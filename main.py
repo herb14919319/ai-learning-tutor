@@ -1,14 +1,22 @@
 import logging
 import os
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 from agents.tutor_agent import TutorAgent
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv() -> bool:
+        return False
 from flask import Flask, abort, jsonify, request
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     ApiClient,
     Configuration,
     MessagingApi,
+    PushMessageRequest,
     ReplyMessageRequest,
     TextMessage,
 )
@@ -25,6 +33,11 @@ logger = logging.getLogger(__name__)
 APP_NAME = "AI Learning 助教"
 DEFAULT_MODEL = "gpt-4.1-mini"
 MAX_LINE_TEXT_LENGTH = 4500
+PROCESSING_MESSAGE = "助教正在努力思考中..."
+FALLBACK_MESSAGE = "助教目前找不到明確答案，可能需要換個問法，或提供更多上下文。"
+AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
+PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
+BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
@@ -37,6 +50,13 @@ app.json.ensure_ascii = False
 line_configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+webhook_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
+ai_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
+
+# In-memory duplicate guard for LINE webhook retries. This is intentionally
+# small and process-local; replace with Redis/DB when running multiple instances.
+processed_events: dict[str, float] = {}
+processed_events_lock = threading.Lock()
 
 
 def ask_gpt(system_prompt: str, user_prompt: str) -> str:
@@ -76,19 +96,19 @@ def help_text() -> str:
 
 def generate_ai_reply(user_text: str, *, truncate: bool = True) -> str:
     if not openai_client:
-        return "目前 OpenAI API 尚未設定完成，請稍後再試。"
+        return FALLBACK_MESSAGE
 
     try:
-        reply = tutor_agent.answer(user_text).strip()
+        reply = (tutor_agent.answer(user_text) or "").strip()
     except OpenAIError:
         logger.exception("OpenAI API request failed")
-        return "抱歉，我剛剛連線到 AI 服務時遇到問題。請稍後再試一次。"
+        return FALLBACK_MESSAGE
     except Exception:
-        logger.exception("Unexpected OpenAI response error")
-        return "抱歉，我剛剛產生回覆時遇到問題。請稍後再試一次。"
+        logger.exception("Unexpected AI Tutor response error")
+        return FALLBACK_MESSAGE
 
     if not reply:
-        return "抱歉，我這次沒有產生有效回覆。請換個問法再試一次。"
+        return FALLBACK_MESSAGE
 
     if truncate:
         return truncate_for_line(reply)
@@ -107,6 +127,81 @@ def reply_text(reply_token: str, text: str) -> None:
             )
     except Exception:
         logger.exception("LINE reply API failed")
+
+
+def push_text(to: str, text: str) -> None:
+    try:
+        with ApiClient(line_configuration) as api_client:
+            messaging_api = MessagingApi(api_client)
+            messaging_api.push_message(
+                PushMessageRequest(
+                    to=to,
+                    messages=[TextMessage(text=truncate_for_line(text))],
+                )
+            )
+    except Exception:
+        logger.exception("LINE push API failed")
+
+
+def line_recipient_id(event: MessageEvent) -> str | None:
+    source = getattr(event, "source", None)
+    for attr in ("user_id", "group_id", "room_id"):
+        value = getattr(source, attr, None)
+        if value:
+            return value
+    return None
+
+
+def event_deduplication_key(event: MessageEvent) -> str:
+    event_id = getattr(event, "webhook_event_id", None)
+    message_id = getattr(getattr(event, "message", None), "id", None)
+    if event_id:
+        return f"event:{event_id}"
+    if message_id:
+        return f"message:{message_id}"
+    return f"reply:{event.reply_token}"
+
+
+def mark_event_if_new(event: MessageEvent) -> bool:
+    now = time.monotonic()
+    key = event_deduplication_key(event)
+    with processed_events_lock:
+        expired_keys = [
+            cached_key
+            for cached_key, cached_at in processed_events.items()
+            if now - cached_at > PROCESSED_EVENT_TTL_SECONDS
+        ]
+        for cached_key in expired_keys:
+            processed_events.pop(cached_key, None)
+
+        if key in processed_events:
+            logger.info("Skipping duplicate LINE event: %s", key)
+            return False
+
+        processed_events[key] = now
+        return True
+
+
+def generate_ai_reply_with_timeout(user_text: str) -> str:
+    future = ai_executor.submit(generate_ai_reply, user_text)
+    try:
+        reply = future.result(timeout=AI_REPLY_TIMEOUT_SECONDS)
+    except TimeoutError:
+        logger.exception("AI Tutor response timed out")
+        return FALLBACK_MESSAGE
+
+    if not reply or not reply.strip():
+        return FALLBACK_MESSAGE
+    return reply
+
+
+def process_text_message_async(user_text: str, recipient_id: str) -> None:
+    if user_text.lower() == "/help":
+        push_text(recipient_id, help_text())
+        return
+
+    reply = generate_ai_reply_with_timeout(user_text)
+    push_text(recipient_id, reply)
 
 
 @app.get("/")
@@ -151,12 +246,17 @@ def callback():
 def handle_text_message(event: MessageEvent):
     user_text = event.message.text.strip()
 
-    if user_text.lower() == "/help":
-        reply_text(event.reply_token, help_text())
+    if not mark_event_if_new(event):
         return
 
-    reply = generate_ai_reply(user_text)
-    reply_text(event.reply_token, reply)
+    reply_text(event.reply_token, PROCESSING_MESSAGE)
+
+    recipient_id = line_recipient_id(event)
+    if not recipient_id:
+        logger.warning("LINE event has no push recipient id")
+        return
+
+    webhook_executor.submit(process_text_message_async, user_text, recipient_id)
 
 
 if __name__ == "__main__":
