@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import main
+from menu_router import is_menu_command
 from agents.router import route
 from agents.tutor_agent import TutorAgent
 from skills.registry import get_skill_metadata, list_skills
@@ -147,6 +148,35 @@ class LineWebhookFlowTest(unittest.TestCase):
                 ("push", "user-1", "正式答案"),
             ],
         )
+
+    def test_ai_map_is_menu_command(self):
+        self.assertTrue(is_menu_command("AI地圖"))
+
+    def test_regular_question_is_not_menu_command(self):
+        self.assertFalse(is_menu_command("什麼是 Transformer？"))
+
+    def test_menu_command_does_not_enter_ai_reply_flow(self):
+        calls = []
+
+        with main.app.test_request_context("/callback", base_url="https://example.com"):
+            with patch.object(
+                main,
+                "handle_menu_command",
+                side_effect=lambda text, api, token, base_url, assets_dir: calls.append(
+                    ("menu", text, token, base_url)
+                )
+                or True,
+            ), patch.object(
+                main, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
+            ), patch.object(
+                main, "webhook_executor", ImmediateExecutor()
+            ), patch.object(
+                main, "generate_ai_reply_with_timeout", return_value="正式答案"
+            ) as generate_ai_reply:
+                main.handle_text_message(fake_line_event(text="AI地圖"))
+
+        self.assertEqual(calls, [("menu", "AI地圖", "reply-token-1", "https://example.com")])
+        generate_ai_reply.assert_not_called()
 
     def test_empty_ai_answer_pushes_fallback_message(self):
         calls = []

@@ -3,14 +3,16 @@ import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
+from menu_router import handle_menu_command, is_menu_command
 try:
     from dotenv import load_dotenv
 except ImportError:
     def load_dotenv() -> bool:
         return False
-from flask import Flask, abort, jsonify, request
+from flask import Flask, abort, jsonify, request, send_from_directory
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     ApiClient,
@@ -46,6 +48,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL", "")
+ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
@@ -154,6 +158,12 @@ def push_text(to: str, text: str) -> None:
         logger.exception("LINE push API failed")
 
 
+def public_base_url() -> str:
+    if PUBLIC_BASE_URL.strip():
+        return PUBLIC_BASE_URL.strip().rstrip("/")
+    return request.url_root.rstrip("/")
+
+
 def line_recipient_id(event: MessageEvent) -> str | None:
     source = getattr(event, "source", None)
     for attr in ("user_id", "group_id", "room_id"):
@@ -243,6 +253,11 @@ def test_mode():
     )
 
 
+@app.get("/assets/<path:filename>")
+def asset_file(filename: str):
+    return send_from_directory(ASSETS_DIR, filename)
+
+
 @app.post("/callback")
 def callback():
     signature = request.headers.get("X-Line-Signature", "")
@@ -264,6 +279,22 @@ def handle_text_message(event: MessageEvent):
     user_text = event.message.text.strip()
 
     if not mark_event_if_new(event):
+        return
+
+    if is_menu_command(user_text):
+        try:
+            with ApiClient(line_configuration) as api_client:
+                messaging_api = MessagingApi(api_client)
+                handle_menu_command(
+                    user_text,
+                    messaging_api,
+                    event.reply_token,
+                    public_base_url(),
+                    ASSETS_DIR,
+                )
+        except Exception:
+            logger.exception("LINE Rich Menu command handling failed")
+            reply_text(event.reply_token, DEFAULT_FALLBACK_RESPONSE)
         return
 
     reply_text(event.reply_token, PROCESSING_MESSAGE)

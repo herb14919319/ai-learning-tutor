@@ -30,9 +30,11 @@ LINE_CHANNEL_ACCESS_TOKEN="你的 LINE Channel Access Token"
 LINE_CHANNEL_SECRET="你的 LINE Channel Secret"
 OPENAI_MODEL="gpt-4.1-mini"
 PORT="8080"
+PUBLIC_BASE_URL="https://your-public-service-url"
 ```
 
 `OPENAI_MODEL` 可省略，預設使用 `gpt-4.1-mini`。
+`PUBLIC_BASE_URL` 用於產生 LINE Rich Menu 圖片網址，例如 `https://your-service.onrender.com/assets/ai_map.png`。若未設定，服務會用目前 request 的 host 自動產生；部署到 Render 或 Cloud Run 時建議明確設定為服務公開 HTTPS URL。
 
 ## 本機 .env
 
@@ -44,6 +46,7 @@ LINE_CHANNEL_ACCESS_TOKEN=你的 LINE Channel Access Token
 LINE_CHANNEL_SECRET=你的 LINE Channel Secret
 OPENAI_MODEL=gpt-4.1-mini
 PORT=8080
+PUBLIC_BASE_URL=https://your-public-service-url
 ```
 
 `main.py` 啟動時會透過 `python-dotenv` 自動載入 `.env`。如果同一個變數已經存在於系統環境變數中，系統環境變數會保留原值，不會被 `.env` 覆蓋。這讓本機 `.env` 與 Cloud Run 的環境變數設定可以相容。
@@ -145,6 +148,35 @@ https://你的-cloud-run-url/callback
 傳送 `/help` 可取得使用說明。
 
 一般文字訊息會交由 AI Learning 助教回答。第一版只處理文字訊息；圖片、貼圖、語音等訊息會被忽略。
+
+## Rich Menu MVP
+
+LINE Rich Menu 按鈕送出的固定文字會先被 `menu_router.py` 攔截，不會進入 LLM，也不會先回覆「助教正在努力思考中...」。
+
+目前支援：
+
+```text
+AI地圖
+ML基礎
+DL基礎
+LLM介紹
+Agent介紹
+我要問問題
+```
+
+圖片素材放在 `assets/`，並由 Flask route `/assets/<filename>` 對外提供。LINE `ImageMessage` 需要公開可存取的 `originalContentUrl` 和 `previewImageUrl`，所以部署時請設定：
+
+```bash
+PUBLIC_BASE_URL="https://your-render-or-cloud-run-url"
+```
+
+本地若要測試圖片網址，可啟動服務後開啟：
+
+```text
+http://localhost:8080/assets/ai_map.png
+```
+
+若要讓 LINE 在本地也能讀取圖片，需要使用 ngrok、Cloudflare Tunnel 等 HTTPS tunnel，並將 `PUBLIC_BASE_URL` 設為 tunnel URL。
 
 ## 免責聲明
 
