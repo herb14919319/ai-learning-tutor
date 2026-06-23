@@ -94,12 +94,12 @@ def help_text() -> str:
     )
 
 
-def generate_ai_reply(user_text: str, *, truncate: bool = True) -> str:
+def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
     if not openai_client:
         return FALLBACK_MESSAGE
 
     try:
-        reply = (tutor_agent.answer(user_text) or "").strip()
+        reply = (tutor_agent.answer(user_text, user_id=user_id) or "").strip()
     except OpenAIError:
         logger.exception("OpenAI API request failed")
         return FALLBACK_MESSAGE
@@ -182,8 +182,8 @@ def mark_event_if_new(event: MessageEvent) -> bool:
         return True
 
 
-def generate_ai_reply_with_timeout(user_text: str) -> str:
-    future = ai_executor.submit(generate_ai_reply, user_text)
+def generate_ai_reply_with_timeout(user_text: str, user_id: str | None = None) -> str:
+    future = ai_executor.submit(generate_ai_reply, user_text, user_id=user_id)
     try:
         reply = future.result(timeout=AI_REPLY_TIMEOUT_SECONDS)
     except TimeoutError:
@@ -200,7 +200,7 @@ def process_text_message_async(user_text: str, recipient_id: str) -> None:
         push_text(recipient_id, help_text())
         return
 
-    reply = generate_ai_reply_with_timeout(user_text)
+    reply = generate_ai_reply_with_timeout(user_text, user_id=recipient_id)
     push_text(recipient_id, reply)
 
 

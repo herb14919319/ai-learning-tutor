@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import logging
 import inspect
+from contextvars import ContextVar
 from typing import Callable
 
+from memory.conversation_context import add_turn
+from memory.conversation_context import build_contextual_prompt
 from skills.registry import configure as configure_skills
 from skills.registry import get_skill
 from skills.registry import get_runtime
@@ -11,24 +14,35 @@ from skills.runtime import SkillRuntime
 
 
 logger = logging.getLogger(__name__)
+_active_user_id: ContextVar[str | None] = ContextVar("active_user_id", default=None)
 
 
 class TutorAgent:
     def __init__(self, ask_gpt: Callable[[str, str], str], skill_runtime: SkillRuntime | None = None):
-        self.ask_gpt = ask_gpt
+        self._ask_gpt = ask_gpt
+        self.ask_gpt = self._ask_gpt_with_context
         self.skill_runtime = skill_runtime or get_runtime()
         if skill_runtime:
-            self.skill_runtime.configure(ask_gpt)
+            self.skill_runtime.configure(self.ask_gpt)
         else:
-            configure_skills(ask_gpt)
+            configure_skills(self.ask_gpt)
 
-    def answer(self, user_message: str) -> str:
+    def _ask_gpt_with_context(self, system_prompt: str, user_prompt: str) -> str:
+        return self._ask_gpt(
+            system_prompt,
+            build_contextual_prompt(user_prompt, _active_user_id.get()),
+        )
+
+    def answer(self, user_message: str, user_id: str | None = None) -> str:
+        _active_user_id.set(user_id)
         request = self.skill_runtime.normalize_request(user_message)
         decision = self.skill_runtime.route(request)
         skill_name = decision.get("skill", "general")
 
         if skill_name == "general":
-            return self._general_teaching_answer(user_message, reason="router_general")
+            answer = self._general_teaching_answer(user_message, reason="router_general")
+            add_turn(user_id, user_message, answer)
+            return answer
 
         try:
             skill = (
@@ -38,22 +52,31 @@ class TutorAgent:
             )
         except Exception:
             logger.exception("Skill failed: %s", skill_name)
-            return self._general_teaching_answer(user_message, reason="skill_exception")
+            answer = self._general_teaching_answer(user_message, reason="skill_exception")
+            add_turn(user_id, user_message, answer)
+            return answer
 
         if not skill:
             logger.warning("Router selected unknown skill: %s", skill_name)
-            return self._general_teaching_answer(user_message, reason="unknown_skill")
+            answer = self._general_teaching_answer(user_message, reason="unknown_skill")
+            add_turn(user_id, user_message, answer)
+            return answer
 
         try:
             skill_answer = self._invoke_skill(skill, request)
         except Exception:
             logger.exception("Skill failed: %s", skill_name)
-            return self._general_teaching_answer(user_message, reason="skill_exception")
+            answer = self._general_teaching_answer(user_message, reason="skill_exception")
+            add_turn(user_id, user_message, answer)
+            return answer
 
         if not skill_answer:
             logger.warning("Skill returned empty answer: %s", skill_name)
-            return self._general_teaching_answer(user_message, reason="empty_skill_answer")
+            answer = self._general_teaching_answer(user_message, reason="empty_skill_answer")
+            add_turn(user_id, user_message, answer)
+            return answer
 
+        add_turn(user_id, user_message, skill_answer)
         return skill_answer
 
     def _invoke_skill(self, skill, request) -> str:
