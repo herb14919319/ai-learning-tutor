@@ -34,7 +34,10 @@ APP_NAME = "AI Learning 助教"
 DEFAULT_MODEL = "gpt-4.1-mini"
 MAX_LINE_TEXT_LENGTH = 4500
 PROCESSING_MESSAGE = "助教正在努力思考中..."
-FALLBACK_MESSAGE = "助教目前找不到明確答案，可能需要換個問法，或提供更多上下文。"
+DEFAULT_FALLBACK_RESPONSE = "抱歉，這個問題我目前可能無法回覆。"
+ERROR_FALLBACK_RESPONSE = "抱歉，目前系統發生異常，請稍後再試。"
+TIMEOUT_FALLBACK_RESPONSE = "抱歉，目前查詢時間較長，請稍後再試。"
+FALLBACK_MESSAGE = DEFAULT_FALLBACK_RESPONSE
 AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
 PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
 BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
@@ -94,21 +97,29 @@ def help_text() -> str:
     )
 
 
+def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESPONSE) -> str:
+    if answer is None:
+        logger.warning("AI Tutor returned None response")
+        return fallback
+    if isinstance(answer, str) and not answer.strip():
+        logger.warning("AI Tutor returned empty response")
+        return fallback
+    return answer
+
+
 def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
     if not openai_client:
-        return FALLBACK_MESSAGE
+        logger.error("OpenAI API is not configured")
+        return ERROR_FALLBACK_RESPONSE
 
     try:
-        reply = (tutor_agent.answer(user_text, user_id=user_id) or "").strip()
+        reply = normalize_response(tutor_agent.answer(user_text, user_id=user_id))
     except OpenAIError:
         logger.exception("OpenAI API request failed")
-        return FALLBACK_MESSAGE
+        return ERROR_FALLBACK_RESPONSE
     except Exception:
         logger.exception("Unexpected AI Tutor response error")
-        return FALLBACK_MESSAGE
-
-    if not reply:
-        return FALLBACK_MESSAGE
+        return ERROR_FALLBACK_RESPONSE
 
     if truncate:
         return truncate_for_line(reply)
@@ -183,25 +194,31 @@ def mark_event_if_new(event: MessageEvent) -> bool:
 
 
 def generate_ai_reply_with_timeout(user_text: str, user_id: str | None = None) -> str:
-    future = ai_executor.submit(generate_ai_reply, user_text, user_id=user_id)
     try:
+        future = ai_executor.submit(generate_ai_reply, user_text, user_id=user_id)
         reply = future.result(timeout=AI_REPLY_TIMEOUT_SECONDS)
     except TimeoutError:
-        logger.exception("AI Tutor response timed out")
-        return FALLBACK_MESSAGE
+        logger.warning("AI Tutor response timed out after %s seconds", AI_REPLY_TIMEOUT_SECONDS)
+        return TIMEOUT_FALLBACK_RESPONSE
+    except Exception:
+        logger.exception("AI Tutor background response failed")
+        return ERROR_FALLBACK_RESPONSE
 
-    if not reply or not reply.strip():
-        return FALLBACK_MESSAGE
-    return reply
+    return normalize_response(reply)
 
 
 def process_text_message_async(user_text: str, recipient_id: str) -> None:
-    if user_text.lower() == "/help":
-        push_text(recipient_id, help_text())
-        return
+    try:
+        if user_text.lower() == "/help":
+            push_text(recipient_id, help_text())
+            return
 
-    reply = generate_ai_reply_with_timeout(user_text, user_id=recipient_id)
-    push_text(recipient_id, reply)
+        reply = generate_ai_reply_with_timeout(user_text, user_id=recipient_id)
+    except Exception:
+        logger.exception("LINE async text processing failed")
+        reply = ERROR_FALLBACK_RESPONSE
+
+    push_text(recipient_id, normalize_response(reply))
 
 
 @app.get("/")
@@ -256,7 +273,11 @@ def handle_text_message(event: MessageEvent):
         logger.warning("LINE event has no push recipient id")
         return
 
-    webhook_executor.submit(process_text_message_async, user_text, recipient_id)
+    try:
+        webhook_executor.submit(process_text_message_async, user_text, recipient_id)
+    except Exception:
+        logger.exception("Failed to submit LINE async processing task")
+        push_text(recipient_id, ERROR_FALLBACK_RESPONSE)
 
 
 if __name__ == "__main__":

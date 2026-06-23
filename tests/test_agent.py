@@ -14,6 +14,16 @@ class ImmediateExecutor:
         return fn(*args, **kwargs)
 
 
+class TimeoutFuture:
+    def result(self, timeout=None):
+        raise main.TimeoutError()
+
+
+class TimeoutExecutor:
+    def submit(self, fn, *args, **kwargs):
+        return TimeoutFuture()
+
+
 def fake_line_event(
     *,
     text: str = "請解釋 Transformer",
@@ -148,7 +158,43 @@ class LineWebhookFlowTest(unittest.TestCase):
         ):
             main.process_text_message_async("空答案問題", "user-1")
 
-        self.assertEqual(calls, [("user-1", main.FALLBACK_MESSAGE)])
+        self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
+
+    def test_none_ai_answer_uses_default_fallback_response(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value=None
+        ):
+            reply = main.generate_ai_reply("AI助理有沒有流量限制？")
+
+        self.assertEqual(reply, main.DEFAULT_FALLBACK_RESPONSE)
+
+    def test_empty_ai_answer_uses_default_fallback_response(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="   "
+        ):
+            reply = main.generate_ai_reply("AI助理有沒有流量限制？")
+
+        self.assertEqual(reply, main.DEFAULT_FALLBACK_RESPONSE)
+
+    def test_normal_ai_answer_is_preserved(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="正常答案"
+        ):
+            reply = main.generate_ai_reply("AI助理有沒有流量限制？")
+
+        self.assertEqual(reply, "正常答案")
+
+    def test_empty_rag_or_tool_result_pushes_default_fallback(self):
+        calls = []
+
+        with patch.object(
+            main, "generate_ai_reply_with_timeout", return_value=""
+        ), patch.object(
+            main, "push_text", side_effect=lambda to, text: calls.append((to, text))
+        ):
+            main.process_text_message_async("AI助理有沒有流量限制？", "user-1")
+
+        self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
 
     def test_ai_exception_pushes_fallback_message(self):
         calls = []
@@ -160,7 +206,21 @@ class LineWebhookFlowTest(unittest.TestCase):
         ):
             main.process_text_message_async("會爆炸的問題", "user-1")
 
-        self.assertEqual(calls, [("user-1", main.FALLBACK_MESSAGE)])
+        self.assertEqual(calls, [("user-1", main.ERROR_FALLBACK_RESPONSE)])
+
+    def test_timeout_pushes_timeout_fallback_message(self):
+        with patch.object(main, "ai_executor", TimeoutExecutor()):
+            reply = main.generate_ai_reply_with_timeout("AI助理有沒有流量限制？", user_id="user-1")
+
+        self.assertEqual(reply, main.TIMEOUT_FALLBACK_RESPONSE)
+
+    def test_ai_assistant_rate_limit_question_does_not_hang(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="目前沒有已知的固定流量限制。"
+        ):
+            reply = main.generate_ai_reply("AI助理有沒有流量限制？")
+
+        self.assertEqual(reply, "目前沒有已知的固定流量限制。")
 
     def test_duplicate_event_is_not_processed_twice(self):
         calls = []
