@@ -5,6 +5,7 @@ import inspect
 from contextvars import ContextVar
 from typing import Callable
 
+from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from memory.conversation_context import add_turn
 from memory.conversation_context import build_contextual_prompt
 from skills.registry import configure as configure_skills
@@ -15,6 +16,7 @@ from skills.runtime import SkillRuntime
 
 logger = logging.getLogger(__name__)
 _active_user_id: ContextVar[str | None] = ContextVar("active_user_id", default=None)
+_active_user_message: ContextVar[str | None] = ContextVar("active_user_message", default=None)
 
 
 class TutorAgent:
@@ -28,6 +30,9 @@ class TutorAgent:
             configure_skills(self.ask_gpt)
 
     def _ask_gpt_with_context(self, system_prompt: str, user_prompt: str) -> str:
+        acronym_hint = build_ai_acronym_disambiguation_prompt(_active_user_message.get() or "")
+        if acronym_hint:
+            system_prompt = f"{system_prompt}\n\n{acronym_hint}"
         return self._ask_gpt(
             system_prompt,
             build_contextual_prompt(user_prompt, _active_user_id.get()),
@@ -35,6 +40,7 @@ class TutorAgent:
 
     def answer(self, user_message: str, user_id: str | None = None) -> str:
         _active_user_id.set(user_id)
+        _active_user_message.set(user_message)
         request = self.skill_runtime.normalize_request(user_message)
         decision = self.skill_runtime.route(request)
         skill_name = decision.get("skill", "general")

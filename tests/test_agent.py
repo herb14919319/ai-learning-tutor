@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import main
 from menu_router import is_menu_command
+from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from agents.router import route
 from agents.tutor_agent import TutorAgent
 from skills.registry import get_skill_metadata, list_skills
@@ -120,6 +121,51 @@ class TutorAgentTest(unittest.TestCase):
         agent = TutorAgent(lambda system, user: f"general:{user}", skill_runtime=runtime)
 
         self.assertTrue(agent.answer("What is an LLM?").startswith("general:"))
+
+    def test_ai_acronym_question_routes_to_hungyi_lee(self):
+        self.assertEqual(route("MCP 是什麼？")["skill"], "hungyi_lee")
+        self.assertEqual(route("MCP 跟 RAG 有什麼關係？")["skill"], "hungyi_lee")
+
+    def test_mcp_defaults_to_model_context_protocol_prompt(self):
+        hint = build_ai_acronym_disambiguation_prompt("MCP 是什麼？")
+
+        self.assertIn("Model Context Protocol", hint)
+        self.assertIn("在 AI Agent 領域中", hint)
+        self.assertIn("不要把 MCP 優先解釋為 Microsoft Certified Professional", hint)
+
+    def test_mcp_with_rag_defaults_to_model_context_protocol_prompt(self):
+        hint = build_ai_acronym_disambiguation_prompt("MCP 跟 RAG 有什麼關係？")
+
+        self.assertIn("Model Context Protocol", hint)
+        self.assertIn("AI Agent", hint)
+
+    def test_microsoft_mcp_certification_prompt(self):
+        hint = build_ai_acronym_disambiguation_prompt("微軟 MCP 證照是什麼？")
+
+        self.assertIn("Microsoft Certified Professional", hint)
+        self.assertIn("微軟認證專家", hint)
+
+    def test_microsoft_certified_professional_prompt(self):
+        hint = build_ai_acronym_disambiguation_prompt("Microsoft Certified Professional 是什麼？")
+
+        self.assertIn("Microsoft Certified Professional", hint)
+        self.assertIn("微軟認證專家", hint)
+
+    def test_agent_injects_mcp_disambiguation_into_general_prompt(self):
+        prompts = []
+
+        def fake_ask_gpt(system_prompt: str, user_prompt: str) -> str:
+            prompts.append((system_prompt, user_prompt))
+            return "在 AI Agent 領域中，MCP 通常指 Model Context Protocol。"
+
+        runtime = SkillRuntime(SkillCatalog(()))
+        agent = TutorAgent(fake_ask_gpt, skill_runtime=runtime)
+
+        answer = agent.answer("MCP 是什麼？")
+
+        self.assertIn("Model Context Protocol", answer)
+        self.assertIn("Model Context Protocol", prompts[0][0])
+        self.assertIn("不要把 MCP 優先解釋為 Microsoft Certified Professional", prompts[0][0])
 
 
 class LineWebhookFlowTest(unittest.TestCase):
