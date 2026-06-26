@@ -168,6 +168,97 @@ class TutorAgentTest(unittest.TestCase):
         self.assertIn("不要把 MCP 優先解釋為 Microsoft Certified Professional", prompts[0][0])
 
 
+class AgentAskApiTest(unittest.TestCase):
+    def test_successful_agent_ask_returns_metadata(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="RAG retrieves context before generation."
+        ) as answer:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?", "caller": "baeko", "user_id": "amos"},
+            )
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["answer"], "RAG retrieves context before generation.")
+        self.assertEqual(data["source_agent"], "ai_learning_tutor")
+        self.assertEqual(data["handled_by"], "tutor_agent")
+        self.assertEqual(data["caller"], "baeko")
+        self.assertTrue(data["call_id"])
+        self.assertEqual(data["confidence"], "medium")
+        answer.assert_called_once_with("What is RAG?", user_id="amos")
+
+    def test_missing_question_returns_400(self):
+        response = main.app.test_client().post("/api/agent/ask", json={"caller": "baeko"})
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(data["ok"])
+        self.assertEqual(data["error"], "missing_question")
+        self.assertEqual(data["source_agent"], "ai_learning_tutor")
+        self.assertTrue(data["call_id"])
+
+    def test_caller_defaults_to_unknown(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="answer"
+        ):
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is an embedding?"},
+            )
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["caller"], "unknown")
+
+    def test_agent_ask_does_not_trigger_line_reply_or_push(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="answer"
+        ), patch.object(main, "reply_text") as reply_text, patch.object(main, "push_text") as push_text:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?", "caller": "baeko"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        reply_text.assert_not_called()
+        push_text.assert_not_called()
+
+    def test_agent_ask_logs_call_id_and_caller(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="answer"
+        ), self.assertLogs("main", level="INFO") as logs:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?", "caller": "baeko"},
+            )
+
+        call_id = response.get_json()["call_id"]
+        log_text = "\n".join(logs.output)
+        self.assertIn(f"call_id={call_id}", log_text)
+        self.assertIn("caller=baeko", log_text)
+        self.assertIn("[AGENT_API] call_in_received", log_text)
+        self.assertIn("[AGENT_API] call_in_success", log_text)
+
+    def test_internal_error_returns_500_without_exception_details(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", side_effect=RuntimeError("secret failure")
+        ):
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?", "caller": "baeko"},
+            )
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 500)
+        self.assertFalse(data["ok"])
+        self.assertEqual(data["error"], "internal_error")
+        self.assertEqual(data["source_agent"], "ai_learning_tutor")
+        self.assertTrue(data["call_id"])
+        self.assertNotIn("secret failure", str(data))
+
+
 class LineWebhookFlowTest(unittest.TestCase):
     def setUp(self):
         main.processed_events.clear()

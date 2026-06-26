@@ -183,3 +183,20 @@ http://localhost:8080/assets/ai_map.png
 本服務為 AI 學習工具，非任何教師、學校或教育機構官方帳號。
 
 本服務可依據學習助教的教學風格/脈絡協助解釋 AI 相關概念，但不宣稱為李宏毅教授、台大或任何教育機構官方服務，也不宣稱取得官方授權。
+
+## Agent Call-in API
+
+External agents can call the tutor directly without using LINE webhook, push, reply, or Rich Menu behavior.
+
+```http
+POST /api/agent/ask
+Content-Type: application/json
+```
+
+```json
+{
+  "question": "What is RAG?",
+  "caller": "baeko",
+  "user_id": "amos"
+}
+```

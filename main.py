@@ -2,6 +2,7 @@ import logging
 import os
 import threading
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from pathlib import Path
 
@@ -111,13 +112,16 @@ def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESP
     return answer
 
 
-def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
+def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
     if not openai_client:
-        logger.error("OpenAI API is not configured")
-        return ERROR_FALLBACK_RESPONSE
+        raise RuntimeError("OpenAI API is not configured")
 
+    return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
+
+
+def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
     try:
-        reply = normalize_response(tutor_agent.answer(user_text, user_id=user_id))
+        reply = generate_tutor_answer(user_text, user_id=user_id)
     except OpenAIError:
         logger.exception("OpenAI API request failed")
         return ERROR_FALLBACK_RESPONSE
@@ -249,6 +253,64 @@ def test_mode():
             "question": question,
             "answer": answer,
             "model": OPENAI_MODEL,
+        }
+    )
+
+
+@app.post("/api/agent/ask")
+def agent_ask():
+    call_id = uuid.uuid4().hex
+    payload = request.get_json(silent=True) or {}
+    raw_caller = payload.get("caller") or "unknown"
+    caller = raw_caller.strip() if isinstance(raw_caller, str) else str(raw_caller)
+    caller = caller or "unknown"
+
+    raw_question = payload.get("question")
+    question = raw_question.strip() if isinstance(raw_question, str) else ""
+    if not question:
+        logger.warning("[AGENT_API] call_in_rejected call_id=%s reason=missing_question", call_id)
+        return jsonify(
+            {
+                "ok": False,
+                "error": "missing_question",
+                "source_agent": "ai_learning_tutor",
+                "call_id": call_id,
+            }
+        ), 400
+
+    raw_user_id = payload.get("user_id")
+    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
+
+    logger.info(
+        "[AGENT_API] call_in_received call_id=%s caller=%s question=%s",
+        call_id,
+        caller,
+        question,
+    )
+
+    try:
+        answer = generate_tutor_answer(question, user_id=user_id)
+    except Exception as exc:
+        logger.exception("[AGENT_API] call_in_error call_id=%s error=%s", call_id, exc)
+        return jsonify(
+            {
+                "ok": False,
+                "error": "internal_error",
+                "source_agent": "ai_learning_tutor",
+                "call_id": call_id,
+            }
+        ), 500
+
+    logger.info("[AGENT_API] call_in_success call_id=%s caller=%s", call_id, caller)
+    return jsonify(
+        {
+            "ok": True,
+            "answer": answer,
+            "source_agent": "ai_learning_tutor",
+            "handled_by": "tutor_agent",
+            "caller": caller,
+            "call_id": call_id,
+            "confidence": "medium",
         }
     )
 
