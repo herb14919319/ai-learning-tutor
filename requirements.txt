@@ -3,5 +3,5 @@ gunicorn==22.0.0
 line-bot-sdk==3.11.0
 openai==1.93.0
 python-dotenv==1.0.1
-networkx>=3.0
-python-louvain>=0.16
+networkx==3.5
+python-louvain==0.16

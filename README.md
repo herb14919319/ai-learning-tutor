@@ -200,3 +200,49 @@ Content-Type: application/json
   "user_id": "amos"
 }
 ```
+
+Recommended capability protocol for new integrations:
+
+```json
+{
+  "task": "answer_question",
+  "caller": "baeko",
+  "user_id": "amos",
+  "input": {
+    "question": "What is RAG?"
+  },
+  "context": {}
+}
+```
+
+Legacy clients can continue sending the simple question format:
+
+```json
+{
+  "question": "What is RAG?"
+}
+```
+
+Both request formats route to the same tutor answer generation flow and return the same response shape:
+
+```json
+{
+  "ok": true,
+  "call_id": "...",
+  "source_agent": "ai_learning_tutor",
+  "handled_by": "answer_question",
+  "capability": "answer_question",
+  "caller": "baeko",
+  "answer": "...",
+  "confidence": "medium"
+}
+```
+
+Only `answer_question` is supported today. Unsupported tasks return HTTP 400:
+
+```json
+{
+  "ok": false,
+  "error": "unsupported_task"
+}
+```

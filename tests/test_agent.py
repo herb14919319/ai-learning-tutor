@@ -183,11 +183,91 @@ class AgentAskApiTest(unittest.TestCase):
         self.assertTrue(data["ok"])
         self.assertEqual(data["answer"], "RAG retrieves context before generation.")
         self.assertEqual(data["source_agent"], "ai_learning_tutor")
-        self.assertEqual(data["handled_by"], "tutor_agent")
+        self.assertEqual(data["handled_by"], "answer_question")
+        self.assertEqual(data["capability"], "answer_question")
         self.assertEqual(data["caller"], "baeko")
         self.assertTrue(data["call_id"])
         self.assertEqual(data["confidence"], "medium")
         answer.assert_called_once_with("What is RAG?", user_id="amos")
+
+    def test_capability_agent_ask_returns_same_answer_flow(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="RAG retrieves context before generation."
+        ) as answer:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={
+                    "task": "answer_question",
+                    "caller": "baeko",
+                    "user_id": "amos",
+                    "input": {"question": "What is RAG?"},
+                    "context": {},
+                    "memory": "ignored",
+                    "messages": [{"role": "user", "content": "ignored"}],
+                },
+            )
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["answer"], "RAG retrieves context before generation.")
+        self.assertEqual(data["handled_by"], "answer_question")
+        self.assertEqual(data["capability"], "answer_question")
+        self.assertEqual(data["caller"], "baeko")
+        answer.assert_called_once_with("What is RAG?", user_id="amos")
+
+    def test_old_and_capability_formats_return_same_metadata_except_call_id(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="same answer"
+        ):
+            client = main.app.test_client()
+            old_response = client.post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?", "caller": "baeko", "user_id": "amos"},
+            )
+            new_response = client.post(
+                "/api/agent/ask",
+                json={
+                    "task": "answer_question",
+                    "caller": "baeko",
+                    "user_id": "amos",
+                    "input": {"question": "What is RAG?"},
+                    "context": {},
+                },
+            )
+
+        old_data = old_response.get_json()
+        new_data = new_response.get_json()
+        old_data.pop("call_id")
+        new_data.pop("call_id")
+        self.assertEqual(old_response.status_code, 200)
+        self.assertEqual(new_response.status_code, 200)
+        self.assertEqual(old_data, new_data)
+
+    def test_dispatcher_routes_answer_question_to_tutor_answer(self):
+        with patch.object(main, "generate_tutor_answer", return_value="answer") as generate:
+            handled_by, answer = main.dispatch_agent_capability(
+                "answer_question", question="What is RAG?", user_id="amos"
+            )
+
+        self.assertEqual(handled_by, "answer_question")
+        self.assertEqual(answer, "answer")
+        generate.assert_called_once_with("What is RAG?", user_id="amos")
+
+    def test_unsupported_task_returns_400(self):
+        with patch.object(main, "generate_tutor_answer") as generate:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={
+                    "task": "quiz",
+                    "caller": "baeko",
+                    "input": {"question": "What is RAG?"},
+                },
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "unsupported_task"})
+        generate.assert_not_called()
 
     def test_missing_question_returns_400(self):
         response = main.app.test_client().post("/api/agent/ask", json={"caller": "baeko"})
@@ -238,8 +318,12 @@ class AgentAskApiTest(unittest.TestCase):
         log_text = "\n".join(logs.output)
         self.assertIn(f"call_id={call_id}", log_text)
         self.assertIn("caller=baeko", log_text)
-        self.assertIn("[AGENT_API] call_in_received", log_text)
-        self.assertIn("[AGENT_API] call_in_success", log_text)
+        self.assertIn("task=answer_question", log_text)
+        self.assertIn("handled_by=answer_question", log_text)
+        self.assertIn("duration_ms=", log_text)
+        self.assertIn("[AGENT_API] received", log_text)
+        self.assertIn("[AGENT_API] dispatch capability=answer_question", log_text)
+        self.assertIn("[AGENT_API] answered", log_text)
 
     def test_internal_error_returns_500_without_exception_details(self):
         with patch.object(main, "openai_client", object()), patch.object(

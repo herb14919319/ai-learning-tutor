@@ -82,6 +82,9 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
 
 
 tutor_agent = TutorAgent(ask_gpt)
+SOURCE_AGENT = "ai_learning_tutor"
+ANSWER_QUESTION_CAPABILITY = "answer_question"
+SUPPORTED_AGENT_CAPABILITIES = {ANSWER_QUESTION_CAPABILITY}
 
 
 def truncate_for_line(text: str) -> str:
@@ -117,6 +120,38 @@ def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
         raise RuntimeError("OpenAI API is not configured")
 
     return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
+
+
+def normalize_agent_request(payload: dict) -> dict:
+    raw_task = payload.get("task") or ANSWER_QUESTION_CAPABILITY
+    task = raw_task.strip() if isinstance(raw_task, str) else str(raw_task)
+    task = task or ANSWER_QUESTION_CAPABILITY
+
+    raw_caller = payload.get("caller") or "unknown"
+    caller = raw_caller.strip() if isinstance(raw_caller, str) else str(raw_caller)
+    caller = caller or "unknown"
+
+    raw_user_id = payload.get("user_id")
+    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
+
+    input_payload = payload.get("input") if isinstance(payload.get("input"), dict) else {}
+    raw_question = input_payload.get("question") if "task" in payload else payload.get("question")
+    question = raw_question.strip() if isinstance(raw_question, str) else ""
+
+    return {
+        "task": task,
+        "caller": caller,
+        "user_id": user_id,
+        "question": question,
+    }
+
+
+def dispatch_agent_capability(task: str, *, question: str, user_id: str | None = None) -> tuple[str, str]:
+    if task not in SUPPORTED_AGENT_CAPABILITIES:
+        raise ValueError("unsupported_task")
+    if task == ANSWER_QUESTION_CAPABILITY:
+        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(question, user_id=user_id)
+    raise ValueError("unsupported_task")
 
 
 def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
@@ -259,55 +294,98 @@ def test_mode():
 
 @app.post("/api/agent/ask")
 def agent_ask():
+    started_at = time.perf_counter()
     call_id = uuid.uuid4().hex
     payload = request.get_json(silent=True) or {}
-    raw_caller = payload.get("caller") or "unknown"
-    caller = raw_caller.strip() if isinstance(raw_caller, str) else str(raw_caller)
-    caller = caller or "unknown"
+    if not isinstance(payload, dict):
+        payload = {}
+    agent_request = normalize_agent_request(payload)
+    caller = agent_request["caller"]
+    task = agent_request["task"]
+    question = agent_request["question"]
+    user_id = agent_request["user_id"]
+    handled_by = task if task in SUPPORTED_AGENT_CAPABILITIES else None
 
-    raw_question = payload.get("question")
-    question = raw_question.strip() if isinstance(raw_question, str) else ""
+    logger.info("[AGENT_API] received call_id=%s caller=%s task=%s", call_id, caller, task)
+
+    if task not in SUPPORTED_AGENT_CAPABILITIES:
+        duration_ms = round((time.perf_counter() - started_at) * 1000)
+        logger.warning(
+            "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=unsupported_task",
+            call_id,
+            caller,
+            task,
+            handled_by,
+            duration_ms,
+        )
+        return jsonify({"ok": False, "error": "unsupported_task"}), 400
+
     if not question:
-        logger.warning("[AGENT_API] call_in_rejected call_id=%s reason=missing_question", call_id)
+        duration_ms = round((time.perf_counter() - started_at) * 1000)
+        logger.warning(
+            "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=missing_question",
+            call_id,
+            caller,
+            task,
+            handled_by,
+            duration_ms,
+        )
         return jsonify(
             {
                 "ok": False,
                 "error": "missing_question",
-                "source_agent": "ai_learning_tutor",
+                "source_agent": SOURCE_AGENT,
                 "call_id": call_id,
             }
         ), 400
 
-    raw_user_id = payload.get("user_id")
-    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
-
     logger.info(
-        "[AGENT_API] call_in_received call_id=%s caller=%s question=%s",
+        "[AGENT_API] dispatch capability=%s call_id=%s caller=%s task=%s handled_by=%s",
+        task,
         call_id,
         caller,
-        question,
+        task,
+        handled_by,
     )
 
     try:
-        answer = generate_tutor_answer(question, user_id=user_id)
+        handled_by, answer = dispatch_agent_capability(task, question=question, user_id=user_id)
     except Exception as exc:
-        logger.exception("[AGENT_API] call_in_error call_id=%s error=%s", call_id, exc)
+        duration_ms = round((time.perf_counter() - started_at) * 1000)
+        logger.exception(
+            "[AGENT_API] error call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s error=%s",
+            call_id,
+            caller,
+            task,
+            handled_by,
+            duration_ms,
+            exc,
+        )
         return jsonify(
             {
                 "ok": False,
                 "error": "internal_error",
-                "source_agent": "ai_learning_tutor",
+                "source_agent": SOURCE_AGENT,
                 "call_id": call_id,
             }
         ), 500
 
-    logger.info("[AGENT_API] call_in_success call_id=%s caller=%s", call_id, caller)
+    duration_ms = round((time.perf_counter() - started_at) * 1000)
+    logger.info(
+        "[AGENT_API] answered call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s",
+        call_id,
+        caller,
+        task,
+        handled_by,
+        duration_ms,
+    )
     return jsonify(
         {
             "ok": True,
             "answer": answer,
-            "source_agent": "ai_learning_tutor",
-            "handled_by": "tutor_agent",
+            "source_agent": SOURCE_AGENT,
+            "handled_by": handled_by,
+            "capability": handled_by,
             "caller": caller,
             "call_id": call_id,
             "confidence": "medium",
