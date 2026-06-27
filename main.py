@@ -10,6 +10,7 @@ from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
 from menu_router import handle_menu_command, is_menu_command
+import messenger_webhook
 try:
     from dotenv import load_dotenv
 except ImportError:
@@ -386,18 +387,32 @@ def generate_ai_reply_with_timeout(user_text: str, user_id: str | None = None) -
     return normalize_response(reply)
 
 
+def generate_tutor_reply(user_id: str, user_text: str) -> str:
+    return generate_ai_reply_with_timeout(user_text, user_id=user_id)
+
+
 def process_text_message_async(user_text: str, recipient_id: str) -> None:
     try:
         if user_text.lower() == "/help":
             push_text(recipient_id, help_text())
             return
 
-        reply = generate_ai_reply_with_timeout(user_text, user_id=recipient_id)
+        reply = generate_tutor_reply(recipient_id, user_text)
     except Exception:
         logger.exception("LINE async text processing failed")
         reply = ERROR_FALLBACK_RESPONSE
 
     push_text(recipient_id, normalize_response(reply))
+
+
+messenger_webhook.configure_messenger_handler(
+    reply_generator=generate_tutor_reply,
+    executor=webhook_executor,
+)
+
+
+def messenger_enabled() -> bool:
+    return os.getenv("MESSENGER_ENABLED", "").strip().lower() == "true"
 
 
 @app.get("/")
@@ -615,6 +630,30 @@ def tutor_ask():
 @app.get("/assets/<path:filename>")
 def asset_file(filename: str):
     return send_from_directory(ASSETS_DIR, filename)
+
+
+@app.get("/webhook/messenger")
+def messenger_verify():
+    if not messenger_enabled():
+        abort(404)
+    return messenger_webhook.handle_verify_request(request.args, os.getenv("MESSENGER_VERIFY_TOKEN", ""))
+
+
+@app.post("/webhook/messenger")
+def messenger_callback():
+    if not messenger_enabled():
+        abort(404)
+
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    try:
+        messenger_webhook.handle_messenger_event(payload)
+    except Exception:
+        logger.exception("Messenger webhook handler failed")
+
+    return "OK"
 
 
 @app.post("/callback")

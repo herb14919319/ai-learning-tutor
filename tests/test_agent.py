@@ -27,6 +27,14 @@ class TimeoutExecutor:
         return TimeoutFuture()
 
 
+class RecordingExecutor:
+    def __init__(self):
+        self.calls = []
+
+    def submit(self, fn, *args, **kwargs):
+        self.calls.append((fn, args, kwargs))
+
+
 def fake_line_event(
     *,
     text: str = "請解釋 Transformer",
@@ -732,6 +740,116 @@ class LineWebhookFlowTest(unittest.TestCase):
                 ("push", "user-1", "正式答案"),
             ],
         )
+
+
+class MessengerWebhookFlowTest(unittest.TestCase):
+    def setUp(self):
+        self.original_executor = main.messenger_webhook._background_executor
+        self.original_reply_generator = main.messenger_webhook._reply_generator
+
+    def tearDown(self):
+        main.messenger_webhook.configure_messenger_handler(
+            reply_generator=self.original_reply_generator,
+            executor=self.original_executor,
+        )
+
+    def messenger_payload(self, messaging_event):
+        return {
+            "object": "page",
+            "entry": [
+                {
+                    "messaging": [
+                        messaging_event,
+                    ]
+                }
+            ],
+        }
+
+    def test_verify_token_success_returns_challenge(self):
+        with patch.dict(os.environ, {"MESSENGER_ENABLED": "true", "MESSENGER_VERIFY_TOKEN": "verify-me"}):
+            response = main.app.test_client().get(
+                "/webhook/messenger?hub.mode=subscribe&hub.verify_token=verify-me&hub.challenge=abc123"
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(as_text=True), "abc123")
+
+    def test_verify_token_failure_returns_403(self):
+        with patch.dict(os.environ, {"MESSENGER_ENABLED": "true", "MESSENGER_VERIFY_TOKEN": "verify-me"}):
+            response = main.app.test_client().get(
+                "/webhook/messenger?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=abc123"
+            )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_text_message_returns_200_and_submits_background_work(self):
+        executor = RecordingExecutor()
+        main.messenger_webhook.configure_messenger_handler(
+            reply_generator=lambda user_id, text: "answer",
+            executor=executor,
+        )
+        payload = self.messenger_payload(
+            {
+                "sender": {"id": "sender-1"},
+                "message": {"text": "What is RAG?"},
+            }
+        )
+
+        with patch.dict(os.environ, {"MESSENGER_ENABLED": "true"}), patch.object(
+            main.messenger_webhook, "send_text_message", return_value=True
+        ) as send_text:
+            response = main.app.test_client().post("/webhook/messenger", json=payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_data(as_text=True), "OK")
+        send_text.assert_called_once_with("sender-1", main.messenger_webhook.MESSENGER_PROCESSING_MESSAGE)
+        self.assertEqual(len(executor.calls), 1)
+        fn, args, kwargs = executor.calls[0]
+        self.assertIs(fn, main.messenger_webhook.process_messenger_text_async)
+        self.assertEqual(args, ("sender-1", "What is RAG?"))
+        self.assertEqual(kwargs, {})
+
+    def test_background_messenger_text_uses_tutor_user_id_and_pushes_reply(self):
+        calls = []
+        main.messenger_webhook.configure_messenger_handler(
+            reply_generator=lambda user_id, text: calls.append((user_id, text)) or "answer",
+            executor=ImmediateExecutor(),
+        )
+
+        with patch.object(
+            main.messenger_webhook,
+            "send_text_message",
+            side_effect=lambda recipient_id, text: calls.append((recipient_id, text)) or True,
+        ):
+            main.messenger_webhook.process_messenger_text_async("sender-1", "What is MCP?")
+
+        self.assertEqual(calls, [("messenger:sender-1", "What is MCP?"), ("sender-1", "answer")])
+
+    def test_delivery_read_and_echo_events_do_not_submit_ai_flow(self):
+        executor = RecordingExecutor()
+        main.messenger_webhook.configure_messenger_handler(
+            reply_generator=lambda user_id, text: "answer",
+            executor=executor,
+        )
+        payload = {
+            "object": "page",
+            "entry": [
+                {
+                    "messaging": [
+                        {"sender": {"id": "sender-1"}, "delivery": {"mids": ["mid-1"]}},
+                        {"sender": {"id": "sender-1"}, "read": {"watermark": 123}},
+                        {"sender": {"id": "sender-1"}, "message": {"text": "echo", "is_echo": True}},
+                    ]
+                }
+            ],
+        }
+
+        with patch.object(main.messenger_webhook, "send_text_message") as send_text:
+            submitted = main.messenger_webhook.handle_messenger_event(payload)
+
+        self.assertFalse(submitted)
+        self.assertEqual(executor.calls, [])
+        send_text.assert_not_called()
 
 
 if __name__ == "__main__":
