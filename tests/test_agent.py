@@ -345,11 +345,25 @@ class AgentAskApiTest(unittest.TestCase):
 
 
 class TutorAskApiTest(unittest.TestCase):
-    def post_tutor_ask(self, *, json=None, api_key: str | None = "test-key"):
+    def setUp(self):
+        main.tutor_api_rate_limits.clear()
+        main.tutor_api_daily_quotas.clear()
+
+    def tearDown(self):
+        main.tutor_api_rate_limits.clear()
+        main.tutor_api_daily_quotas.clear()
+
+    def post_tutor_ask(self, *, json=None, data=None, content_type=None, api_key: str | None = "test-key"):
         headers = {}
         if api_key is not None:
             headers["X-API-Key"] = api_key
-        return main.app.test_client().post("/api/tutor/ask", json=json, headers=headers)
+        return main.app.test_client().post(
+            "/api/tutor/ask",
+            json=json,
+            data=data,
+            content_type=content_type,
+            headers=headers,
+        )
 
     def test_valid_api_key_allows_request(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -370,6 +384,7 @@ class TutorAskApiTest(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(), {"ok": False, "error": "unauthorized"})
         generate.assert_not_called()
+        self.assertEqual(main.tutor_api_daily_quotas, {})
 
     def test_missing_api_key_header_returns_401(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -419,6 +434,29 @@ class TutorAskApiTest(unittest.TestCase):
         )
         generate.assert_called_once_with("What is MCP?", user_id="baeko")
 
+    def test_oversized_payload_returns_413(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request"
+        ) as dispatch:
+            response = self.post_tutor_ask(
+                data="x" * (main.TUTOR_API_MAX_CONTENT_LENGTH + 1),
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 413)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "Payload too large"})
+        dispatch.assert_not_called()
+
+    def test_invalid_question_type_returns_400(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request"
+        ) as dispatch:
+            response = self.post_tutor_ask(json={"question": 123})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "Invalid question"})
+        dispatch.assert_not_called()
+
     def test_metadata_is_preserved_for_internal_dispatch(self):
         metadata = {
             "caller": "baeko",
@@ -454,8 +492,76 @@ class TutorAskApiTest(unittest.TestCase):
             response = self.post_tutor_ask(json={"question": "   ", "metadata": {"caller": "baeko"}})
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"ok": False, "error": "missing_question"})
+        self.assertEqual(response.get_json(), {"ok": False, "error": "Invalid question"})
         generate.assert_not_called()
+
+    def test_question_too_long_returns_400(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request"
+        ) as dispatch:
+            response = self.post_tutor_ask(json={"question": "a" * (main.TUTOR_API_MAX_QUESTION_LENGTH + 1)})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "Invalid question"})
+        dispatch.assert_not_called()
+
+    def test_rate_limit_exceeded_returns_429(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "TUTOR_API_RATE_LIMIT_REQUESTS", 1
+        ), patch.object(main, "dispatch_tutor_api_request", return_value="answer") as dispatch:
+            first_response = self.post_tutor_ask(json={"question": "What is MCP?"})
+            second_response = self.post_tutor_ask(json={"question": "What is MCP?"})
+
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 429)
+        self.assertEqual(second_response.get_json(), {"ok": False, "error": "Rate limit exceeded"})
+        dispatch.assert_called_once()
+
+    def test_daily_quota_exceeded_returns_403(self):
+        main.tutor_api_daily_quotas["test-key"] = {
+            "date": main.date.today().isoformat(),
+            "count": main.TUTOR_API_DAILY_QUOTA,
+        }
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request"
+        ) as dispatch:
+            response = self.post_tutor_ask(json={"question": "What is MCP?"})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "Daily quota exceeded"})
+        dispatch.assert_not_called()
+
+    def test_daily_quota_resets_when_date_changes(self):
+        main.tutor_api_daily_quotas["test-key"] = {"date": "1900-01-01", "count": main.TUTOR_API_DAILY_QUOTA}
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request", return_value="answer"
+        ):
+            response = self.post_tutor_ask(json={"question": "What is MCP?"})
+
+        quota = main.tutor_api_daily_quotas["test-key"]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(quota["date"], main.date.today().isoformat())
+        self.assertEqual(quota["count"], 1)
+
+    def test_audit_logging_for_authenticated_request(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request", return_value="answer"
+        ), self.assertLogs("main", level="INFO") as logs:
+            response = self.post_tutor_ask(
+                json={"question": "What is MCP?", "source": "baeko_callout", "user_id": "baeko"},
+            )
+
+        log_text = "\n".join(logs.output)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("[TUTOR_API_AUDIT]", log_text)
+        self.assertIn("client_ip=127.0.0.1", log_text)
+        self.assertIn("source=baeko_callout", log_text)
+        self.assertIn("user_id=baeko", log_text)
+        self.assertIn("question_length=12", log_text)
+        self.assertIn("status=200", log_text)
+        self.assertIn("duration_ms=", log_text)
+        self.assertNotIn("test-key", log_text)
+        self.assertNotIn("answer", log_text)
 
     def test_internal_exception_returns_500_without_details(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(

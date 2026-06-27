@@ -5,6 +5,7 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
@@ -85,8 +86,17 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
 tutor_agent = TutorAgent(ask_gpt)
 SOURCE_AGENT = "ai_learning_tutor"
 TUTOR_API_SOURCE = "ai-learning-tutor"
+TUTOR_API_MAX_CONTENT_LENGTH = 64 * 1024
+TUTOR_API_MAX_QUESTION_LENGTH = 3000
+TUTOR_API_RATE_LIMIT_WINDOW_SECONDS = 60
+TUTOR_API_RATE_LIMIT_REQUESTS = 20
+TUTOR_API_DAILY_QUOTA = 1000
 ANSWER_QUESTION_CAPABILITY = "answer_question"
 SUPPORTED_AGENT_CAPABILITIES = {ANSWER_QUESTION_CAPABILITY}
+tutor_api_rate_limits: dict[str, list[float]] = {}
+tutor_api_rate_limits_lock = threading.Lock()
+tutor_api_daily_quotas: dict[str, dict[str, int | str]] = {}
+tutor_api_daily_quotas_lock = threading.Lock()
 
 
 def truncate_for_line(text: str) -> str:
@@ -189,6 +199,85 @@ def authenticate_tutor_api_request() -> tuple[bool, tuple | None]:
         return False, (jsonify({"ok": False, "error": "unauthorized"}), 401)
 
     return True, None
+
+
+def tutor_api_client_ip() -> str:
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip() or "unknown"
+    return request.remote_addr or "unknown"
+
+
+def tutor_api_payload_too_large() -> bool:
+    return request.content_length is not None and request.content_length > TUTOR_API_MAX_CONTENT_LENGTH
+
+
+def tutor_api_rate_limit_exceeded(client_ip: str) -> bool:
+    now = time.monotonic()
+    window_start = now - TUTOR_API_RATE_LIMIT_WINDOW_SECONDS
+    with tutor_api_rate_limits_lock:
+        timestamps = [ts for ts in tutor_api_rate_limits.get(client_ip, []) if ts > window_start]
+        if len(timestamps) >= TUTOR_API_RATE_LIMIT_REQUESTS:
+            tutor_api_rate_limits[client_ip] = timestamps
+            return True
+        timestamps.append(now)
+        tutor_api_rate_limits[client_ip] = timestamps
+        return False
+
+
+def tutor_api_quota_exceeded(api_key: str) -> bool:
+    today = date.today().isoformat()
+    with tutor_api_daily_quotas_lock:
+        quota = tutor_api_daily_quotas.get(api_key)
+        if not quota or quota.get("date") != today:
+            tutor_api_daily_quotas[api_key] = {"date": today, "count": 0}
+            return False
+        return int(quota.get("count", 0)) >= TUTOR_API_DAILY_QUOTA
+
+
+def record_tutor_api_quota_success(api_key: str) -> None:
+    today = date.today().isoformat()
+    with tutor_api_daily_quotas_lock:
+        quota = tutor_api_daily_quotas.get(api_key)
+        if not quota or quota.get("date") != today:
+            tutor_api_daily_quotas[api_key] = {"date": today, "count": 1}
+            return
+        quota["count"] = int(quota.get("count", 0)) + 1
+
+
+def validate_tutor_api_question(payload: dict) -> str | None:
+    raw_question = payload.get("question")
+    if not isinstance(raw_question, str):
+        return None
+
+    question = raw_question.strip()
+    if not question or len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
+        return None
+
+    return question
+
+
+def log_tutor_api_audit(
+    *,
+    started_at: float,
+    client_ip: str,
+    tutor_request: dict | None,
+    question_length: int,
+    status_code: int,
+) -> None:
+    duration_ms = round((time.perf_counter() - started_at) * 1000)
+    source = tutor_request.get("source") if tutor_request else None
+    user_id = tutor_request.get("user_id") if tutor_request else None
+    logger.info(
+        "[TUTOR_API_AUDIT] timestamp=%s client_ip=%s source=%s user_id=%s question_length=%s status=%s duration_ms=%s",
+        datetime.now(timezone.utc).isoformat(),
+        client_ip,
+        source,
+        user_id,
+        question_length,
+        status_code,
+        duration_ms,
+    )
 
 
 def dispatch_tutor_api_request(tutor_request: dict) -> str:
@@ -436,36 +525,91 @@ def agent_ask():
 
 @app.post("/api/tutor/ask")
 def tutor_ask():
+    started_at = time.perf_counter()
+    client_ip = tutor_api_client_ip()
+
+    if tutor_api_payload_too_large():
+        return jsonify({"ok": False, "error": "Payload too large"}), 413
+
     authenticated, error_response = authenticate_tutor_api_request()
     if not authenticated:
         return error_response
+
+    if tutor_api_rate_limit_exceeded(client_ip):
+        status_code = 429
+        log_tutor_api_audit(
+            started_at=started_at,
+            client_ip=client_ip,
+            tutor_request=None,
+            question_length=0,
+            status_code=status_code,
+        )
+        return jsonify({"ok": False, "error": "Rate limit exceeded"}), status_code
 
     payload = request.get_json(silent=True) or {}
     if not isinstance(payload, dict):
         payload = {}
 
+    question = validate_tutor_api_question(payload)
+    if question is None:
+        tutor_request = normalize_tutor_api_request(payload)
+        status_code = 400
+        log_tutor_api_audit(
+            started_at=started_at,
+            client_ip=client_ip,
+            tutor_request=tutor_request,
+            question_length=0,
+            status_code=status_code,
+        )
+        return jsonify({"ok": False, "error": "Invalid question"}), status_code
+
     tutor_request = normalize_tutor_api_request(payload)
-    question = tutor_request["question"]
-    if not question:
-        return jsonify({"ok": False, "error": "missing_question"}), 400
+    api_key = request.headers.get("X-API-Key", "")
+    if tutor_api_quota_exceeded(api_key):
+        status_code = 403
+        log_tutor_api_audit(
+            started_at=started_at,
+            client_ip=client_ip,
+            tutor_request=tutor_request,
+            question_length=len(question),
+            status_code=status_code,
+        )
+        return jsonify({"ok": False, "error": "Daily quota exceeded"}), status_code
 
     try:
         answer = dispatch_tutor_api_request(tutor_request)
     except Exception:
+        status_code = 500
         logger.exception(
             "External tutor API request failed source=%s metadata=%s",
             tutor_request["source"],
             tutor_request["metadata"],
         )
-        return jsonify({"ok": False, "error": "internal_error"}), 500
+        log_tutor_api_audit(
+            started_at=started_at,
+            client_ip=client_ip,
+            tutor_request=tutor_request,
+            question_length=len(question),
+            status_code=status_code,
+        )
+        return jsonify({"ok": False, "error": "internal_error"}), status_code
 
+    record_tutor_api_quota_success(api_key)
+    status_code = 200
+    log_tutor_api_audit(
+        started_at=started_at,
+        client_ip=client_ip,
+        tutor_request=tutor_request,
+        question_length=len(question),
+        status_code=status_code,
+    )
     return jsonify(
         {
             "ok": True,
             "answer": answer,
             "source": TUTOR_API_SOURCE,
         }
-    )
+    ), status_code
 
 
 @app.get("/assets/<path:filename>")
