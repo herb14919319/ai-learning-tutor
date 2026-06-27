@@ -1,3 +1,4 @@
+import hmac
 import logging
 import os
 import threading
@@ -83,6 +84,7 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
 
 tutor_agent = TutorAgent(ask_gpt)
 SOURCE_AGENT = "ai_learning_tutor"
+TUTOR_API_SOURCE = "ai-learning-tutor"
 ANSWER_QUESTION_CAPABILITY = "answer_question"
 SUPPORTED_AGENT_CAPABILITIES = {ANSWER_QUESTION_CAPABILITY}
 
@@ -152,6 +154,45 @@ def dispatch_agent_capability(task: str, *, question: str, user_id: str | None =
     if task == ANSWER_QUESTION_CAPABILITY:
         return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(question, user_id=user_id)
     raise ValueError("unsupported_task")
+
+
+def normalize_tutor_api_request(payload: dict) -> dict:
+    raw_question = payload.get("question")
+    question = raw_question.strip() if isinstance(raw_question, str) else ""
+
+    raw_user_id = payload.get("user_id")
+    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
+
+    raw_source = payload.get("source")
+    source = raw_source.strip() if isinstance(raw_source, str) and raw_source.strip() else None
+
+    metadata = payload.get("metadata")
+    if not isinstance(metadata, dict):
+        metadata = {}
+
+    return {
+        "question": question,
+        "user_id": user_id,
+        "source": source,
+        "metadata": metadata.copy(),
+    }
+
+
+def authenticate_tutor_api_request() -> tuple[bool, tuple | None]:
+    expected_key = os.getenv("AI_TUTOR_API_KEY", "")
+    if not expected_key:
+        logger.error("AI_TUTOR_API_KEY is not configured; rejecting external tutor API request")
+        return False, (jsonify({"ok": False, "error": "server_not_configured"}), 500)
+
+    provided_key = request.headers.get("X-API-Key", "")
+    if not hmac.compare_digest(provided_key, expected_key):
+        return False, (jsonify({"ok": False, "error": "unauthorized"}), 401)
+
+    return True, None
+
+
+def dispatch_tutor_api_request(tutor_request: dict) -> str:
+    return generate_tutor_answer(tutor_request["question"], user_id=tutor_request["user_id"])
 
 
 def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
@@ -389,6 +430,40 @@ def agent_ask():
             "caller": caller,
             "call_id": call_id,
             "confidence": "medium",
+        }
+    )
+
+
+@app.post("/api/tutor/ask")
+def tutor_ask():
+    authenticated, error_response = authenticate_tutor_api_request()
+    if not authenticated:
+        return error_response
+
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    tutor_request = normalize_tutor_api_request(payload)
+    question = tutor_request["question"]
+    if not question:
+        return jsonify({"ok": False, "error": "missing_question"}), 400
+
+    try:
+        answer = dispatch_tutor_api_request(tutor_request)
+    except Exception:
+        logger.exception(
+            "External tutor API request failed source=%s metadata=%s",
+            tutor_request["source"],
+            tutor_request["metadata"],
+        )
+        return jsonify({"ok": False, "error": "internal_error"}), 500
+
+    return jsonify(
+        {
+            "ok": True,
+            "answer": answer,
+            "source": TUTOR_API_SOURCE,
         }
     )
 

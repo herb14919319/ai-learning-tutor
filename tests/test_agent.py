@@ -1,4 +1,5 @@
 import unittest
+import os
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -340,6 +341,137 @@ class AgentAskApiTest(unittest.TestCase):
         self.assertEqual(data["error"], "internal_error")
         self.assertEqual(data["source_agent"], "ai_learning_tutor")
         self.assertTrue(data["call_id"])
+        self.assertNotIn("secret failure", str(data))
+
+
+class TutorAskApiTest(unittest.TestCase):
+    def post_tutor_ask(self, *, json=None, api_key: str | None = "test-key"):
+        headers = {}
+        if api_key is not None:
+            headers["X-API-Key"] = api_key
+        return main.app.test_client().post("/api/tutor/ask", json=json, headers=headers)
+
+    def test_valid_api_key_allows_request(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer", return_value="answer"
+        ) as generate:
+            response = self.post_tutor_ask(json={"question": "What is MCP?"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.get_json()["ok"])
+        generate.assert_called_once_with("What is MCP?", user_id=None)
+
+    def test_invalid_api_key_returns_401(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer"
+        ) as generate:
+            response = self.post_tutor_ask(json={"question": "What is MCP?"}, api_key="wrong-key")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "unauthorized"})
+        generate.assert_not_called()
+
+    def test_missing_api_key_header_returns_401(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer"
+        ) as generate:
+            response = self.post_tutor_ask(json={"question": "What is MCP?"}, api_key=None)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "unauthorized"})
+        generate.assert_not_called()
+
+    def test_missing_api_key_env_returns_500(self):
+        with patch.dict(os.environ, {}, clear=True), patch.object(main, "generate_tutor_answer") as generate:
+            with self.assertLogs("main", level="ERROR") as logs:
+                response = self.post_tutor_ask(json={"question": "What is MCP?"})
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "server_not_configured"})
+        self.assertTrue(any("AI_TUTOR_API_KEY is not configured" in message for message in logs.output))
+        generate.assert_not_called()
+
+    def test_successful_answer_returns_external_api_shape(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer", return_value="MCP usually means Model Context Protocol."
+        ) as generate:
+            response = self.post_tutor_ask(
+                json={
+                    "question": "What is MCP?",
+                    "user_id": "baeko",
+                    "source": "baeko_callout",
+                    "metadata": {
+                        "caller": "baeko",
+                        "required_capability": "knowledge",
+                        "future_field": {"nested": True},
+                    },
+                }
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            {
+                "ok": True,
+                "answer": "MCP usually means Model Context Protocol.",
+                "source": "ai-learning-tutor",
+            },
+        )
+        generate.assert_called_once_with("What is MCP?", user_id="baeko")
+
+    def test_metadata_is_preserved_for_internal_dispatch(self):
+        metadata = {
+            "caller": "baeko",
+            "required_capability": "knowledge",
+            "future_field": {"nested": True},
+        }
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "dispatch_tutor_api_request", return_value="answer"
+        ) as dispatch:
+            response = self.post_tutor_ask(
+                json={
+                    "question": "What is MCP?",
+                    "user_id": "baeko",
+                    "source": "baeko_callout",
+                    "metadata": metadata,
+                }
+            )
+
+        self.assertEqual(response.status_code, 200)
+        dispatch.assert_called_once_with(
+            {
+                "question": "What is MCP?",
+                "user_id": "baeko",
+                "source": "baeko_callout",
+                "metadata": metadata,
+            }
+        )
+
+    def test_empty_question_returns_400(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer"
+        ) as generate:
+            response = self.post_tutor_ask(json={"question": "   ", "metadata": {"caller": "baeko"}})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "missing_question"})
+        generate.assert_not_called()
+
+    def test_internal_exception_returns_500_without_details(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
+            main, "generate_tutor_answer", side_effect=RuntimeError("secret failure")
+        ):
+            response = self.post_tutor_ask(
+                json={
+                    "question": "What is MCP?",
+                    "source": "baeko_callout",
+                    "metadata": {"caller": "baeko"},
+                }
+            )
+
+        data = response.get_json()
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(data, {"ok": False, "error": "internal_error"})
         self.assertNotIn("secret failure", str(data))
 
 
