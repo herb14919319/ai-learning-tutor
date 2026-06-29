@@ -12,6 +12,7 @@ from agents.tutor_agent import TutorAgent
 from skills.little_tree_companion import (
     LITTLE_TREE_SKILL_NAME,
     WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
+    build_system_prompt as build_little_tree_system_prompt,
 )
 from skills.registry import get_skill_metadata, list_skills
 from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
@@ -210,6 +211,11 @@ class LittleTreeCommandTest(unittest.TestCase):
             reply = main.generate_tutor_answer("/小樹", user_id="child-1")
 
         self.assertEqual(reply, LITTLE_TREE_WELCOME_MESSAGE)
+        self.assertIn("孩子與家長", reply)
+        self.assertIn("安全又有智慧地使用 AI", reply)
+        self.assertIn("不是幫你把功課寫完", reply)
+        self.assertNotIn("英文", reply)
+        self.assertNotIn("數學", reply)
         self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
         answer.assert_not_called()
 
@@ -219,10 +225,10 @@ class LittleTreeCommandTest(unittest.TestCase):
         with patch.object(main, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="小樹回答"
         ) as answer:
-            reply = main.generate_tutor_answer("我數學不會", user_id="child-1")
+            reply = main.generate_tutor_answer("AI 會不會犯錯？", user_id="child-1")
 
         self.assertEqual(reply, "小樹回答")
-        answer.assert_called_once_with("我數學不會", user_id="child-1")
+        answer.assert_called_once_with("AI 會不會犯錯？", user_id="child-1")
         self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
 
     def test_tutor_agent_uses_active_little_tree_skill(self):
@@ -256,7 +262,17 @@ class LittleTreeCommandTest(unittest.TestCase):
 
         self.assertEqual(reply, "小樹：慢慢來，我們一起想。")
         self.assertIn("小樹 AI 陪伴模式", prompts[0][0])
-        self.assertIn("孩子的問題：為什麼月亮會亮？", prompts[0][1])
+        self.assertIn("AI 素養", prompts[0][0])
+        self.assertIn("不是功課代寫工具", prompts[0][0])
+        self.assertIn("使用者的問題：為什麼月亮會亮？", prompts[0][1])
+
+    def test_little_tree_prompt_centers_ai_literacy_and_homework_boundary(self):
+        prompt = build_little_tree_system_prompt()
+
+        self.assertIn("幫助孩子、家長、志工與老師發展 AI 素養，而不是依賴 AI", prompt)
+        self.assertIn("AI 是陪伴者與思考工具，不是人的替代品", prompt)
+        self.assertIn("不鼓勵抄答案", prompt)
+        self.assertIn("不要假設使用者一定是孩子", prompt)
 
     def test_little_tree_is_per_user(self):
         main.generate_tutor_answer("/小樹", user_id="child-1")
