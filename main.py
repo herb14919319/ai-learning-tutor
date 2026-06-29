@@ -10,8 +10,14 @@ from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
 from menu_router import handle_menu_command, is_menu_command
+from memory.conversation_context import clear_active_skill, get_active_skill, set_active_skill
 import messenger_webhook
 from router_guard import route_learning_boundary
+from skills.little_tree_companion import (
+    EXIT_MESSAGE as LITTLE_TREE_EXIT_MESSAGE,
+    LITTLE_TREE_SKILL_NAME,
+    WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
+)
 try:
     from dotenv import load_dotenv
 except ImportError:
@@ -130,6 +136,20 @@ def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESP
 
 
 def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
+    normalized_text = (user_text or "").strip()
+    if normalized_text == "/小樹":
+        set_active_skill(user_id, LITTLE_TREE_SKILL_NAME)
+        return LITTLE_TREE_WELCOME_MESSAGE
+
+    if normalized_text in {"/離開", "/李教授"}:
+        clear_active_skill(user_id)
+        return LITTLE_TREE_EXIT_MESSAGE
+
+    if get_active_skill(user_id) == LITTLE_TREE_SKILL_NAME:
+        if not openai_client:
+            raise RuntimeError("OpenAI API is not configured")
+        return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
+
     guard_result = route_learning_boundary(user_text)
     if not guard_result.allowed:
         return guard_result.response or DEFAULT_FALLBACK_RESPONSE

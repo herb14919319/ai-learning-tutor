@@ -8,6 +8,7 @@ from typing import Callable
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from memory.conversation_context import add_turn
 from memory.conversation_context import build_contextual_prompt
+from memory.conversation_context import get_active_skill
 from skills.registry import configure as configure_skills
 from skills.registry import get_skill
 from skills.registry import get_runtime
@@ -42,7 +43,12 @@ class TutorAgent:
         _active_user_id.set(user_id)
         _active_user_message.set(user_message)
         request = self.skill_runtime.normalize_request(user_message)
-        decision = self.skill_runtime.route(request)
+        active_skill = get_active_skill(user_id)
+        decision = (
+            {"skill": active_skill, "reason": "active_skill"}
+            if active_skill
+            else self.skill_runtime.route(request)
+        )
         skill_name = decision.get("skill", "general")
 
         if skill_name == "general":

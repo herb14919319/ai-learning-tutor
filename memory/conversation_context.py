@@ -6,6 +6,7 @@ import threading
 MAX_CONTEXT_TURNS = 6
 
 _conversation_context: dict[str, list[dict[str, str]]] = {}
+_active_skills: dict[str, str] = {}
 _context_lock = threading.Lock()
 
 
@@ -42,8 +43,34 @@ def clear_context(user_id: str | None = None) -> None:
     with _context_lock:
         if user_id is None:
             _conversation_context.clear()
+            _active_skills.clear()
         else:
             _conversation_context.pop(user_id, None)
+            _active_skills.pop(user_id, None)
+
+
+def get_active_skill(user_id: str | None) -> str | None:
+    if not user_id:
+        return None
+
+    with _context_lock:
+        return _active_skills.get(user_id)
+
+
+def set_active_skill(user_id: str | None, skill_name: str) -> None:
+    if not user_id or not skill_name:
+        return
+
+    with _context_lock:
+        _active_skills[user_id] = skill_name
+
+
+def clear_active_skill(user_id: str | None) -> None:
+    if not user_id:
+        return
+
+    with _context_lock:
+        _active_skills.pop(user_id, None)
 
 
 def format_recent_context(messages: list[dict[str, str]]) -> str:

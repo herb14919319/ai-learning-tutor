@@ -5,9 +5,14 @@ from unittest.mock import patch
 
 import main
 from menu_router import is_menu_command
+from memory.conversation_context import clear_context, get_active_skill, set_active_skill
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from agents.router import route
 from agents.tutor_agent import TutorAgent
+from skills.little_tree_companion import (
+    LITTLE_TREE_SKILL_NAME,
+    WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
+)
 from skills.registry import get_skill_metadata, list_skills
 from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
 
@@ -67,6 +72,9 @@ class TutorAgentTest(unittest.TestCase):
     def test_list_skills_includes_hungyi_lee(self):
         self.assertIn("hungyi_lee", [metadata.name for metadata in list_skills()])
 
+    def test_list_skills_includes_little_tree_companion(self):
+        self.assertIn(LITTLE_TREE_SKILL_NAME, [metadata.name for metadata in list_skills()])
+
     def test_hungyi_lee_metadata_can_be_read(self):
         metadata = get_skill_metadata("hungyi_lee")
 
@@ -79,6 +87,16 @@ class TutorAgentTest(unittest.TestCase):
         self.assertIn("answer_ai_learning_question", metadata.capabilities)
         self.assertEqual(metadata.entrypoint, "skills.hungyi_lee_skill")
 
+    def test_little_tree_metadata_can_be_read(self):
+        metadata = get_skill_metadata(LITTLE_TREE_SKILL_NAME)
+
+        self.assertIsNotNone(metadata)
+        self.assertEqual(metadata.name, LITTLE_TREE_SKILL_NAME)
+        self.assertTrue(metadata.enabled)
+        self.assertIn("/小樹", metadata.keywords)
+        self.assertIn("child_friendly_learning_companion", metadata.capabilities)
+        self.assertEqual(metadata.entrypoint, "skills.little_tree_companion")
+
     def test_ai_question_routes_to_hungyi_lee(self):
         self.assertEqual(route("什麼是 Transformer？")["skill"], "hungyi_lee")
         self.assertEqual(route("RAG 跟 fine-tune 差在哪？")["skill"], "hungyi_lee")
@@ -87,6 +105,9 @@ class TutorAgentTest(unittest.TestCase):
     def test_non_ai_question_routes_to_general(self):
         self.assertEqual(route("今天晚餐適合吃什麼？")["skill"], "general")
         self.assertEqual(route("Taiwan 旅遊三天怎麼排？")["skill"], "general")
+
+    def test_little_tree_command_routes_to_little_tree_skill(self):
+        self.assertEqual(route("/小樹")["skill"], LITTLE_TREE_SKILL_NAME)
 
     def test_agent_calls_selected_skill(self):
         with patch("agents.tutor_agent.configure_skills"), patch(
@@ -175,6 +196,108 @@ class TutorAgentTest(unittest.TestCase):
         self.assertIn("Model Context Protocol", answer)
         self.assertIn("Model Context Protocol", prompts[0][0])
         self.assertIn("不要把 MCP 優先解釋為 Microsoft Certified Professional", prompts[0][0])
+
+
+class LittleTreeCommandTest(unittest.TestCase):
+    def setUp(self):
+        clear_context()
+
+    def tearDown(self):
+        clear_context()
+
+    def test_little_tree_activation_sets_active_skill_without_llm_call(self):
+        with patch.object(main.tutor_agent, "answer") as answer:
+            reply = main.generate_tutor_answer("/小樹", user_id="child-1")
+
+        self.assertEqual(reply, LITTLE_TREE_WELCOME_MESSAGE)
+        self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
+        answer.assert_not_called()
+
+    def test_little_tree_active_skill_persists_for_same_user(self):
+        main.generate_tutor_answer("/小樹", user_id="child-1")
+
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="小樹回答"
+        ) as answer:
+            reply = main.generate_tutor_answer("我數學不會", user_id="child-1")
+
+        self.assertEqual(reply, "小樹回答")
+        answer.assert_called_once_with("我數學不會", user_id="child-1")
+        self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
+
+    def test_tutor_agent_uses_active_little_tree_skill(self):
+        prompts = []
+        runtime = SkillRuntime(
+            SkillCatalog(
+                (
+                    SkillManifest(
+                        name=LITTLE_TREE_SKILL_NAME,
+                        display_name="Little Tree Companion",
+                        description="Test Little Tree skill",
+                        domains=(),
+                        keywords=("/小樹",),
+                        capabilities=("child_friendly_learning_companion",),
+                        entrypoint="skills.little_tree_companion",
+                        priority=100,
+                        enabled=True,
+                    ),
+                )
+            )
+        )
+
+        def fake_ask_gpt(system_prompt: str, user_prompt: str) -> str:
+            prompts.append((system_prompt, user_prompt))
+            return "小樹：慢慢來，我們一起想。"
+
+        agent = TutorAgent(fake_ask_gpt, skill_runtime=runtime)
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
+
+        reply = agent.answer("為什麼月亮會亮？", user_id="child-1")
+
+        self.assertEqual(reply, "小樹：慢慢來，我們一起想。")
+        self.assertIn("小樹 AI 陪伴模式", prompts[0][0])
+        self.assertIn("孩子的問題：為什麼月亮會亮？", prompts[0][1])
+
+    def test_little_tree_is_per_user(self):
+        main.generate_tutor_answer("/小樹", user_id="child-1")
+
+        with patch.object(main.tutor_agent, "answer") as answer:
+            reply = main.generate_tutor_answer("Hi, how are you?", user_id="child-2")
+
+        self.assertEqual(get_active_skill("child-2"), None)
+        self.assertNotEqual(reply, "小樹回答")
+        answer.assert_not_called()
+
+    def test_little_tree_exit_restores_normal_guard_behavior(self):
+        main.generate_tutor_answer("/小樹", user_id="child-1")
+
+        reply = main.generate_tutor_answer("/離開", user_id="child-1")
+
+        self.assertIn("一般 AI Tutor", reply)
+        self.assertIsNone(get_active_skill("child-1"))
+
+        with patch.object(main.tutor_agent, "answer") as answer:
+            guarded_reply = main.generate_tutor_answer("Hi, how are you?", user_id="child-1")
+
+        self.assertNotEqual(guarded_reply, "小樹回答")
+        answer.assert_not_called()
+
+    def test_little_tree_exit_with_professor_command(self):
+        main.generate_tutor_answer("/小樹", user_id="child-1")
+
+        reply = main.generate_tutor_answer("/李教授", user_id="child-1")
+
+        self.assertIn("李教授", reply)
+        self.assertIsNone(get_active_skill("child-1"))
+
+    def test_normal_questions_without_little_tree_keep_existing_behavior(self):
+        with patch.object(main, "openai_client", object()), patch.object(
+            main.tutor_agent, "answer", return_value="tutor answer"
+        ) as answer:
+            reply = main.generate_ai_reply("What is Transformer attention?", user_id="user-1")
+
+        self.assertEqual(reply, "tutor answer")
+        answer.assert_called_once_with("What is Transformer attention?", user_id="user-1")
 
 
 class AgentAskApiTest(unittest.TestCase):

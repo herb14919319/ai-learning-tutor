@@ -8,6 +8,20 @@ from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
 
 SKILL_MANIFESTS = (
     SkillManifest(
+        name="little_tree_companion",
+        display_name="Little Tree Companion",
+        domains=(),
+        keywords=("/小樹",),
+        description=(
+            "Gentle Traditional Chinese AI learning companion for elementary-school "
+            "children in Little Tree learning support mode."
+        ),
+        capabilities=("child_friendly_learning_companion",),
+        entrypoint="skills.little_tree_companion",
+        priority=200,
+        enabled=True,
+    ),
+    SkillManifest(
         name="hungyi_lee",
         display_name="Hung-yi Lee AI Tutor",
         domains=("AI", "ML", "LLM", "deep learning", "generative AI"),
