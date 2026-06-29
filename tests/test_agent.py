@@ -653,7 +653,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         ), patch.object(
             main, "push_text", side_effect=lambda to, text: calls.append((to, text))
         ):
-            main.process_text_message_async("空答案問題", "user-1")
+            main.process_text_message_async("What is an LLM?", "user-1")
 
         self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
 
@@ -701,7 +701,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         ), patch.object(
             main, "push_text", side_effect=lambda to, text: calls.append((to, text))
         ):
-            main.process_text_message_async("會爆炸的問題", "user-1")
+            main.process_text_message_async("What is an LLM?", "user-1")
 
         self.assertEqual(calls, [("user-1", main.ERROR_FALLBACK_RESPONSE)])
 

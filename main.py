@@ -11,6 +11,7 @@ from pathlib import Path
 from agents.tutor_agent import TutorAgent
 from menu_router import handle_menu_command, is_menu_command
 import messenger_webhook
+from router_guard import route_learning_boundary
 try:
     from dotenv import load_dotenv
 except ImportError:
@@ -129,6 +130,10 @@ def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESP
 
 
 def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
+    guard_result = route_learning_boundary(user_text)
+    if not guard_result.allowed:
+        return guard_result.response or DEFAULT_FALLBACK_RESPONSE
+
     if not openai_client:
         raise RuntimeError("OpenAI API is not configured")
 
