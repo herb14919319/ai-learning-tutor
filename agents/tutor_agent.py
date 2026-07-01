@@ -18,6 +18,7 @@ from skills.runtime import SkillRuntime
 logger = logging.getLogger(__name__)
 _active_user_id: ContextVar[str | None] = ContextVar("active_user_id", default=None)
 _active_user_message: ContextVar[str | None] = ContextVar("active_user_message", default=None)
+LITTLE_TREE_ACTIVE_SKILL = "little_tree_companion"
 
 
 class TutorAgent:
@@ -44,6 +45,8 @@ class TutorAgent:
         _active_user_message.set(user_message)
         request = self.skill_runtime.normalize_request(user_message)
         active_skill = get_active_skill(user_id)
+        if active_skill == LITTLE_TREE_ACTIVE_SKILL:
+            active_skill = None
         decision = (
             {"skill": active_skill, "reason": "active_skill"}
             if active_skill

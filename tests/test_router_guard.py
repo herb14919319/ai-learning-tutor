@@ -89,7 +89,9 @@ class RouterGuardTest(unittest.TestCase):
                     ("menu", text, token, base_url)
                 )
                 or True,
-            ), patch.object(main, "generate_ai_reply_with_timeout") as generate_ai_reply:
+            ), patch.object(main, "generate_ai_reply_with_timeout") as generate_ai_reply, patch.object(
+                main.little_tree_agent, "answer"
+            ) as little_tree_answer:
                 main.handle_text_message(
                     type(
                         "FakeEvent",
@@ -105,6 +107,7 @@ class RouterGuardTest(unittest.TestCase):
 
         self.assertEqual(calls, [("menu", command, "reply-token-1", "https://example.com")])
         generate_ai_reply.assert_not_called()
+        little_tree_answer.assert_not_called()
 
 
 if __name__ == "__main__":
