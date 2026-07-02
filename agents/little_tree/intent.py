@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from enum import StrEnum
 
+from agents.little_tree.config import GUIDED_LEARNING_TRIGGERS, ROLE_STARTER_REPLIES
+
 
 class LittleTreeIntent(StrEnum):
     LEARNING_QUESTION = "learning_question"
@@ -93,3 +95,14 @@ def classify_intent(user_text: str) -> LittleTreeIntent:
     if _contains_any(text, CHAT_TERMS):
         return LittleTreeIntent.GENERAL_CHAT
     return LittleTreeIntent.UNKNOWN
+
+
+def match_role_starter(user_text: str) -> str | None:
+    text = (user_text or "").strip()
+    if text in ROLE_STARTER_REPLIES:
+        return text
+    return None
+
+
+def is_guided_learning_trigger(user_text: str) -> bool:
+    return (user_text or "").strip() in GUIDED_LEARNING_TRIGGERS

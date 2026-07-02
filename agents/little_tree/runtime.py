@@ -4,9 +4,19 @@ import logging
 from dataclasses import dataclass
 from typing import Callable
 
-from agents.little_tree.config import EMPTY_INPUT_REPLY
-from agents.little_tree.intent import LittleTreeIntent, classify_intent
-from agents.little_tree.policy import PolicyDecision, decide_policy
+from agents.little_tree.config import (
+    EMPTY_INPUT_REPLY,
+    GUIDED_LEARNING_REPLY,
+    HOMEWORK_GUIDANCE_REPLY,
+    ROLE_STARTER_REPLIES,
+)
+from agents.little_tree.intent import (
+    LittleTreeIntent,
+    classify_intent,
+    is_guided_learning_trigger,
+    match_role_starter,
+)
+from agents.little_tree.policy import PolicyAction, PolicyDecision, decide_policy
 from agents.little_tree.prompts import build_system_prompt, build_user_prompt
 from memory.conversation_context import add_turn
 
@@ -40,6 +50,16 @@ class LittleTreeRuntime:
         context = self.prepare(user_message)
         if context is None:
             return EMPTY_INPUT_REPLY
+
+        role_starter = match_role_starter(context.user_message)
+        if role_starter:
+            return ROLE_STARTER_REPLIES[role_starter]
+
+        if is_guided_learning_trigger(context.user_message):
+            return GUIDED_LEARNING_REPLY
+
+        if context.policy.action == PolicyAction.GUIDE:
+            return HOMEWORK_GUIDANCE_REPLY
 
         try:
             reply = self._ask_gpt(

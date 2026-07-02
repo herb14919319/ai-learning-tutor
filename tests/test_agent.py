@@ -279,11 +279,11 @@ class LittleTreeCommandTest(unittest.TestCase):
     def test_little_tree_prompt_centers_ai_literacy_and_homework_boundary(self):
         prompt = build_little_tree_system_prompt()
 
-        self.assertIn("AI 素養、親子共學、兒童引導", prompt)
-        self.assertIn("不是作業代寫工具", prompt)
-        self.assertIn("不直接給答案", prompt)
+        self.assertIn("AI literacy instead of AI dependence", prompt)
+        self.assertIn("Think together before answering", prompt)
+        self.assertIn("Encourage verification", prompt)
+        self.assertIn("自己的話", prompt)
         self.assertIn("不要完成整份作業", prompt)
-
     def test_little_tree_agent_has_ai_literacy_family_and_child_boundary(self):
         agent = LittleTreeAgent(lambda system, user: "ok")
 
@@ -296,16 +296,16 @@ class LittleTreeCommandTest(unittest.TestCase):
 
         def fake_ask_gpt(system_prompt: str, user_prompt: str) -> str:
             prompts.append((system_prompt, user_prompt))
-            return "我不能直接代寫，但可以陪你先找題目重點。"
+            return "unused"
 
         agent = LittleTreeAgent(fake_ask_gpt)
         reply = agent.answer("幫我直接寫完整作文作業")
 
-        self.assertIn("不能直接代寫", reply)
-        self.assertIn("不直接給答案", prompts[0][0])
-        self.assertIn("不要完成整份作業", prompts[0][0])
-        self.assertIn("使用者的問題：幫我直接寫完整作文作業", prompts[0][1])
-
+        self.assertIn("我不會直接給你最後答案", reply)
+        self.assertIn("1. 先說說你目前想到哪裡", reply)
+        self.assertIn("2. 我可以給你提示", reply)
+        self.assertIn("3. 我們一起檢查你的想法", reply)
+        self.assertEqual(prompts, [])
     def test_little_tree_is_per_user(self):
         main.generate_tutor_answer("/小樹", user_id="child-1")
 
