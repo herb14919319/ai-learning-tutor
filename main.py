@@ -26,7 +26,7 @@ try:
 except ImportError:
     def load_dotenv() -> bool:
         return False
-from flask import Flask, abort, jsonify, request, send_from_directory
+from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     ApiClient,
@@ -446,7 +446,25 @@ def messenger_enabled() -> bool:
 
 @app.get("/")
 def health_check():
-    return f"{APP_NAME} service is running."
+    return render_template("index.html")
+
+
+@app.post("/web-chat")
+def web_chat():
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    raw_message = payload.get("message")
+    message = raw_message.strip() if isinstance(raw_message, str) else ""
+    if not message:
+        return jsonify({"reply": "請先輸入一個想討論的 AI 學習問題。"}), 400
+
+    raw_user_id = payload.get("user_id")
+    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else "web-demo"
+
+    reply = generate_ai_reply(message, user_id=user_id, truncate=False)
+    return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
 
 
 @app.get("/test")

@@ -10,7 +10,12 @@ from agents.little_tree.config import (
     LITTLE_TREE_SKILL_NAME,
     WELCOME_MESSAGE,
 )
-from agents.little_tree.intent import LittleTreeIntent, classify_intent
+from agents.little_tree.intent import (
+    LittleTreeIntent,
+    classify_intent,
+    is_guided_learning_trigger,
+    match_role_starter,
+)
 from agents.little_tree.prompts import build_system_prompt, build_user_prompt
 from agents.little_tree.runtime import LittleTreeRuntime
 
@@ -24,6 +29,8 @@ class LittleTreeAgent:
     def can_handle(self, user_message: str) -> bool:
         text = (user_message or "").strip().lower()
         if text == LITTLE_TREE_COMMAND or text in LITTLE_TREE_EXIT_COMMANDS:
+            return True
+        if match_role_starter(user_message) or is_guided_learning_trigger(user_message):
             return True
 
         return classify_intent(text) in {

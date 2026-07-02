@@ -527,6 +527,43 @@ class AgentAskApiTest(unittest.TestCase):
         self.assertNotIn("secret failure", str(data))
 
 
+class WebChatTest(unittest.TestCase):
+    def test_homepage_returns_web_chat_entry(self):
+        response = main.app.test_client().get("/")
+
+        body = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("AI Learning Tutor", body)
+        self.assertIn("不是代寫作業工具", body)
+        self.assertIn("/web-chat", body)
+
+    def test_web_chat_returns_reply_from_existing_ai_flow(self):
+        with patch.object(main, "generate_ai_reply", return_value="RAG 會先檢索再生成。") as generate:
+            response = main.app.test_client().post(
+                "/web-chat",
+                json={"message": "什麼是 RAG？", "user_id": "web-demo"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {"reply": "RAG 會先檢索再生成。"})
+        generate.assert_called_once_with("什麼是 RAG？", user_id="web-demo", truncate=False)
+
+    def test_web_chat_defaults_user_id_to_web_demo(self):
+        with patch.object(main, "generate_ai_reply", return_value="answer") as generate:
+            response = main.app.test_client().post("/web-chat", json={"message": "What is MCP?"})
+
+        self.assertEqual(response.status_code, 200)
+        generate.assert_called_once_with("What is MCP?", user_id="web-demo", truncate=False)
+
+    def test_web_chat_rejects_empty_message_without_calling_ai(self):
+        with patch.object(main, "generate_ai_reply") as generate:
+            response = main.app.test_client().post("/web-chat", json={"message": "   "})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("請先輸入", response.get_json()["reply"])
+        generate.assert_not_called()
+
+
 class TutorAskApiTest(unittest.TestCase):
     def setUp(self):
         main.tutor_api_rate_limits.clear()
