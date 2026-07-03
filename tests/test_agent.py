@@ -533,8 +533,10 @@ class WebChatTest(unittest.TestCase):
 
         body = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("AI Learning Tutor", body)
-        self.assertIn("不是代寫作業工具", body)
+        self.assertIn("AI 學習助教", body)
+        self.assertIn("Deep Learning", body)
+        self.assertIn("助教會引導理解，不是直接代寫作業", body)
+        self.assertIn("AI Agent 是什麼？", body)
         self.assertIn("/web-chat", body)
 
     def test_web_chat_returns_reply_from_existing_ai_flow(self):
@@ -560,6 +562,7 @@ class WebChatTest(unittest.TestCase):
             response = main.app.test_client().post("/web-chat", json={"message": "   "})
 
         self.assertEqual(response.status_code, 400)
+        self.assertIsInstance(response.get_json(), dict)
         self.assertIn("請先輸入", response.get_json()["reply"])
         generate.assert_not_called()
 

@@ -112,6 +112,30 @@
         background: #fbfcfe;
       }
 
+      .quick-prompts {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .quick-prompt {
+        min-height: 40px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: #fff;
+        color: var(--accent);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .quick-prompt:hover {
+        border-color: var(--accent);
+        background: #f4f8ff;
+      }
+
       textarea {
         width: 100%;
         min-height: 54px;
@@ -124,7 +148,7 @@
         font: inherit;
       }
 
-      button {
+      .send-button {
         align-self: end;
         min-height: 54px;
         border: 0;
@@ -137,7 +161,7 @@
         cursor: pointer;
       }
 
-      button:hover {
+      .send-button:hover {
         background: var(--accent-dark);
       }
 
@@ -152,11 +176,33 @@
           padding: 28px 0;
         }
 
+        .lead {
+          font-size: 1rem;
+        }
+
+        .messages {
+          min-height: 320px;
+          max-height: 58vh;
+          padding: 14px;
+        }
+
+        .message {
+          max-width: 100%;
+          padding: 12px;
+        }
+
         form {
+          grid-template-columns: 1fr;
+          padding: 12px;
+        }
+
+        .quick-prompts {
+          display: grid;
           grid-template-columns: 1fr;
         }
 
-        button {
+        .quick-prompt,
+        .send-button {
           width: 100%;
         }
       }
@@ -165,18 +211,25 @@
   <body>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <h1 id="page-title">AI Learning Tutor</h1>
-        <p class="lead">把 AI、機器學習、深度學習、RAG、Agent 等概念拆成可以理解的小步驟，陪你釐清問題、建立觀念、練習表達。</p>
-        <p class="note">這是 AI 學習助教，不是代寫作業工具。你可以帶著自己的想法來，我會給提示、引導和檢查方向。</p>
+        <h1 id="page-title">AI 學習助教</h1>
+        <p class="lead">這裡不是一般聊天機器人，而是陪你理解 AI、Machine Learning、Deep Learning、RAG、AI Agent 等概念的學習入口。</p>
+        <p class="lead">你可以用它拆解名詞、比較觀念、規劃 Top-down 學習路線，或把卡住的問題整理成下一步。</p>
+        <p class="note">提醒：助教會引導理解，不是直接代寫作業。帶著你的想法來問，效果會更好。</p>
       </section>
 
       <section class="chat-shell" aria-label="AI Learning Tutor chat">
         <div id="messages" class="messages" aria-live="polite">
-          <div class="message assistant">嗨，我是 AI Learning Tutor。你可以問我：「什麼是 Transformer attention？」或「RAG 跟 fine-tuning 差在哪？」</div>
+          <div class="message assistant">嗨，我是 AI 學習助教。你可以問我 AI、ML、Deep Learning、RAG 或 AI Agent 的觀念，我會用引導的方式幫你一步步理解。</div>
         </div>
         <form id="chat-form">
+          <div class="quick-prompts" aria-label="快速問題">
+            <button class="quick-prompt" type="button">AI Agent 是什麼？</button>
+            <button class="quick-prompt" type="button">機器學習和深度學習差在哪？</button>
+            <button class="quick-prompt" type="button">RAG 是什麼？</button>
+            <button class="quick-prompt" type="button">我想用 Top-down 學 AI，該怎麼開始？</button>
+          </div>
           <textarea id="message-input" name="message" placeholder="輸入你的 AI 學習問題..." required></textarea>
-          <button id="send-button" type="submit">送出</button>
+          <button id="send-button" class="send-button" type="submit">送出</button>
         </form>
       </section>
     </main>
@@ -186,6 +239,8 @@
       const input = document.querySelector("#message-input");
       const button = document.querySelector("#send-button");
       const messages = document.querySelector("#messages");
+      const quickPrompts = document.querySelectorAll(".quick-prompt");
+      let isSubmitting = false;
 
       function appendMessage(text, role) {
         const bubble = document.createElement("div");
@@ -196,8 +251,19 @@
         return bubble;
       }
 
+      quickPrompts.forEach((promptButton) => {
+        promptButton.addEventListener("click", () => {
+          input.value = promptButton.textContent;
+          input.focus();
+        });
+      });
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (isSubmitting) {
+          return;
+        }
+
         const message = input.value.trim();
         if (!message) {
           return;
@@ -206,8 +272,14 @@
         appendMessage(message, "user");
         input.value = "";
         input.focus();
+        isSubmitting = true;
         button.disabled = true;
-        const thinking = appendMessage("思考中...", "assistant");
+        button.textContent = "整理中...";
+        form.setAttribute("aria-busy", "true");
+        quickPrompts.forEach((promptButton) => {
+          promptButton.disabled = true;
+        });
+        const thinking = appendMessage("助教正在整理答案...", "assistant");
 
         try {
           const response = await fetch("/web-chat", {
@@ -216,13 +288,27 @@
             body: JSON.stringify({message, user_id: "web-demo"}),
           });
           const data = await response.json().catch(() => ({}));
-          thinking.textContent = data.reply || "我剛剛沒有順利產生回答，請換個問法再試一次。";
-          thinking.classList.toggle("error", !response.ok);
+          if (!response.ok) {
+            console.error("Web chat request failed", {status: response.status, data});
+            thinking.textContent = "助教剛剛有點卡住，請稍後再試一次。";
+            thinking.classList.add("error");
+            return;
+          }
+
+          thinking.textContent = data.reply || "助教剛剛有點卡住，請稍後再試一次。";
+          thinking.classList.toggle("error", !data.reply);
         } catch (error) {
-          thinking.textContent = "目前連線不太順，請稍後再試一次。";
+          console.error("Web chat request error", error);
+          thinking.textContent = "助教剛剛有點卡住，請稍後再試一次。";
           thinking.classList.add("error");
         } finally {
+          isSubmitting = false;
           button.disabled = false;
+          button.textContent = "送出";
+          form.removeAttribute("aria-busy");
+          quickPrompts.forEach((promptButton) => {
+            promptButton.disabled = false;
+          });
         }
       });
     </script>
