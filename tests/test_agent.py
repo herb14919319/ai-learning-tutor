@@ -1,6 +1,8 @@
 import unittest
 import os
+from io import BytesIO
 from types import SimpleNamespace
+from urllib.error import HTTPError
 from unittest.mock import patch
 
 import main
@@ -15,6 +17,7 @@ from skills.little_tree_companion import (
     WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
     build_system_prompt as build_little_tree_system_prompt,
 )
+from models.clients import DEFAULT_GEMINI_MODEL, GeminiModelClient
 from skills.registry import get_skill_metadata, list_skills
 from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
 
@@ -77,6 +80,52 @@ class ModelRoutingPolicyTest(unittest.TestCase):
 
         self.assertEqual(web_reply, "gemini")
         self.assertEqual(api_reply, "openai")
+
+
+class GeminiModelClientTest(unittest.TestCase):
+    def test_default_gemini_model_is_current_flash(self):
+        self.assertEqual(DEFAULT_GEMINI_MODEL, "gemini-2.0-flash")
+
+    def test_generate_content_url_uses_official_rest_format(self):
+        client = GeminiModelClient(api_key="test-key", model="gemini-2.0-flash")
+
+        self.assertEqual(
+            client.generate_content_url(),
+            "https://generativelanguage.googleapis.com/v1beta/"
+            "models/gemini-2.0-flash:generateContent?key=test-key",
+        )
+
+    def test_generate_content_url_accepts_models_prefix_without_double_models_path(self):
+        client = GeminiModelClient(api_key="test-key", model="models/gemini-2.0-flash")
+
+        self.assertEqual(
+            client.generate_content_url(),
+            "https://generativelanguage.googleapis.com/v1beta/"
+            "models/gemini-2.0-flash:generateContent?key=test-key",
+        )
+
+    def test_gemini_http_error_logs_provider_model_and_status_without_api_key(self):
+        client = GeminiModelClient(api_key="secret-key", model="models/gemini-2.0-flash")
+        error = HTTPError(
+            url=client.generate_content_url(),
+            code=404,
+            msg="Not Found",
+            hdrs=None,
+            fp=BytesIO(b"not found"),
+        )
+
+        with patch("models.clients.urlopen", side_effect=error), self.assertLogs(
+            "models.clients",
+            level="ERROR",
+        ) as logs:
+            with self.assertRaises(HTTPError):
+                client.complete("system", "user")
+
+        log_text = "\n".join(logs.output)
+        self.assertIn("provider=gemini", log_text)
+        self.assertIn("model=gemini-2.0-flash", log_text)
+        self.assertIn("status_code=404", log_text)
+        self.assertNotIn("secret-key", log_text)
 
 
 def fake_line_event(

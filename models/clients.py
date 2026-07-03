@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass
 from typing import Protocol
-from urllib.parse import quote
+from urllib.error import HTTPError
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 
 DEFAULT_MODEL_PROVIDER = "openai"
 DEFAULT_OPENAI_MODEL = "gpt-4.1-mini"
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+
+logger = logging.getLogger(__name__)
 
 
 class ModelClient(Protocol):
@@ -52,32 +57,34 @@ class GeminiModelClient:
     provider = "gemini"
 
     def __init__(self, *, api_key: str, model: str = DEFAULT_GEMINI_MODEL):
-        self.model = model
+        self.model = normalize_gemini_model_name(model)
         self._api_key = api_key
 
-    def complete(self, system_prompt: str, user_prompt: str) -> str:
+    def generate_content_url(self) -> str:
         model = quote(self.model, safe="")
-        url = (
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{model}:generateContent?key={self._api_key}"
-        )
-        payload = {
-            "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [{"text": user_prompt}],
-                }
-            ],
-        }
+        query = urlencode({"key": self._api_key})
+        return f"{GEMINI_API_BASE_URL}/models/{model}:generateContent?{query}"
+
+    def complete(self, system_prompt: str, user_prompt: str) -> str:
+        url = self.generate_content_url()
+        payload = build_gemini_generate_content_payload(system_prompt, user_prompt)
         request = Request(
             url,
             data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urlopen(request, timeout=60) as response:
-            body = json.loads(response.read().decode("utf-8"))
+        try:
+            with urlopen(request, timeout=60) as response:
+                body = json.loads(response.read().decode("utf-8"))
+        except HTTPError as exc:
+            logger.error(
+                "Gemini API request failed provider=%s model=%s status_code=%s",
+                self.provider,
+                self.model,
+                exc.code,
+            )
+            raise
 
         parts = []
         for candidate in body.get("candidates", []):
@@ -87,6 +94,25 @@ class GeminiModelClient:
                 if text:
                     parts.append(text)
         return "\n".join(parts).strip()
+
+
+def normalize_gemini_model_name(model: str) -> str:
+    normalized = (model or DEFAULT_GEMINI_MODEL).strip()
+    if normalized.startswith("models/"):
+        normalized = normalized.removeprefix("models/")
+    return normalized or DEFAULT_GEMINI_MODEL
+
+
+def build_gemini_generate_content_payload(system_prompt: str, user_prompt: str) -> dict:
+    return {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": user_prompt}],
+            }
+        ],
+    }
 
 
 def model_client_config_from_env() -> ModelClientConfig:
