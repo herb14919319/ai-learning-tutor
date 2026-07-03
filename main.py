@@ -51,6 +51,7 @@ from models import (
     resolve_model_provider,
 )
 from models.clients import model_client_config_for_provider, model_client_config_from_env
+from runtime_telemetry import aggregate_runtime_telemetry, utc_timestamp, write_runtime_telemetry
 
 
 load_dotenv()
@@ -90,6 +91,7 @@ openai_client = create_model_client(model_client_config_for_provider("openai"))
 webhook_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
 ai_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
 _active_model_provider: ContextVar[str | None] = ContextVar("active_model_provider", default=None)
+_active_entrypoint: ContextVar[str | None] = ContextVar("active_entrypoint", default=None)
 
 # In-memory duplicate guard for LINE webhook retries. This is intentionally
 # small and process-local; replace with Redis/DB when running multiple instances.
@@ -118,11 +120,89 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
         raise RuntimeError(f"{provider} model API is not configured")
 
     try:
-        return client.complete(system_prompt, user_prompt)
+        return complete_model_call(provider, client, system_prompt, user_prompt)
     except HTTPError as exc:
         if provider != "gemini" or exc.code != 429:
             raise
         return fallback_from_gemini_rate_limit(system_prompt, user_prompt, exc)
+
+
+def complete_model_call(
+    provider: str,
+    client,
+    system_prompt: str,
+    user_prompt: str,
+    *,
+    fallback: bool = False,
+    fallback_from: str | None = None,
+) -> str:
+    started_at = time.perf_counter()
+    if hasattr(client, "last_usage"):
+        client.last_usage = None
+
+    try:
+        result = client.complete(system_prompt, user_prompt)
+    except Exception as exc:
+        record_model_call_telemetry(
+            provider=provider,
+            client=client,
+            status="error",
+            error_type=type(exc).__name__,
+            fallback=fallback,
+            fallback_from=fallback_from,
+            started_at=started_at,
+        )
+        raise
+
+    record_model_call_telemetry(
+        provider=provider,
+        client=client,
+        status="success",
+        error_type=None,
+        fallback=fallback,
+        fallback_from=fallback_from,
+        started_at=started_at,
+    )
+    return result
+
+
+def record_model_call_telemetry(
+    *,
+    provider: str,
+    client,
+    status: str,
+    error_type: str | None,
+    fallback: bool,
+    fallback_from: str | None,
+    started_at: float,
+) -> None:
+    usage = normalize_model_usage(getattr(client, "last_usage", None))
+    write_runtime_telemetry(
+        {
+            "timestamp": utc_timestamp(),
+            "entrypoint": _active_entrypoint.get() or "test",
+            "provider": provider,
+            "model": getattr(client, "model", model_client_config_for_provider(provider).model),
+            "status": status,
+            "error_type": error_type,
+            "fallback": fallback,
+            "fallback_from": fallback_from,
+            "latency_ms": round((time.perf_counter() - started_at) * 1000),
+            "input_tokens": usage["input_tokens"],
+            "output_tokens": usage["output_tokens"],
+            "total_tokens": usage["total_tokens"],
+        }
+    )
+
+
+def normalize_model_usage(usage) -> dict:
+    if not isinstance(usage, dict):
+        usage = {}
+    return {
+        "input_tokens": usage.get("input_tokens") if isinstance(usage.get("input_tokens"), int) else None,
+        "output_tokens": usage.get("output_tokens") if isinstance(usage.get("output_tokens"), int) else None,
+        "total_tokens": usage.get("total_tokens") if isinstance(usage.get("total_tokens"), int) else None,
+    }
 
 
 def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error: HTTPError) -> str:
@@ -144,7 +224,14 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
         error.code,
     )
     try:
-        return fallback_client.complete(system_prompt, user_prompt)
+        return complete_model_call(
+            fallback_provider,
+            fallback_client,
+            system_prompt,
+            user_prompt,
+            fallback=True,
+            fallback_from="gemini",
+        )
     except Exception:
         logger.exception(
             "Model provider fallback failed original_provider=%s fallback_provider=%s status_code=%s",
@@ -208,11 +295,13 @@ def generate_tutor_answer(
     model_provider: str | None = None,
 ) -> str:
     provider = model_provider or resolve_model_provider(entrypoint)
-    token = _active_model_provider.set(provider)
+    provider_token = _active_model_provider.set(provider)
+    entrypoint_token = _active_entrypoint.set(entrypoint)
     try:
         return _generate_tutor_answer(user_text, user_id=user_id)
     finally:
-        _active_model_provider.reset(token)
+        _active_entrypoint.reset(entrypoint_token)
+        _active_model_provider.reset(provider_token)
 
 
 def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
@@ -593,6 +682,156 @@ def test_mode():
             "model_provider": MODEL_PROVIDER,
         }
     )
+
+
+@app.get("/dashboard")
+@app.get("/observability")
+def runtime_dashboard():
+    month = request.args.get("month") or datetime.now(timezone.utc).strftime("%Y-%m")
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Runtime Observability</title>
+  <style>
+    :root {{
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #5d6878;
+      --line: #d9dee8;
+      --accent: #166534;
+      --error: #b42318;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }}
+    header {{
+      padding: 24px clamp(16px, 4vw, 40px) 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }}
+    h1 {{ margin: 0 0 12px; font-size: 28px; letter-spacing: 0; }}
+    main {{ padding: 20px clamp(16px, 4vw, 40px) 40px; }}
+    label {{ color: var(--muted); font-size: 14px; }}
+    input {{
+      margin-left: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font: inherit;
+    }}
+    .metrics {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }}
+    .metric, section {{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }}
+    .metric {{ padding: 14px; }}
+    .metric span {{ display: block; color: var(--muted); font-size: 13px; }}
+    .metric strong {{ display: block; margin-top: 8px; font-size: 26px; }}
+    .grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }}
+    section {{ overflow: hidden; }}
+    h2 {{ margin: 0; padding: 14px 16px; font-size: 16px; border-bottom: 1px solid var(--line); }}
+    table {{ width: 100%; border-collapse: collapse; }}
+    th, td {{ padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }}
+    th {{ color: var(--muted); font-weight: 600; }}
+    .status-error {{ color: var(--error); font-weight: 600; }}
+    .status-success {{ color: var(--accent); font-weight: 600; }}
+    .recent {{ margin-top: 16px; }}
+    @media (max-width: 640px) {{
+      h1 {{ font-size: 23px; }}
+      th, td {{ font-size: 13px; padding: 8px; }}
+    }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Runtime Observability</h1>
+    <label>Month <input id="month" type="month" value="{month}"></label>
+  </header>
+  <main>
+    <div class="metrics" id="metrics"></div>
+    <div class="grid">
+      <section>
+        <h2>By Entrypoint</h2>
+        <table><thead><tr><th>Entrypoint</th><th>Requests</th><th>Tokens</th></tr></thead><tbody id="entrypoints"></tbody></table>
+      </section>
+      <section>
+        <h2>By Provider</h2>
+        <table><thead><tr><th>Provider</th><th>Requests</th><th>Tokens</th><th>Errors</th></tr></thead><tbody id="providers"></tbody></table>
+      </section>
+    </div>
+    <section class="recent">
+      <h2>Recent Requests</h2>
+      <table>
+        <thead><tr><th>Time</th><th>Entrypoint</th><th>Provider</th><th>Model</th><th>Status</th><th>Fallback</th><th>Latency</th><th>Tokens</th></tr></thead>
+        <tbody id="recent"></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const monthInput = document.getElementById("month");
+    const number = (value) => new Intl.NumberFormat().format(value || 0);
+    const cell = (value) => `<td>${{value ?? ""}}</td>`;
+
+    async function loadDashboard() {{
+      const response = await fetch(`/api/runtime/telemetry?month=${{encodeURIComponent(monthInput.value)}}`);
+      const data = await response.json();
+      document.getElementById("metrics").innerHTML = [
+        ["Requests", data.total_requests],
+        ["Success", data.success],
+        ["Errors", data.error],
+        ["Tokens", data.total_tokens],
+        ["Fallbacks", data.fallback_count],
+      ].map(([label, value]) => `<div class="metric"><span>${{label}}</span><strong>${{number(value)}}</strong></div>`).join("");
+
+      document.getElementById("entrypoints").innerHTML = data.by_entrypoint.map((row) =>
+        `<tr>${{cell(row.entrypoint)}}${{cell(number(row.requests))}}${{cell(number(row.tokens))}}</tr>`
+      ).join("") || `<tr><td colspan="3">No data</td></tr>`;
+
+      document.getElementById("providers").innerHTML = data.by_provider.map((row) =>
+        `<tr>${{cell(row.provider)}}${{cell(number(row.requests))}}${{cell(number(row.tokens))}}${{cell(number(row.errors))}}</tr>`
+      ).join("") || `<tr><td colspan="4">No data</td></tr>`;
+
+      document.getElementById("recent").innerHTML = data.recent_requests.map((row) => {{
+        const statusClass = row.status === "error" ? "status-error" : "status-success";
+        return `<tr>
+          ${{cell(row.timestamp)}}${{cell(row.entrypoint)}}${{cell(row.provider)}}${{cell(row.model)}}
+          <td class="${{statusClass}}">${{row.status}}</td>
+          ${{cell(row.fallback ? `yes from ${{row.fallback_from || ""}}` : "no")}}
+          ${{cell(`${{row.latency_ms ?? ""}} ms`)}}
+          ${{cell(number(row.total_tokens))}}
+        </tr>`;
+      }}).join("") || `<tr><td colspan="8">No data</td></tr>`;
+    }}
+
+    monthInput.addEventListener("change", loadDashboard);
+    loadDashboard();
+  </script>
+</body>
+</html>"""
+
+
+@app.get("/api/runtime/telemetry")
+def runtime_telemetry_api():
+    month = request.args.get("month") or datetime.now(timezone.utc).strftime("%Y-%m")
+    return jsonify(aggregate_runtime_telemetry(month))
 
 
 @app.post("/api/agent/ask")

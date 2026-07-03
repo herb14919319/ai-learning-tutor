@@ -246,7 +246,7 @@ class GeminiFallbackTest(unittest.TestCase):
                 main,
                 "openai_client",
                 AvailableOpenAI(),
-            ), self.assertLogs("main", level="WARNING") as logs:
+            ), patch.object(main, "write_runtime_telemetry"), self.assertLogs("main", level="WARNING") as logs:
                 reply = main.ask_gpt("system", "user")
         finally:
             main._active_model_provider.reset(token)
@@ -274,7 +274,10 @@ class GeminiFallbackTest(unittest.TestCase):
                 main,
                 "model_clients",
                 {"gemini": RateLimitedGemini()},
-            ), patch.object(main, "openai_client", None), self.assertLogs("main", level="WARNING") as logs:
+            ), patch.object(main, "openai_client", None), patch.object(
+                main,
+                "write_runtime_telemetry",
+            ), self.assertLogs("main", level="WARNING") as logs:
                 reply = main.ask_gpt("system", "user")
         finally:
             main._active_model_provider.reset(token)

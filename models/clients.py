@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.error import HTTPError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
@@ -42,6 +42,7 @@ class OpenAIModelClient:
         from openai import OpenAI
 
         self.model = model
+        self.last_usage = None
         self._client = OpenAI(api_key=api_key)
 
     def complete(self, system_prompt: str, user_prompt: str) -> str:
@@ -52,6 +53,7 @@ class OpenAIModelClient:
                 {"role": "user", "content": user_prompt},
             ],
         )
+        self.last_usage = extract_openai_usage(response)
         return response.output_text.strip()
 
 
@@ -61,6 +63,7 @@ class GeminiModelClient:
     def __init__(self, *, api_key: str, model: str = DEFAULT_GEMINI_MODEL):
         self.model = normalize_gemini_model_name(model)
         self._api_key = api_key
+        self.last_usage = None
 
     def generate_content_url(self) -> str:
         model = quote(self.model, safe="")
@@ -88,6 +91,7 @@ class GeminiModelClient:
             )
             raise
 
+        self.last_usage = extract_gemini_usage(body)
         parts = []
         for candidate in body.get("candidates", []):
             content = candidate.get("content", {})
@@ -113,6 +117,7 @@ class DeepSeekModelClient:
         self.model = model or DEFAULT_DEEPSEEK_MODEL
         self._api_key = api_key
         self._base_url = normalize_deepseek_base_url(base_url)
+        self.last_usage = None
 
     def chat_completions_url(self) -> str:
         return f"{self._base_url}/chat/completions"
@@ -140,6 +145,7 @@ class DeepSeekModelClient:
         with urlopen(request, timeout=60) as response:
             body = json.loads(response.read().decode("utf-8"))
 
+        self.last_usage = extract_deepseek_usage(body)
         choices = body.get("choices") or []
         if not choices:
             return ""
@@ -168,6 +174,53 @@ def build_gemini_generate_content_payload(system_prompt: str, user_prompt: str) 
             }
         ],
     }
+
+
+def extract_openai_usage(response: Any) -> dict[str, int | None] | None:
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return None
+    return {
+        "input_tokens": usage_int(get_usage_value(usage, "input_tokens")),
+        "output_tokens": usage_int(get_usage_value(usage, "output_tokens")),
+        "total_tokens": usage_int(get_usage_value(usage, "total_tokens")),
+    }
+
+
+def extract_gemini_usage(body: dict) -> dict[str, int | None] | None:
+    usage = body.get("usageMetadata")
+    if not isinstance(usage, dict):
+        return None
+    return {
+        "input_tokens": usage_int(usage.get("promptTokenCount")),
+        "output_tokens": usage_int(usage.get("candidatesTokenCount")),
+        "total_tokens": usage_int(usage.get("totalTokenCount")),
+    }
+
+
+def extract_deepseek_usage(body: dict) -> dict[str, int | None] | None:
+    usage = body.get("usage")
+    if not isinstance(usage, dict):
+        return None
+    return {
+        "input_tokens": usage_int(usage.get("prompt_tokens")),
+        "output_tokens": usage_int(usage.get("completion_tokens")),
+        "total_tokens": usage_int(usage.get("total_tokens")),
+    }
+
+
+def get_usage_value(usage: Any, key: str) -> Any:
+    if isinstance(usage, dict):
+        return usage.get(key)
+    return getattr(usage, key, None)
+
+
+def usage_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    return None
 
 
 def model_client_config_from_env() -> ModelClientConfig:
