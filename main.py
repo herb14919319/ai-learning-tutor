@@ -47,6 +47,7 @@ from models import (
     ENTRYPOINT_MESSENGER,
     ENTRYPOINT_WEB_CHAT,
     create_model_client,
+    normalize_model_provider,
     resolve_model_provider,
 )
 from models.clients import model_client_config_for_provider, model_client_config_from_env

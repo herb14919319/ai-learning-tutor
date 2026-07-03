@@ -13,6 +13,8 @@ from urllib.request import Request, urlopen
 DEFAULT_MODEL_PROVIDER = "openai"
 DEFAULT_OPENAI_MODEL = "gpt-4.1-mini"
 DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_DEEPSEEK_MODEL = "deepseek-chat"
+DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 logger = logging.getLogger(__name__)
@@ -96,6 +98,59 @@ class GeminiModelClient:
         return "\n".join(parts).strip()
 
 
+class DeepSeekModelClient:
+    provider = "deepseek"
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str = DEFAULT_DEEPSEEK_MODEL,
+        base_url: str = DEFAULT_DEEPSEEK_BASE_URL,
+    ):
+        if not api_key:
+            raise RuntimeError("DEEPSEEK_API_KEY is not configured")
+        self.model = model or DEFAULT_DEEPSEEK_MODEL
+        self._api_key = api_key
+        self._base_url = normalize_deepseek_base_url(base_url)
+
+    def chat_completions_url(self) -> str:
+        return f"{self._base_url}/chat/completions"
+
+    def build_chat_completions_payload(self, system_prompt: str, user_prompt: str) -> dict:
+        return {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        }
+
+    def complete(self, system_prompt: str, user_prompt: str) -> str:
+        payload = self.build_chat_completions_payload(system_prompt, user_prompt)
+        request = Request(
+            self.chat_completions_url(),
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urlopen(request, timeout=60) as response:
+            body = json.loads(response.read().decode("utf-8"))
+
+        choices = body.get("choices") or []
+        if not choices:
+            return ""
+        message = choices[0].get("message") or {}
+        return (message.get("content") or "").strip()
+
+
+def normalize_deepseek_base_url(base_url: str) -> str:
+    return (base_url or DEFAULT_DEEPSEEK_BASE_URL).strip().rstrip("/")
+
+
 def normalize_gemini_model_name(model: str) -> str:
     normalized = (model or DEFAULT_GEMINI_MODEL).strip()
     if normalized.startswith("models/"):
@@ -128,19 +183,33 @@ def model_client_config_for_provider(provider: str) -> ModelClientConfig:
             model=os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
             api_key=os.getenv("GEMINI_API_KEY", ""),
         )
+    if provider == "deepseek":
+        return ModelClientConfig(
+            provider=provider,
+            model=os.getenv("DEEPSEEK_MODEL", DEFAULT_DEEPSEEK_MODEL),
+            api_key=os.getenv("DEEPSEEK_API_KEY", ""),
+        )
     if provider == "openai":
         return ModelClientConfig(
             provider=provider,
             model=os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL),
             api_key=os.getenv("OPENAI_API_KEY", ""),
         )
-    raise ValueError("MODEL_PROVIDER must be 'openai' or 'gemini'")
+    raise ValueError("MODEL_PROVIDER must be 'openai', 'gemini', or 'deepseek'")
 
 
 def create_model_client(config: ModelClientConfig | None = None) -> ModelClient | None:
     config = config or model_client_config_from_env()
+    if config.provider == "deepseek" and not config.api_key:
+        raise RuntimeError("DEEPSEEK_API_KEY is not configured")
     if not config.api_key:
         return None
     if config.provider == "gemini":
         return GeminiModelClient(api_key=config.api_key, model=config.model)
+    if config.provider == "deepseek":
+        return DeepSeekModelClient(
+            api_key=config.api_key,
+            model=config.model,
+            base_url=os.getenv("DEEPSEEK_BASE_URL", DEFAULT_DEEPSEEK_BASE_URL),
+        )
     return OpenAIModelClient(api_key=config.api_key, model=config.model)

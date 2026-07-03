@@ -11,9 +11,9 @@ ENTRYPOINT_MESSENGER = "messenger"
 ENTRYPOINT_WEB_CHAT = "web_chat"
 
 DEFAULT_ENTRYPOINT_MODEL_PROVIDERS = {
-    ENTRYPOINT_WEB_CHAT: "gemini",
-    ENTRYPOINT_LINE: "gemini",
-    ENTRYPOINT_MESSENGER: "gemini",
+    ENTRYPOINT_WEB_CHAT: "openai",
+    ENTRYPOINT_LINE: "openai",
+    ENTRYPOINT_MESSENGER: "openai",
     ENTRYPOINT_API: "openai",
 }
 
@@ -24,13 +24,18 @@ ENTRYPOINT_PROVIDER_ENV_VARS = {
     ENTRYPOINT_API: "API_MODEL_PROVIDER",
 }
 
-SUPPORTED_MODEL_PROVIDERS = {"openai", "gemini"}
+SUPPORTED_MODEL_PROVIDERS = {"openai", "gemini", "deepseek"}
+
+
+def supported_model_provider_message() -> str:
+    providers = "', '".join(sorted(SUPPORTED_MODEL_PROVIDERS))
+    return f"model provider must be one of: '{providers}'"
 
 
 def normalize_model_provider(provider: str | None) -> str:
     normalized = (provider or DEFAULT_MODEL_PROVIDER).strip().lower()
     if normalized not in SUPPORTED_MODEL_PROVIDERS:
-        raise ValueError("model provider must be 'openai' or 'gemini'")
+        raise ValueError(supported_model_provider_message())
     return normalized
 
 

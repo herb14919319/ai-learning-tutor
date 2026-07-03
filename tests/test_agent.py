@@ -1,4 +1,5 @@
 import unittest
+import json
 import os
 from io import BytesIO
 from types import SimpleNamespace
@@ -17,9 +18,23 @@ from skills.little_tree_companion import (
     WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
     build_system_prompt as build_little_tree_system_prompt,
 )
-from models.clients import DEFAULT_GEMINI_MODEL, GeminiModelClient
+from models.clients import DEFAULT_GEMINI_MODEL, DeepSeekModelClient, GeminiModelClient, create_model_client
 from skills.registry import get_skill_metadata, list_skills
 from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
+
+
+class FakeHttpResponse:
+    def __init__(self, payload: dict):
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def read(self):
+        return json.dumps(self.payload).encode("utf-8")
 
 
 class ImmediateExecutor:
@@ -46,28 +61,40 @@ class RecordingExecutor:
 
 
 class ModelRoutingPolicyTest(unittest.TestCase):
+    def test_normalize_model_provider_accepts_deepseek(self):
+        self.assertEqual(main.normalize_model_provider("deepseek"), "deepseek")
+
+    def test_normalize_model_provider_invalid_error_lists_supported_providers(self):
+        with self.assertRaisesRegex(ValueError, "deepseek") as context:
+            main.normalize_model_provider("claude")
+
+        message = str(context.exception)
+        self.assertIn("openai", message)
+        self.assertIn("gemini", message)
+        self.assertIn("deepseek", message)
+
     def test_default_entrypoint_model_providers(self):
         with patch.dict(os.environ, {}, clear=True):
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "gemini")
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "gemini")
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "openai")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "openai")
 
     def test_entrypoint_model_provider_env_overrides(self):
         with patch.dict(
             os.environ,
             {
-                "WEB_CHAT_MODEL_PROVIDER": "openai",
-                "LINE_MODEL_PROVIDER": "openai",
-                "MESSENGER_MODEL_PROVIDER": "openai",
-                "API_MODEL_PROVIDER": "gemini",
+                "WEB_CHAT_MODEL_PROVIDER": "deepseek",
+                "LINE_MODEL_PROVIDER": "deepseek",
+                "MESSENGER_MODEL_PROVIDER": "deepseek",
+                "API_MODEL_PROVIDER": "deepseek",
             },
             clear=True,
         ):
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "openai")
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "openai")
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "openai")
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "deepseek")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "deepseek")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "deepseek")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "deepseek")
 
     def test_generate_tutor_answer_sets_provider_for_runtime_call(self):
         with patch.dict(os.environ, {}, clear=True), patch.object(
@@ -78,8 +105,12 @@ class ModelRoutingPolicyTest(unittest.TestCase):
             web_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_WEB_CHAT)
             api_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_API)
 
-        self.assertEqual(web_reply, "gemini")
+        self.assertEqual(web_reply, "openai")
         self.assertEqual(api_reply, "openai")
+
+    def test_model_provider_accepts_deepseek(self):
+        with patch.dict(os.environ, {"MODEL_PROVIDER": "deepseek"}, clear=True):
+            self.assertEqual(main.resolve_model_provider("unknown"), "deepseek")
 
 
 class GeminiModelClientTest(unittest.TestCase):
@@ -126,6 +157,63 @@ class GeminiModelClientTest(unittest.TestCase):
         self.assertIn("model=gemini-2.0-flash", log_text)
         self.assertIn("status_code=404", log_text)
         self.assertNotIn("secret-key", log_text)
+
+
+class DeepSeekModelClientTest(unittest.TestCase):
+    def test_deepseek_request_url_uses_chat_completions_endpoint(self):
+        client = DeepSeekModelClient(api_key="test-key", model="deepseek-chat")
+
+        self.assertEqual(client.chat_completions_url(), "https://api.deepseek.com/chat/completions")
+
+    def test_deepseek_request_url_trims_base_url_slash(self):
+        client = DeepSeekModelClient(
+            api_key="test-key",
+            model="deepseek-chat",
+            base_url="https://api.deepseek.com/",
+        )
+
+        self.assertEqual(client.chat_completions_url(), "https://api.deepseek.com/chat/completions")
+
+    def test_deepseek_payload_uses_messages_format(self):
+        client = DeepSeekModelClient(api_key="test-key", model="deepseek-chat")
+
+        self.assertEqual(
+            client.build_chat_completions_payload("system prompt", "user prompt"),
+            {
+                "model": "deepseek-chat",
+                "messages": [
+                    {"role": "system", "content": "system prompt"},
+                    {"role": "user", "content": "user prompt"},
+                ],
+            },
+        )
+
+    def test_deepseek_without_api_key_has_clear_error(self):
+        with self.assertRaisesRegex(RuntimeError, "DEEPSEEK_API_KEY is not configured"):
+            DeepSeekModelClient(api_key="", model="deepseek-chat")
+
+    def test_deepseek_factory_without_api_key_has_clear_error(self):
+        with patch.dict(os.environ, {"MODEL_PROVIDER": "deepseek", "DEEPSEEK_API_KEY": ""}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "DEEPSEEK_API_KEY is not configured"):
+                create_model_client()
+
+    def test_deepseek_response_parses_first_choice_message_content(self):
+        client = DeepSeekModelClient(api_key="test-key", model="deepseek-chat")
+        response = FakeHttpResponse(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "  DeepSeek answer  ",
+                        }
+                    }
+                ]
+            }
+        )
+
+        with patch("models.clients.urlopen", return_value=response):
+            self.assertEqual(client.complete("system prompt", "user prompt"), "DeepSeek answer")
 
 
 class GeminiFallbackTest(unittest.TestCase):
