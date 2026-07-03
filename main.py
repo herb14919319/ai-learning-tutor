@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from pathlib import Path
+from urllib.error import HTTPError
 
 from agents.little_tree_agent import (
     EXIT_MESSAGE as LITTLE_TREE_EXIT_MESSAGE,
@@ -63,6 +64,7 @@ DEFAULT_FALLBACK_RESPONSE = "抱歉，這個問題我目前可能無法回覆。
 ERROR_FALLBACK_RESPONSE = "抱歉，目前系統發生異常，請稍後再試。"
 TIMEOUT_FALLBACK_RESPONSE = "抱歉，目前查詢時間較長，請稍後再試。"
 FALLBACK_MESSAGE = DEFAULT_FALLBACK_RESPONSE
+MODEL_RATE_LIMIT_FALLBACK_RESPONSE = "The model is temporarily busy. Please try again later."
 AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
 PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
 BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
@@ -95,8 +97,11 @@ processed_events_lock = threading.Lock()
 
 
 def get_model_client(model_provider: str):
+    global openai_client
     provider = (model_provider or MODEL_PROVIDER).strip().lower()
     if provider == "openai":
+        if not openai_client and os.getenv("OPENAI_API_KEY", ""):
+            openai_client = create_model_client(model_client_config_for_provider("openai"))
         return openai_client
     if provider == MODEL_PROVIDER and model_client:
         return model_client
@@ -111,7 +116,42 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
     if not client:
         raise RuntimeError(f"{provider} model API is not configured")
 
-    return client.complete(system_prompt, user_prompt)
+    try:
+        return client.complete(system_prompt, user_prompt)
+    except HTTPError as exc:
+        if provider != "gemini" or exc.code != 429:
+            raise
+        return fallback_from_gemini_rate_limit(system_prompt, user_prompt, exc)
+
+
+def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error: HTTPError) -> str:
+    fallback_provider = "openai"
+    fallback_client = get_model_client(fallback_provider)
+    if not fallback_client:
+        logger.warning(
+            "Model provider fallback unavailable original_provider=%s fallback_provider=%s status_code=%s",
+            "gemini",
+            fallback_provider,
+            error.code,
+        )
+        return MODEL_RATE_LIMIT_FALLBACK_RESPONSE
+
+    logger.warning(
+        "Model provider fallback original_provider=%s fallback_provider=%s status_code=%s",
+        "gemini",
+        fallback_provider,
+        error.code,
+    )
+    try:
+        return fallback_client.complete(system_prompt, user_prompt)
+    except Exception:
+        logger.exception(
+            "Model provider fallback failed original_provider=%s fallback_provider=%s status_code=%s",
+            "gemini",
+            fallback_provider,
+            error.code,
+        )
+        return MODEL_RATE_LIMIT_FALLBACK_RESPONSE
 
 
 tutor_agent = TutorAgent(ask_gpt)

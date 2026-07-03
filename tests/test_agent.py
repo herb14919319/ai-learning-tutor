@@ -128,6 +128,79 @@ class GeminiModelClientTest(unittest.TestCase):
         self.assertNotIn("secret-key", log_text)
 
 
+class GeminiFallbackTest(unittest.TestCase):
+    def gemini_rate_limit_error(self) -> HTTPError:
+        return HTTPError(
+            url="https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+            code=429,
+            msg="Too Many Requests",
+            hdrs=None,
+            fp=BytesIO(b"rate limited"),
+        )
+
+    def test_gemini_429_falls_back_to_openai_once(self):
+        calls = []
+
+        class RateLimitedGemini:
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                calls.append(("gemini", system_prompt, user_prompt))
+                raise self_error
+
+        class AvailableOpenAI:
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                calls.append(("openai", system_prompt, user_prompt))
+                return "openai answer"
+
+        self_error = self.gemini_rate_limit_error()
+        token = main._active_model_provider.set("gemini")
+        try:
+            with patch.object(main, "model_clients", {"gemini": RateLimitedGemini()}), patch.object(
+                main,
+                "openai_client",
+                AvailableOpenAI(),
+            ), self.assertLogs("main", level="WARNING") as logs:
+                reply = main.ask_gpt("system", "user")
+        finally:
+            main._active_model_provider.reset(token)
+
+        self.assertEqual(reply, "openai answer")
+        self.assertEqual(calls, [("gemini", "system", "user"), ("openai", "system", "user")])
+        log_text = "\n".join(logs.output)
+        self.assertIn("original_provider=gemini", log_text)
+        self.assertIn("fallback_provider=openai", log_text)
+        self.assertIn("status_code=429", log_text)
+        self.assertNotIn("secret", log_text)
+
+    def test_gemini_429_without_openai_returns_graceful_error(self):
+        calls = []
+
+        class RateLimitedGemini:
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                calls.append(("gemini", system_prompt, user_prompt))
+                raise self_error
+
+        self_error = self.gemini_rate_limit_error()
+        token = main._active_model_provider.set("gemini")
+        try:
+            with patch.dict(os.environ, {"OPENAI_API_KEY": ""}), patch.object(
+                main,
+                "model_clients",
+                {"gemini": RateLimitedGemini()},
+            ), patch.object(main, "openai_client", None), self.assertLogs("main", level="WARNING") as logs:
+                reply = main.ask_gpt("system", "user")
+        finally:
+            main._active_model_provider.reset(token)
+
+        self.assertEqual(reply, main.MODEL_RATE_LIMIT_FALLBACK_RESPONSE)
+        self.assertEqual(calls, [("gemini", "system", "user")])
+        log_text = "\n".join(logs.output)
+        self.assertIn("fallback unavailable", log_text)
+        self.assertIn("original_provider=gemini", log_text)
+        self.assertIn("fallback_provider=openai", log_text)
+        self.assertIn("status_code=429", log_text)
+        self.assertNotIn("secret", log_text)
+
+
 def fake_line_event(
     *,
     text: str = "請解釋 Transformer",
