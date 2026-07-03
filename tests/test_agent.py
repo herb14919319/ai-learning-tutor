@@ -42,6 +42,43 @@ class RecordingExecutor:
         self.calls.append((fn, args, kwargs))
 
 
+class ModelRoutingPolicyTest(unittest.TestCase):
+    def test_default_entrypoint_model_providers(self):
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "openai")
+
+    def test_entrypoint_model_provider_env_overrides(self):
+        with patch.dict(
+            os.environ,
+            {
+                "WEB_CHAT_MODEL_PROVIDER": "openai",
+                "LINE_MODEL_PROVIDER": "openai",
+                "MESSENGER_MODEL_PROVIDER": "openai",
+                "API_MODEL_PROVIDER": "gemini",
+            },
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "gemini")
+
+    def test_generate_tutor_answer_sets_provider_for_runtime_call(self):
+        with patch.dict(os.environ, {}, clear=True), patch.object(
+            main.tutor_agent,
+            "answer",
+            side_effect=lambda _message, user_id=None: main._active_model_provider.get(),
+        ):
+            web_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_WEB_CHAT)
+            api_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_API)
+
+        self.assertEqual(web_reply, "gemini")
+        self.assertEqual(api_reply, "openai")
+
+
 def fake_line_event(
     *,
     text: str = "請解釋 Transformer",
@@ -436,7 +473,7 @@ class AgentAskApiTest(unittest.TestCase):
 
         self.assertEqual(handled_by, "answer_question")
         self.assertEqual(answer, "answer")
-        generate.assert_called_once_with("What is RAG?", user_id="amos")
+        generate.assert_called_once_with("What is RAG?", user_id="amos", entrypoint=main.ENTRYPOINT_API)
 
     def test_unsupported_task_returns_400(self):
         with patch.object(main, "generate_tutor_answer") as generate:
@@ -548,14 +585,24 @@ class WebChatTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), {"reply": "RAG 會先檢索再生成。"})
-        generate.assert_called_once_with("什麼是 RAG？", user_id="web-demo", truncate=False)
+        generate.assert_called_once_with(
+            "什麼是 RAG？",
+            user_id="web-demo",
+            truncate=False,
+            entrypoint=main.ENTRYPOINT_WEB_CHAT,
+        )
 
     def test_web_chat_defaults_user_id_to_web_demo(self):
         with patch.object(main, "generate_ai_reply", return_value="answer") as generate:
             response = main.app.test_client().post("/web-chat", json={"message": "What is MCP?"})
 
         self.assertEqual(response.status_code, 200)
-        generate.assert_called_once_with("What is MCP?", user_id="web-demo", truncate=False)
+        generate.assert_called_once_with(
+            "What is MCP?",
+            user_id="web-demo",
+            truncate=False,
+            entrypoint=main.ENTRYPOINT_WEB_CHAT,
+        )
 
     def test_web_chat_rejects_empty_message_without_calling_ai(self):
         with patch.object(main, "generate_ai_reply") as generate:
@@ -596,7 +643,7 @@ class TutorAskApiTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.get_json()["ok"])
-        generate.assert_called_once_with("What is MCP?", user_id=None)
+        generate.assert_called_once_with("What is MCP?", user_id=None, entrypoint=main.ENTRYPOINT_API)
 
     def test_invalid_api_key_returns_401(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -655,7 +702,7 @@ class TutorAskApiTest(unittest.TestCase):
                 "source": "ai-learning-tutor",
             },
         )
-        generate.assert_called_once_with("What is MCP?", user_id="baeko")
+        generate.assert_called_once_with("What is MCP?", user_id="baeko", entrypoint=main.ENTRYPOINT_API)
 
     def test_oversized_payload_returns_413(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -872,6 +919,17 @@ class LineWebhookFlowTest(unittest.TestCase):
 
         self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
 
+    def test_line_reply_helper_uses_line_entrypoint(self):
+        with patch.object(main, "generate_ai_reply_with_timeout", return_value="answer") as generate:
+            reply = main.generate_tutor_reply("user-1", "What is RAG?")
+
+        self.assertEqual(reply, "answer")
+        generate.assert_called_once_with(
+            "What is RAG?",
+            user_id="user-1",
+            entrypoint=main.ENTRYPOINT_LINE,
+        )
+
     def test_none_ai_answer_uses_default_fallback_response(self):
         with patch.object(main, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value=None
@@ -1039,6 +1097,17 @@ class MessengerWebhookFlowTest(unittest.TestCase):
             main.messenger_webhook.process_messenger_text_async("sender-1", "What is MCP?")
 
         self.assertEqual(calls, [("messenger:sender-1", "What is MCP?"), ("sender-1", "answer")])
+
+    def test_messenger_reply_helper_uses_messenger_entrypoint(self):
+        with patch.object(main, "generate_ai_reply_with_timeout", return_value="answer") as generate:
+            reply = main.generate_messenger_tutor_reply("messenger:sender-1", "What is MCP?")
+
+        self.assertEqual(reply, "answer")
+        generate.assert_called_once_with(
+            "What is MCP?",
+            user_id="messenger:sender-1",
+            entrypoint=main.ENTRYPOINT_MESSENGER,
+        )
 
     def test_delivery_read_and_echo_events_do_not_submit_ai_flow(self):
         executor = RecordingExecutor()

@@ -5,6 +5,7 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -38,7 +39,16 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
-from openai import OpenAI, OpenAIError
+from models import (
+    DEFAULT_MODEL_PROVIDER,
+    ENTRYPOINT_API,
+    ENTRYPOINT_LINE,
+    ENTRYPOINT_MESSENGER,
+    ENTRYPOINT_WEB_CHAT,
+    create_model_client,
+    resolve_model_provider,
+)
+from models.clients import model_client_config_for_provider, model_client_config_from_env
 
 
 load_dotenv()
@@ -47,7 +57,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 APP_NAME = "AI Learning 助教"
-DEFAULT_MODEL = "gpt-4.1-mini"
 MAX_LINE_TEXT_LENGTH = 4500
 PROCESSING_MESSAGE = "助教正在努力思考中..."
 DEFAULT_FALLBACK_RESPONSE = "抱歉，這個問題我目前可能無法回覆。"
@@ -58,8 +67,10 @@ AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
 PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
 BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
+MODEL_CONFIG = model_client_config_from_env()
+MODEL_PROVIDER = MODEL_CONFIG.provider or DEFAULT_MODEL_PROVIDER
+MODEL_NAME = MODEL_CONFIG.model
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", MODEL_NAME)
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL", "")
@@ -70,9 +81,12 @@ app.json.ensure_ascii = False
 
 line_configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
-openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+model_clients = {}
+model_client = create_model_client(MODEL_CONFIG)
+openai_client = create_model_client(model_client_config_for_provider("openai"))
 webhook_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
 ai_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
+_active_model_provider: ContextVar[str | None] = ContextVar("active_model_provider", default=None)
 
 # In-memory duplicate guard for LINE webhook retries. This is intentionally
 # small and process-local; replace with Redis/DB when running multiple instances.
@@ -80,18 +94,24 @@ processed_events: dict[str, float] = {}
 processed_events_lock = threading.Lock()
 
 
-def ask_gpt(system_prompt: str, user_prompt: str) -> str:
-    if not openai_client:
-        raise RuntimeError("OpenAI API is not configured")
+def get_model_client(model_provider: str):
+    provider = (model_provider or MODEL_PROVIDER).strip().lower()
+    if provider == "openai":
+        return openai_client
+    if provider == MODEL_PROVIDER and model_client:
+        return model_client
+    if provider not in model_clients:
+        model_clients[provider] = create_model_client(model_client_config_for_provider(provider))
+    return model_clients[provider]
 
-    response = openai_client.responses.create(
-        model=OPENAI_MODEL,
-        input=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-    return response.output_text.strip()
+
+def ask_gpt(system_prompt: str, user_prompt: str) -> str:
+    provider = _active_model_provider.get() or MODEL_PROVIDER
+    client = get_model_client(provider)
+    if not client:
+        raise RuntimeError(f"{provider} model API is not configured")
+
+    return client.complete(system_prompt, user_prompt)
 
 
 tutor_agent = TutorAgent(ask_gpt)
@@ -139,7 +159,22 @@ def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESP
     return answer
 
 
-def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
+def generate_tutor_answer(
+    user_text: str,
+    *,
+    user_id: str | None = None,
+    entrypoint: str = ENTRYPOINT_API,
+    model_provider: str | None = None,
+) -> str:
+    provider = model_provider or resolve_model_provider(entrypoint)
+    token = _active_model_provider.set(provider)
+    try:
+        return _generate_tutor_answer(user_text, user_id=user_id)
+    finally:
+        _active_model_provider.reset(token)
+
+
+def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
     normalized_text = (user_text or "").strip()
     if normalized_text == LITTLE_TREE_COMMAND:
         set_active_skill(user_id, LITTLE_TREE_SKILL_NAME)
@@ -150,16 +185,11 @@ def generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
         return LITTLE_TREE_EXIT_MESSAGE
 
     if get_active_skill(user_id) == LITTLE_TREE_SKILL_NAME:
-        if not openai_client:
-            raise RuntimeError("OpenAI API is not configured")
         return normalize_response(little_tree_agent.answer(user_text, user_id=user_id))
 
     guard_result = route_learning_boundary(user_text)
     if not guard_result.allowed:
         return guard_result.response or DEFAULT_FALLBACK_RESPONSE
-
-    if not openai_client:
-        raise RuntimeError("OpenAI API is not configured")
 
     return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
 
@@ -188,11 +218,21 @@ def normalize_agent_request(payload: dict) -> dict:
     }
 
 
-def dispatch_agent_capability(task: str, *, question: str, user_id: str | None = None) -> tuple[str, str]:
+def dispatch_agent_capability(
+    task: str,
+    *,
+    question: str,
+    user_id: str | None = None,
+    entrypoint: str = ENTRYPOINT_API,
+) -> tuple[str, str]:
     if task not in SUPPORTED_AGENT_CAPABILITIES:
         raise ValueError("unsupported_task")
     if task == ANSWER_QUESTION_CAPABILITY:
-        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(question, user_id=user_id)
+        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(
+            question,
+            user_id=user_id,
+            entrypoint=entrypoint,
+        )
     raise ValueError("unsupported_task")
 
 
@@ -311,15 +351,28 @@ def log_tutor_api_audit(
 
 
 def dispatch_tutor_api_request(tutor_request: dict) -> str:
-    return generate_tutor_answer(tutor_request["question"], user_id=tutor_request["user_id"])
+    return generate_tutor_answer(
+        tutor_request["question"],
+        user_id=tutor_request["user_id"],
+        entrypoint=ENTRYPOINT_API,
+    )
 
 
-def generate_ai_reply(user_text: str, *, user_id: str | None = None, truncate: bool = True) -> str:
+def generate_ai_reply(
+    user_text: str,
+    *,
+    user_id: str | None = None,
+    truncate: bool = True,
+    entrypoint: str = ENTRYPOINT_API,
+    model_provider: str | None = None,
+) -> str:
     try:
-        reply = generate_tutor_answer(user_text, user_id=user_id)
-    except OpenAIError:
-        logger.exception("OpenAI API request failed")
-        return ERROR_FALLBACK_RESPONSE
+        reply = generate_tutor_answer(
+            user_text,
+            user_id=user_id,
+            entrypoint=entrypoint,
+            model_provider=model_provider,
+        )
     except Exception:
         logger.exception("Unexpected AI Tutor response error")
         return ERROR_FALLBACK_RESPONSE
@@ -402,9 +455,21 @@ def mark_event_if_new(event: MessageEvent) -> bool:
         return True
 
 
-def generate_ai_reply_with_timeout(user_text: str, user_id: str | None = None) -> str:
+def generate_ai_reply_with_timeout(
+    user_text: str,
+    user_id: str | None = None,
+    *,
+    entrypoint: str = ENTRYPOINT_LINE,
+    model_provider: str | None = None,
+) -> str:
     try:
-        future = ai_executor.submit(generate_ai_reply, user_text, user_id=user_id)
+        future = ai_executor.submit(
+            generate_ai_reply,
+            user_text,
+            user_id=user_id,
+            entrypoint=entrypoint,
+            model_provider=model_provider,
+        )
         reply = future.result(timeout=AI_REPLY_TIMEOUT_SECONDS)
     except TimeoutError:
         logger.warning("AI Tutor response timed out after %s seconds", AI_REPLY_TIMEOUT_SECONDS)
@@ -417,7 +482,11 @@ def generate_ai_reply_with_timeout(user_text: str, user_id: str | None = None) -
 
 
 def generate_tutor_reply(user_id: str, user_text: str) -> str:
-    return generate_ai_reply_with_timeout(user_text, user_id=user_id)
+    return generate_ai_reply_with_timeout(user_text, user_id=user_id, entrypoint=ENTRYPOINT_LINE)
+
+
+def generate_messenger_tutor_reply(user_id: str, user_text: str) -> str:
+    return generate_ai_reply_with_timeout(user_text, user_id=user_id, entrypoint=ENTRYPOINT_MESSENGER)
 
 
 def process_text_message_async(user_text: str, recipient_id: str) -> None:
@@ -435,7 +504,7 @@ def process_text_message_async(user_text: str, recipient_id: str) -> None:
 
 
 messenger_webhook.configure_messenger_handler(
-    reply_generator=generate_tutor_reply,
+    reply_generator=generate_messenger_tutor_reply,
     executor=webhook_executor,
 )
 
@@ -463,7 +532,7 @@ def web_chat():
     raw_user_id = payload.get("user_id")
     user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else "web-demo"
 
-    reply = generate_ai_reply(message, user_id=user_id, truncate=False)
+    reply = generate_ai_reply(message, user_id=user_id, truncate=False, entrypoint=ENTRYPOINT_WEB_CHAT)
     return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
 
 
@@ -474,12 +543,13 @@ def test_mode():
     if not question:
         return jsonify({"error": "Missing required query parameter: question"}), 400
 
-    answer = generate_ai_reply(question, truncate=False)
+    answer = generate_ai_reply(question, truncate=False, entrypoint=ENTRYPOINT_API)
     return jsonify(
         {
             "question": question,
             "answer": answer,
-            "model": OPENAI_MODEL,
+            "model": MODEL_NAME,
+            "model_provider": MODEL_PROVIDER,
         }
     )
 
@@ -541,7 +611,12 @@ def agent_ask():
     )
 
     try:
-        handled_by, answer = dispatch_agent_capability(task, question=question, user_id=user_id)
+        handled_by, answer = dispatch_agent_capability(
+            task,
+            question=question,
+            user_id=user_id,
+            entrypoint=ENTRYPOINT_API,
+        )
     except Exception as exc:
         duration_ms = round((time.perf_counter() - started_at) * 1000)
         logger.exception(

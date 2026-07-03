@@ -7,10 +7,10 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from models import create_model_client
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "gpt-4.1-mini"
 MAX_CONTEXT_CHARS = 12000
 KB_TIMEOUT_SECONDS = 20
 
@@ -32,21 +32,11 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
     if _ask_gpt:
         return _ask_gpt(system_prompt, user_prompt)
 
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not configured")
-
-    from openai import OpenAI
-
-    client = OpenAI(api_key=api_key)
-    response = client.responses.create(
-        model=os.getenv("OPENAI_MODEL", DEFAULT_MODEL),
-        input=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-    )
-    return response.output_text.strip()
+    client = create_model_client()
+    if not client:
+        provider = os.getenv("MODEL_PROVIDER", "openai").strip().lower()
+        raise RuntimeError(f"{provider} model API is not configured")
+    return client.complete(system_prompt, user_prompt)
 
 
 def answer(question: str) -> str:
