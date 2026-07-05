@@ -80,6 +80,7 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 | Little Tree companion mode | Implemented | Command activation, intent classification, policy decision, deterministic starters, LLM fallback |
 | External agent API | Implemented | `/api/agent/ask`, only `answer_question` |
 | External tutor API | Implemented | `/api/tutor/ask` with API key, size validation, rate limit, daily quota, audit logging |
+| Runtime observability | Implemented, gated | `/dashboard`, `/observability`, and `/api/runtime/telemetry` require `DASHBOARD_API_KEY` or `OBSERVABILITY_API_KEY` with `X-Dashboard-Key` |
 | LINE channel | Implemented | `/callback`, signature validation, reply-then-push async flow, Rich Menu commands |
 | Web Chat | Implemented | `GET /` and `POST /web-chat` |
 | Messenger channel | Implemented, gated | Enabled only when `MESSENGER_ENABLED=true`; text messages only |
@@ -162,6 +163,13 @@ The agent is not stateless. It has process-local, non-durable memory.
 | LINE duplicate-event cache | Process-local event key TTL | In memory only |
 | Tutor API rate limits and quotas | Process-local dictionaries | In memory only |
 
+Operational telemetry is separate from conversational memory. The local
+`data/runtime_telemetry.jsonl` file is a lightweight append-only observability
+log for request counts, provider/model usage, latency, token totals, fallback
+status, and error type. It must not be used for user personalization, long-term
+conversation recall, or tutor memory. It is protected behind the dashboard
+API key and is not part of the agent memory model described above.
+
 The implemented memory can record:
 
 - User messages.
@@ -221,6 +229,7 @@ Needs clarification: future outbound multi-agent delegation policy is not implem
 | LINE signature validation | `/callback` uses LINE webhook signature handling |
 | LINE duplicate guard | In-memory duplicate-event protection with TTL |
 | Tutor API authentication | `/api/tutor/ask` requires `X-API-Key` and configured `AI_TUTOR_API_KEY` |
+| Observability authentication | `/dashboard`, `/observability`, and `/api/runtime/telemetry` require `X-Dashboard-Key` and configured `DASHBOARD_API_KEY` or `OBSERVABILITY_API_KEY` |
 | Tutor API validation | Payload size limit, question type/length validation, rate limit, daily quota |
 | Tutor API audit logging | Logs timestamp, client IP, source, user ID, question length, status, and duration; tests verify key and answer are not logged |
 | Messenger enable gate | Messenger routes return 404 unless `MESSENGER_ENABLED=true` |

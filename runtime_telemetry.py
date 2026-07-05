@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -11,7 +12,10 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# Operational telemetry is an append-only observability log. It is not
+# conversational memory and must never block the tutor request path.
 TELEMETRY_PATH = Path("data/runtime_telemetry.jsonl")
+_telemetry_write_lock = threading.Lock()
 TELEMETRY_FIELDS = (
     "timestamp",
     "entrypoint",
@@ -44,11 +48,13 @@ def write_runtime_telemetry(record: dict[str, Any], path: Path | None = None) ->
     safe_record = {field: record.get(field) for field in TELEMETRY_FIELDS}
     if safe_record["timestamp"] is None:
         safe_record["timestamp"] = utc_timestamp()
+    line = json.dumps(safe_record, ensure_ascii=False, separators=(",", ":")) + "\n"
 
     try:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        with target.open("a", encoding="utf-8") as file:
-            file.write(json.dumps(safe_record, ensure_ascii=False, separators=(",", ":")) + "\n")
+        with _telemetry_write_lock:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open("a", encoding="utf-8") as file:
+                file.write(line)
     except Exception:
         logger.exception("Runtime telemetry write failed")
 

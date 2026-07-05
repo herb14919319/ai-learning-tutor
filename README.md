@@ -246,3 +246,17 @@ Only `answer_question` is supported today. Unsupported tasks return HTTP 400:
   "error": "unsupported_task"
 }
 ```
+
+## Runtime Observability
+
+`/dashboard`, `/observability`, and `/api/runtime/telemetry` expose operational
+runtime metrics and are disabled by default. Set `DASHBOARD_API_KEY` or
+`OBSERVABILITY_API_KEY`, then call these routes with the `X-Dashboard-Key`
+header. LINE webhook, `/web-chat`, `/healthz`, and the public web chat page do
+not use this dashboard key.
+
+Runtime telemetry is a lightweight local append-only JSONL log at
+`data/runtime_telemetry.jsonl`. It records operational fields such as entrypoint,
+provider, model, status, latency, token counts, fallback status, and error type.
+This telemetry is not conversational memory: it is not used for personalization,
+long-term recall, or router decisions.
