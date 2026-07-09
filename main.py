@@ -692,8 +692,13 @@ def require_dashboard_access():
 
 
 @app.get("/dashboard")
-@app.get("/observability")
 def runtime_dashboard():
+    month = request.args.get("month") or datetime.now(timezone.utc).strftime("%Y-%m")
+    return render_template("runtime_observability.html", month=month)
+
+
+@app.get("/observability")
+def observability_dashboard():
     require_dashboard_access()
     month = request.args.get("month") or datetime.now(timezone.utc).strftime("%Y-%m")
     return render_template("runtime_observability.html", month=month)

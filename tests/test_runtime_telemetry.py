@@ -97,12 +97,12 @@ class RuntimeTelemetryTest(unittest.TestCase):
 
         self.assertIn(response.status_code, (401, 403))
 
-    def test_dashboard_route_denies_access_when_dashboard_key_is_unset(self):
+    def test_dashboard_route_returns_200_when_dashboard_key_is_unset(self):
         with patch.dict(os.environ, {}, clear=True):
             response = main.app.test_client().get("/dashboard?month=2026-07")
 
-        self.assertIn(response.status_code, (401, 403))
-        self.assertNotIn("Runtime Observability", response.get_data(as_text=True))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Runtime Observability", response.get_data(as_text=True))
 
     def test_observability_route_denies_access_when_dashboard_key_is_unset(self):
         with patch.dict(os.environ, {}, clear=True):
@@ -111,7 +111,7 @@ class RuntimeTelemetryTest(unittest.TestCase):
         self.assertIn(response.status_code, (401, 403))
         self.assertNotIn("Runtime Observability", response.get_data(as_text=True))
 
-    def test_dashboard_route_denies_access_when_key_is_missing_or_wrong(self):
+    def test_dashboard_route_returns_200_when_key_is_missing_or_wrong(self):
         with patch.dict(os.environ, {"DASHBOARD_API_KEY": "test-dashboard-key"}, clear=True):
             missing_response = main.app.test_client().get("/dashboard?month=2026-07")
             wrong_response = main.app.test_client().get(
@@ -119,8 +119,8 @@ class RuntimeTelemetryTest(unittest.TestCase):
                 headers={"X-Dashboard-Key": "wrong-key"},
             )
 
-        self.assertIn(missing_response.status_code, (401, 403))
-        self.assertIn(wrong_response.status_code, (401, 403))
+        self.assertEqual(missing_response.status_code, 200)
+        self.assertEqual(wrong_response.status_code, 200)
 
     def test_runtime_telemetry_api_denies_access_when_key_is_missing_or_wrong(self):
         with patch.dict(os.environ, {"DASHBOARD_API_KEY": "test-dashboard-key"}, clear=True):
@@ -260,7 +260,7 @@ class RuntimeTelemetryTest(unittest.TestCase):
 
     def test_dashboard_route_returns_200(self):
         with patch.dict(os.environ, {"DASHBOARD_API_KEY": "test-dashboard-key"}, clear=True):
-            response = main.app.test_client().get("/dashboard?month=2026-07", headers=self.dashboard_headers)
+            response = main.app.test_client().get("/dashboard?month=2026-07")
 
         body = response.get_data(as_text=True)
         self.assertEqual(response.status_code, 200)
