@@ -1,5 +1,7 @@
 # AI Tutor Architecture
 
+> **Retirement note:** Little Tree is retired from all user entry points. Its runtime, prompt, tests, and data remain in the repository as legacy implementation details.
+
 This document describes the AI Learning Tutor architecture as it is implemented today. It is an extraction of the current codebase, not a proposal for an ideal future design.
 
 ## 1. Product Overview

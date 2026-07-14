@@ -1,5 +1,7 @@
 # Agent Card
 
+> **Retirement note:** Little Tree Companion is retired from all AI Tutor user entry points. References below document retained legacy code and are not an available product mode.
+
 ## 1. Agent Name
 
 | Field | Value |

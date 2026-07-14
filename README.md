@@ -1,5 +1,7 @@
 # AI Learning 助教 LINE Bot MVP
 
+> **Tree／小樹狀態：已退休（Retired）。** AI Tutor 不再提供 Tree 模式、Skill Selector 或快捷入口；相關程式碼、prompt、測試與資料暫時保留，供歷史相容與後續評估使用。
+
 這是一個可部署到 Google Cloud Run 的 Python Flask LINE Bot MVP。
 
 使用者傳 LINE 訊息給 Bot 後，Flask webhook 會接收訊息，讀取本地 `skills/hung-yi-lee-skill/SKILL.md` 作為 system context，呼叫 OpenAI Responses API，最後將 GPT 回覆傳回 LINE。

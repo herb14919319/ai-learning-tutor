@@ -12,15 +12,13 @@ from urllib.error import HTTPError
 
 from agents.little_tree_agent import (
     EXIT_MESSAGE as LITTLE_TREE_EXIT_MESSAGE,
-    LITTLE_TREE_COMMAND,
     LITTLE_TREE_EXIT_COMMANDS,
     LITTLE_TREE_SKILL_NAME,
-    WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
     LittleTreeAgent,
 )
 from agents.tutor_agent import TutorAgent
 from menu_router import handle_menu_command, is_menu_command
-from memory.conversation_context import clear_active_skill, get_active_skill, set_active_skill
+from memory.conversation_context import clear_active_skill, get_active_skill
 import messenger_webhook
 from router_guard import route_learning_boundary
 try:
@@ -310,10 +308,6 @@ def generate_tutor_answer(
 
 def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
     normalized_text = (user_text or "").strip()
-    if normalized_text == LITTLE_TREE_COMMAND:
-        set_active_skill(user_id, LITTLE_TREE_SKILL_NAME)
-        return LITTLE_TREE_WELCOME_MESSAGE
-
     if normalized_text in LITTLE_TREE_EXIT_COMMANDS:
         clear_active_skill(user_id)
         return LITTLE_TREE_EXIT_MESSAGE

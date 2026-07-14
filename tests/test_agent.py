@@ -15,7 +15,6 @@ from agents.router import route
 from agents.tutor_agent import TutorAgent
 from skills.little_tree_companion import (
     LITTLE_TREE_SKILL_NAME,
-    WELCOME_MESSAGE as LITTLE_TREE_WELCOME_MESSAGE,
     build_system_prompt as build_little_tree_system_prompt,
 )
 from models.clients import DEFAULT_GEMINI_MODEL, DeepSeekModelClient, GeminiModelClient, create_model_client
@@ -324,8 +323,8 @@ class TutorAgentTest(unittest.TestCase):
     def test_list_skills_includes_hungyi_lee(self):
         self.assertIn("hungyi_lee", [metadata.name for metadata in list_skills()])
 
-    def test_list_skills_includes_little_tree_companion(self):
-        self.assertIn(LITTLE_TREE_SKILL_NAME, [metadata.name for metadata in list_skills()])
+    def test_list_skills_excludes_retired_little_tree_companion(self):
+        self.assertNotIn(LITTLE_TREE_SKILL_NAME, [metadata.name for metadata in list_skills()])
 
     def test_hungyi_lee_metadata_can_be_read(self):
         metadata = get_skill_metadata("hungyi_lee")
@@ -344,7 +343,7 @@ class TutorAgentTest(unittest.TestCase):
 
         self.assertIsNotNone(metadata)
         self.assertEqual(metadata.name, LITTLE_TREE_SKILL_NAME)
-        self.assertTrue(metadata.enabled)
+        self.assertFalse(metadata.enabled)
         self.assertIn("/小樹", metadata.keywords)
         self.assertIn("child_friendly_learning_companion", metadata.capabilities)
         self.assertEqual(metadata.entrypoint, "skills.little_tree_companion")
@@ -358,8 +357,8 @@ class TutorAgentTest(unittest.TestCase):
         self.assertEqual(route("今天晚餐適合吃什麼？")["skill"], "general")
         self.assertEqual(route("Taiwan 旅遊三天怎麼排？")["skill"], "general")
 
-    def test_little_tree_command_routes_to_little_tree_skill(self):
-        self.assertEqual(route("/小樹")["skill"], LITTLE_TREE_SKILL_NAME)
+    def test_little_tree_command_does_not_route_to_retired_skill(self):
+        self.assertEqual(route("/小樹")["skill"], "general")
 
     def test_agent_calls_selected_skill(self):
         with patch("agents.tutor_agent.configure_skills"), patch(
@@ -457,21 +456,16 @@ class LittleTreeCommandTest(unittest.TestCase):
     def tearDown(self):
         clear_context()
 
-    def test_little_tree_activation_sets_active_skill_without_llm_call(self):
+    def test_little_tree_activation_command_is_retired(self):
         with patch.object(main.tutor_agent, "answer") as answer:
             reply = main.generate_tutor_answer("/小樹", user_id="child-1")
 
-        self.assertEqual(reply, LITTLE_TREE_WELCOME_MESSAGE)
-        self.assertIn("孩子與家長", reply)
-        self.assertIn("安全又有智慧地使用 AI", reply)
-        self.assertIn("不是幫你把功課寫完", reply)
-        self.assertNotIn("英文", reply)
-        self.assertNotIn("數學", reply)
-        self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
+        self.assertIn("AI 或機器學習", reply)
+        self.assertIsNone(get_active_skill("child-1"))
         answer.assert_not_called()
 
-    def test_little_tree_active_skill_persists_for_same_user(self):
-        main.generate_tutor_answer("/小樹", user_id="child-1")
+    def test_retained_little_tree_active_skill_persists_for_legacy_user(self):
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
         with patch.object(main, "openai_client", object()), patch.object(
             main.little_tree_agent, "answer", return_value="小樹回答"
@@ -482,8 +476,8 @@ class LittleTreeCommandTest(unittest.TestCase):
         answer.assert_called_once_with("AI 會不會犯錯？", user_id="child-1")
         self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
 
-    def test_little_tree_command_routes_to_little_tree_agent(self):
-        main.generate_tutor_answer("/小樹", user_id="child-1")
+    def test_retained_little_tree_active_skill_routes_to_little_tree_agent(self):
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
         with patch.object(main, "openai_client", object()), patch.object(
             main.little_tree_agent, "answer", return_value="小樹：慢慢來，我們一起想。"
@@ -557,7 +551,7 @@ class LittleTreeCommandTest(unittest.TestCase):
         self.assertIn("3. 我們一起檢查你的想法", reply)
         self.assertEqual(prompts, [])
     def test_little_tree_is_per_user(self):
-        main.generate_tutor_answer("/小樹", user_id="child-1")
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
         with patch.object(main.little_tree_agent, "answer") as little_tree_answer, patch.object(
             main.tutor_agent, "answer"
@@ -570,7 +564,7 @@ class LittleTreeCommandTest(unittest.TestCase):
         answer.assert_not_called()
 
     def test_little_tree_exit_restores_normal_guard_behavior(self):
-        main.generate_tutor_answer("/小樹", user_id="child-1")
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
         reply = main.generate_tutor_answer("/離開", user_id="child-1")
 
@@ -584,7 +578,7 @@ class LittleTreeCommandTest(unittest.TestCase):
         answer.assert_not_called()
 
     def test_little_tree_exit_with_professor_command(self):
-        main.generate_tutor_answer("/小樹", user_id="child-1")
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
         reply = main.generate_tutor_answer("/李教授", user_id="child-1")
 

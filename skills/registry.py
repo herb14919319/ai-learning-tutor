@@ -19,7 +19,7 @@ SKILL_MANIFESTS = (
         capabilities=("child_friendly_learning_companion",),
         entrypoint="skills.little_tree_companion",
         priority=200,
-        enabled=True,
+        enabled=False,
     ),
     SkillManifest(
         name="hungyi_lee",
@@ -68,7 +68,7 @@ def get_skill(skill_name: str):
 
 
 def list_skills() -> list[SkillMetadata]:
-    return DEFAULT_CATALOG.list_metadata()
+    return DEFAULT_CATALOG.list_metadata(include_disabled=False)
 
 
 def get_skill_metadata(skill_name: str) -> SkillMetadata | None:
