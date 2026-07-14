@@ -1,0 +1,292 @@
+[
+  {
+    "question_id": "L111-Q001",
+    "topic_code": "L111",
+    "question": "一套系統只會辨識產線上的特定瑕疵，換到其他任務就不能直接使用。依能力範圍最適合歸類為何？",
+    "options": {
+      "A": "弱 AI",
+      "B": "強 AI",
+      "C": "AGI",
+      "D": "ASI"
+    },
+    "correct_answer": "A",
+    "explanation": "特定任務且不能遷移，符合弱 AI。強 AI 與 AGI 都指向跨任務的理論能力；ASI 更進一步指全面超越人類，因此 B、C、D 都不符。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.1 AI 的能力範疇分類",
+        "locator": "paragraphs 30–38; table 0"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 Weak AI",
+        "locator": "paragraphs 2097–2100"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q002",
+    "topic_code": "L111",
+    "question": "哪一種名稱描述的是在各領域智能表現都超越人類的假設性 AI？",
+    "options": {
+      "A": "Narrow AI",
+      "B": "Machine Learning",
+      "C": "AGI",
+      "D": "ASI"
+    },
+    "correct_answer": "D",
+    "explanation": "ASI 的定義關鍵是『在所有領域超越人類』。Narrow AI 只做特定任務；Machine Learning 是方法類別；AGI 著重類人通用任務能力，不等同全面超越人類。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.1 AI 的能力範疇分類",
+        "locator": "table 0"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 ASI",
+        "locator": "paragraphs 2112–2115"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q003",
+    "topic_code": "L111",
+    "question": "農場用模型分析果實影像中的顏色與大小來判斷成熟度，核心應用領域為何？",
+    "options": {
+      "A": "自然語言處理",
+      "B": "電腦視覺",
+      "C": "語音辨識",
+      "D": "推薦系統"
+    },
+    "correct_answer": "B",
+    "explanation": "輸入是影像且任務是辨識影像特徵，所以是電腦視覺。NLP 處理文字語言，ASR 處理語音轉文字，推薦系統依偏好排序內容，三者都不符合。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.2 AI 應用領域與產業對應",
+        "locator": "paragraphs 40–48; table 1"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 Computer Vision",
+        "locator": "paragraphs 2117–2120"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q004",
+    "topic_code": "L111",
+    "question": "客服系統要從顧客留言文字判斷情緒，最直接對應哪一領域？",
+    "options": {
+      "A": "NLP",
+      "B": "ASR",
+      "C": "預測性維護",
+      "D": "電腦視覺"
+    },
+    "correct_answer": "A",
+    "explanation": "理解與分析留言文字屬 NLP。ASR 是語音轉文字；預測性維護著重設備故障預警；電腦視覺處理影像，因此 B、C、D 不符。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.2 AI 應用領域與產業對應",
+        "locator": "paragraphs 40–48; table 1"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 NLP",
+        "locator": "paragraphs 2122–2125"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q005",
+    "topic_code": "L111",
+    "question": "醫療 AI 每次提出診斷建議後，都必須由醫師確認才能進入下一步。這是哪種模式？",
+    "options": {
+      "A": "HITL",
+      "B": "HOTL",
+      "C": "HOOTL",
+      "D": "ASI"
+    },
+    "correct_answer": "A",
+    "explanation": "每個關鍵決策都要醫師確認，符合 HITL。HOTL 是 AI 自主運作、人在上方監督；HOOTL 只在重大異常時接管；ASI 是能力層級，並非人機監督模式。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HITL",
+        "locator": "paragraphs 2133–2136"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q006",
+    "topic_code": "L111",
+    "question": "AI 客服平常自行回覆，人員持續查看監控報表，發現異常時可立即接手。這是哪種模式？",
+    "options": {
+      "A": "HITL",
+      "B": "HOTL",
+      "C": "HOOTL",
+      "D": "無監督學習"
+    },
+    "correct_answer": "B",
+    "explanation": "AI 自主運作、人員日常監督且必要時介入，符合 HOTL。HITL 要求每個關鍵決策都經人審核；HOOTL 僅在重大異常才接管；無監督學習是模型學習方式。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HOTL",
+        "locator": "paragraphs 2138–2141"
+      }
+    ],
+    "difficulty": "medium",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q007",
+    "topic_code": "L111",
+    "question": "某低風險自動化流程平常完全自主執行，只有發生重大故障時才由工程師接管。這是哪種模式？",
+    "options": {
+      "A": "HITL",
+      "B": "HOTL",
+      "C": "HOOTL",
+      "D": "XAI"
+    },
+    "correct_answer": "C",
+    "explanation": "平常完全自主、重大故障才接管，符合本教材的 HOOTL。HITL 是逐一審核，HOTL 是日常監督並可介入，XAI 則是解釋模型決策的方法。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HOOTL",
+        "locator": "paragraphs 2143–2146"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q008",
+    "topic_code": "L111",
+    "question": "下列哪一項最符合可解釋 AI（XAI）的核心目的？",
+    "options": {
+      "A": "保證模型永遠正確",
+      "B": "讓人理解模型決策依據",
+      "C": "完全移除資料偏差",
+      "D": "取代所有人工審核"
+    },
+    "correct_answer": "B",
+    "explanation": "XAI 的核心是讓人理解模型的決策依據。它不保證模型永遠正確，也不能自動消除全部偏差或取代所有人工審核，因此 A、C、D 都過度肯定。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.4 可解釋 AI（XAI）四大技術",
+        "locator": "paragraphs 60–68; table 3"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 XAI",
+        "locator": "paragraphs 2153–2155"
+      }
+    ],
+    "difficulty": "easy",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q009",
+    "topic_code": "L111",
+    "question": "房貸模型拒絕申請後，系統指出『若年收入提高到某門檻，結果可能改為通過』。最適合的解釋方法為何？",
+    "options": {
+      "A": "顯著性圖",
+      "B": "反事實解釋",
+      "C": "語音辨識",
+      "D": "K-means"
+    },
+    "correct_answer": "B",
+    "explanation": "說明最小條件變動如何翻轉結果，是反事實解釋。顯著性圖標示影像關注區域；語音辨識處理語音；K-means 用於分群，因此 A、C、D 不符。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.4 可解釋 AI（XAI）四大技術",
+        "locator": "paragraphs 60–68; table 3"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 Counterfactual Explanation",
+        "locator": "paragraphs 2165–2167"
+      }
+    ],
+    "difficulty": "medium",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  },
+  {
+    "question_id": "L111-Q010",
+    "topic_code": "L111",
+    "question": "關於 AI、機器學習與深度學習的範圍，下列何者最恰當？",
+    "options": {
+      "A": "AI 是機器學習的子集",
+      "B": "深度學習是機器學習的子集",
+      "C": "機器學習與 AI 完全無關",
+      "D": "所有 AI 都必須使用深度神經網路"
+    },
+    "correct_answer": "B",
+    "explanation": "教材直接指出深度學習是機器學習的重要子集，所以 B 正確。A 把常見包含方向顛倒；C 否定兩者關聯；D 用『所有』做過度概括，且教材未支持所有 AI 都必須使用深度神經網路。",
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "3.6 神經網路與深度學習基礎",
+        "locator": "paragraphs 376–393"
+      },
+      {
+        "source_id": "SRC-GENAI-001",
+        "section": "2-1 生成式 AI 的定義與本質",
+        "locator": "paragraphs 53–55"
+      }
+    ],
+    "difficulty": "medium",
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "authorship": "model_generated_from_materials"
+  }
+]

@@ -1,0 +1,309 @@
+[
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K001",
+    "title": "AI 定義",
+    "definition": "本 Skill 依教材的能力分類與應用領域所作的綜合整理：人工智慧是涵蓋多種方法的上位概念，用來描述電腦系統執行辨識、理解、預測、決策或內容生成等任務。這不是教材逐字提供的單一定義。",
+    "plain_explanation": "在本教材脈絡中，AI 是讓電腦能看、聽、讀、判斷或產生內容的一大類技術；它不等於某一個模型，也不只包含生成式 AI。",
+    "key_points": [
+      "AI 是上位概念，應用可包含 NLP、電腦視覺、語音辨識、推薦與預測。",
+      "現有實務系統通常針對特定任務。"
+    ],
+    "common_confusions": [
+      "教材沒有在 L111 直接給出單一句的 AI 總定義，本項為依能力分類與應用領域整理的綜合定義。",
+      "AI 不等同機器學習；機器學習是實作 AI 的方法之一。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "第 1 章章節概述與 1.1–1.2",
+        "locator": "paragraphs 26–48; tables 0–1"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 AI 的定義與分類",
+        "locator": "paragraphs 2096–2125"
+      }
+    ],
+    "requires_review": true
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K002",
+    "title": "弱 AI、強 AI、AGI、ASI",
+    "definition": "主講義把弱 AI、Strong AI、AGI、ASI 列成四個層次：Strong AI 是理論上具類人跨任務認知能力，AGI 是能執行任何人類智能任務，ASI 則在所有領域超越人類；考古分析報告另將 Strong AI 稱為『通用 AI（廣義）』，因此 Strong AI 與 AGI 的邊界在兩份教材中並不一致。",
+    "plain_explanation": "兩份教材一致把弱 AI 視為特定任務的專才、ASI 視為全面超越人類；但 Strong AI 與 AGI 有時分成相鄰層級，有時部分重疊，不能當成毫無爭議的唯一分類。",
+    "key_points": [
+      "題目出現單一任務、不能遷移，通常指弱 AI。",
+      "主講義區分 Strong AI 與 AGI；考古分析報告則讓兩者概念部分重疊。",
+      "ASI 的關鍵字是全面超越人類。"
+    ],
+    "common_confusions": [
+      "主講義把強 AI 與 AGI 排成相鄰層級；考古分析則說強 AI 也可稱通用 AI（廣義）。兩者界線需依題幹與教材用語判斷。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.1 AI 的能力範疇分類",
+        "locator": "paragraphs 30–38; table 0"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 AI 的定義與分類",
+        "locator": "paragraphs 2097–2115"
+      }
+    ],
+    "conflict": {
+      "status": "requires_review",
+      "detail": "Strong AI 與 AGI 在兩份教材中的分層／同義關係措辭不同。"
+    },
+    "requires_review": true
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K003",
+    "title": "傳統 AI、機器學習與深度學習",
+    "definition": "教材可直接確認深度學習是機器學習的子集，並以多層神經網路為基礎；生成式 AI 講義則把『傳統 AI』概括為偏向分類、預測或判斷的系統。教材沒有直接把『傳統 AI』定義成規則式 AI，也沒有在這些段落完整定義 AI 與機器學習的集合關係。",
+    "plain_explanation": "最有教材依據的關係是『深度學習屬於機器學習』。常見教科書也會用 AI ⊃ 機器學習 ⊃ 深度學習來記，但本批教材沒有在引用段落完整畫出這個包含關係，所以仍需人工確認。",
+    "key_points": [
+      "教材直接支持：深度學習是機器學習的重要子集。",
+      "生成式 AI 常奠基於深度學習，但深度學習不只用於生成。",
+      "本教材中的『傳統 AI』偏向與生成式 AI 對照的分類、預測或判斷，不應直接等同規則式 AI。"
+    ],
+    "common_confusions": [
+      "不要把 AI、機器學習、深度學習當成完全同義詞。",
+      "不要把『傳統 AI』一律改寫成『規則式 AI』；教材沒有支持這個唯一對應。",
+      "AI ⊃ 機器學習 ⊃ 深度學習是常見整理框架，但本項只有『機器學習 ⊃ 深度學習』獲引用段落直接陳述。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "3.1 學習模式六大家族與 3.6 神經網路與深度學習基礎",
+        "locator": "paragraphs 309–317 and 376–393; table 12"
+      },
+      {
+        "source_id": "SRC-GENAI-001",
+        "section": "2-1 生成式 AI 的定義與本質、2-2 鑑別式 AI vs. 生成式 AI",
+        "locator": "paragraphs 53–58; tables 6–7"
+      }
+    ],
+    "requires_review": true
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K004",
+    "title": "AI 應用領域",
+    "definition": "常見 AI 應用可依輸入與任務分為自然語言處理、電腦視覺、語音辨識、推薦系統、預測性維護，以及醫療、金融與交通等產業應用。",
+    "plain_explanation": "先看 AI 處理什麼：圖像多半是 CV，語音轉文字是 ASR，文字理解是 NLP，依喜好排序是推薦，預先找設備異常是預測性維護。",
+    "key_points": [
+      "影像辨識、物件偵測、分割屬電腦視覺。",
+      "語意理解、生成、翻譯屬 NLP。",
+      "設備故障預警是智慧製造常見的預測性維護。"
+    ],
+    "common_confusions": [
+      "題目常故意把正確技術配到錯誤產業。",
+      "ASR 著重語音轉文字；NLP 著重語言理解與生成。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.2 AI 應用領域與產業對應",
+        "locator": "paragraphs 40–48; table 1"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11101 Computer Vision / NLP",
+        "locator": "paragraphs 2117–2125"
+      }
+    ]
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K005",
+    "title": "AI 治理基本概念",
+    "definition": "AI 治理是在 AI 全生命週期建立政策、流程、組織責任與監督機制，使系統符合倫理、法規與組織要求。",
+    "plain_explanation": "治理是組織如何管理 AI 的制度層：誰負責、怎麼監督、風險怎麼處理、如何查核是否符合規範。倫理提供價值原則，風險管理處理風險辨識與控制，法規遵循確認適用要求；三者與治理相關，但不是彼此同義。",
+    "key_points": [
+      "治理涵蓋設計、開發、部署、使用到退役。",
+      "人機監督與可解釋性都是治理手段。",
+      "高風險應用通常需要更強的人工監督、透明度與稽核。"
+    ],
+    "common_confusions": [
+      "治理不只是資安，也包含當責、公平、可靠、隱私與可解釋性。",
+      "教材沒有另行提供 AI 倫理的完整正式定義；倫理、風險管理、法遵與治理的界線屬依各章內容作的整理，仍需人工確認。",
+      "課程講義不是官方法規或唯一標準；涉及現行法規時需另行查核最新官方資訊。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 AI Governance",
+        "locator": "paragraphs 2127–2131"
+      },
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "第 1 章章節概述與 1.3–1.5",
+        "locator": "paragraphs 26–82"
+      },
+      {
+        "source_id": "SRC-GENAI-001",
+        "section": "9-1–9-7 風險管理、治理框架與透明度",
+        "locator": "paragraphs 269–288; tables 54–60"
+      }
+    ],
+    "requires_review": true
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K006",
+    "title": "HITL（Human-in-the-loop）",
+    "definition": "依本教材，AI 的每個關鍵決策都需要人類審核、批准或介入後才能繼續。",
+    "plain_explanation": "AI 提建議，但關鍵一步一定要人點頭。",
+    "key_points": [
+      "人類角色是決策者。",
+      "常見線索是逐筆、每個關鍵決策、最終確認。",
+      "適合醫療診斷、貸款核准等高風險情境。"
+    ],
+    "common_confusions": [
+      "不是只看報表或異常才介入；那更接近 HOTL。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HITL",
+        "locator": "paragraphs 2133–2136"
+      }
+    ]
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K007",
+    "title": "HOTL（Human-over-the-loop）",
+    "definition": "依本教材，AI 可自主運行，人類進行日常監督，並在需要時介入或調整。",
+    "plain_explanation": "AI 平常自己做，人類在旁監看，必要時踩煞車。",
+    "key_points": [
+      "人類角色是監督者。",
+      "常見線索是日常監督、監控儀表板、必要時介入。",
+      "介入頻率低於 HITL，但仍保有及時控制能力。"
+    ],
+    "common_confusions": [
+      "若人類只在重大故障後才接手，較接近 HOOTL。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HOTL",
+        "locator": "paragraphs 2138–2141"
+      }
+    ]
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K008",
+    "title": "HOOTL（Human-out-of-the-loop）",
+    "definition": "依本教材，AI 系統自主完成決策與執行，人類只在重大異常或事故時接管。",
+    "plain_explanation": "平常完全自動，出了大事才找人。",
+    "key_points": [
+      "自動化程度最高。",
+      "常見線索是完全自主、重大異常才介入。",
+      "高風險情境使用時需要特別審慎的治理與失效保護。"
+    ],
+    "common_confusions": [
+      "『人在迴圈外』不代表系統完全不需治理、監控或事後責任。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.3 AI 治理三層人機監督模式",
+        "locator": "paragraphs 50–58; table 2"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 HOOTL",
+        "locator": "paragraphs 2143–2146"
+      }
+    ]
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K009",
+    "title": "可解釋 AI（XAI）",
+    "definition": "XAI 是讓人能理解 AI 決策依據或行為的技術總稱，可包含模型本身可解釋，以及對黑盒模型做事後解釋的方法。",
+    "plain_explanation": "XAI 讓 AI 不只給答案，也能提供人可理解的理由或影響因素。",
+    "key_points": [
+      "LIME 著重單一樣本附近的局部解釋。",
+      "SHAP 將預測拆成各特徵的貢獻。",
+      "反事實解釋回答『改變什麼會翻轉結果』。",
+      "顯著性圖標示影像中影響判斷的區域。"
+    ],
+    "common_confusions": [
+      "XAI 不保證模型一定正確、公平或安全。",
+      "顯著性圖主要對應影像，不是一般表格資料的萬用解釋法。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.4 可解釋 AI（XAI）四大技術",
+        "locator": "paragraphs 60–68; table 3"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "L11102 XAI、LIME、SHAP、反事實、顯著性圖",
+        "locator": "paragraphs 2153–2171"
+      },
+      {
+        "source_id": "SRC-GENAI-001",
+        "section": "9-7 風險溯源與透明度",
+        "locator": "paragraph 285"
+      }
+    ]
+  },
+  {
+    "topic_code": "L111",
+    "review_status": "pending_review",
+    "knowledge_id": "L111-K010",
+    "title": "L111 常見考試陷阱",
+    "definition": "L111 題目常用相近術語、錯置產業、介入時機與過度延伸的治理敘述來製造干擾。",
+    "plain_explanation": "先抓題幹關鍵字，再判斷能力範圍、資料型態、人何時介入，以及題目是否把治理效果說得太滿。",
+    "key_points": [
+      "特定任務、無法遷移通常指弱 AI。",
+      "逐筆核准是 HITL；持續監督、必要介入是 HOTL；重大異常才接手是 HOOTL。",
+      "『改什麼才會通過』是反事實解釋；『影像看哪裡』是顯著性圖。",
+      "XAI 是解釋工具，不等於正確性保證。"
+    ],
+    "common_confusions": [
+      "不要只看產業名稱，要看實際輸入與任務。",
+      "法規與機構資訊可能隨時間變動；本 MVP 不自動更新，也不把講義當成現行官方唯一標準。"
+    ],
+    "source_references": [
+      {
+        "source_id": "SRC-CORE-001",
+        "section": "1.1–1.5 應試小技巧",
+        "locator": "paragraphs 38, 48, 58, 68, 82"
+      },
+      {
+        "source_id": "SRC-EXAM-001",
+        "section": "執行摘要 1.2–1.3 與 L111 題型分析",
+        "locator": "paragraphs 20–27; L11101–L11102 entries"
+      }
+    ]
+  }
+]

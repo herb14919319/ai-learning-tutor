@@ -1,0 +1,41 @@
+[
+  {
+    "source_id": "SRC-CORE-001",
+    "filename": "ipas_official_topics.docx",
+    "title": "iPAS 初級 AI 應用規劃師七大評鑑主題教學講義",
+    "file_type": "docx",
+    "file_size_bytes": 98730,
+    "sha256": "66709ae6bb56b77c3636a4bcccc81ab46565283e676ab8c6cb51772ce6d5013b",
+    "source_role": "core_outline",
+    "version_date": null,
+    "processed_at": "2026-07-14T09:09:14+00:00",
+    "parse_status": "success",
+    "notes": "作為七大章節主架構；文件自述依官方評鑑範圍編排，但本 Skill 不將課程講義視為官方法規或官方唯一標準。文件未標示可可靠辨識的版本日期。"
+  },
+  {
+    "source_id": "SRC-GENAI-001",
+    "filename": "ipas_generative_ai.docx",
+    "title": "iPAS AI 應用規劃師（初級）科目二生成式 AI 應用與規劃完整教學講義（深化版）",
+    "file_type": "docx",
+    "file_size_bytes": 112216,
+    "sha256": "3451811d92de77bb00eae47350c60ecc6d9bb51fb1e05d36d2adf9378986519d",
+    "source_role": "detailed_reference",
+    "version_date": "2026-05-04",
+    "processed_at": "2026-07-14T09:09:14+00:00",
+    "parse_status": "success",
+    "notes": "作為科目二、新技術、治理與 XAI 補充；不取代七大評鑑主題講義的章節架構。"
+  },
+  {
+    "source_id": "SRC-EXAM-001",
+    "filename": "ipas_exam_analysis_114_115.docx",
+    "title": "iPAS 初級 AI 應用規劃師 114–115 年考古題分析報告",
+    "file_type": "docx",
+    "file_size_bytes": 121645,
+    "sha256": "844ec7bad5667a677d74bcb8e3c8a90986756bd01c76af1a184d72a2bd3edadd",
+    "source_role": "exam_analysis",
+    "version_date": "2026-03-21",
+    "processed_at": "2026-07-14T09:09:14+00:00",
+    "parse_status": "success",
+    "notes": "版本日期採報告涵蓋之最新考試日期；只用於題型、考點與名詞參考。MVP 題目均重新編寫，不標示為官方題目。"
+  }
+]
