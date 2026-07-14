@@ -772,6 +772,35 @@ class AgentAskApiTest(unittest.TestCase):
 
 
 class WebChatTest(unittest.TestCase):
+    def test_health_check_returns_liveness_without_dependencies(self):
+        dependency_names = (
+            "ask_gpt",
+            "generate_ai_reply",
+            "generate_fa_answer",
+            "dispatch_agent_capability",
+            "dispatch_tutor_api_request",
+        )
+        dependency_patches = [patch.object(main, name) for name in dependency_names]
+
+        with dependency_patches[0] as ask_gpt, \
+             dependency_patches[1] as generate_ai_reply, \
+             dependency_patches[2] as generate_fa_answer, \
+             dependency_patches[3] as dispatch_agent_capability, \
+             dependency_patches[4] as dispatch_tutor_api_request:
+            response = main.app.test_client().get("/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, "application/json")
+        data = response.get_json()
+        self.assertEqual(data["status"], "ok")
+        self.assertEqual(data["service"], "ai-learning-tutor")
+        self.assertRegex(data["timestamp"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+        ask_gpt.assert_not_called()
+        generate_ai_reply.assert_not_called()
+        generate_fa_answer.assert_not_called()
+        dispatch_agent_capability.assert_not_called()
+        dispatch_tutor_api_request.assert_not_called()
+
     def test_homepage_returns_web_chat_entry(self):
         response = main.app.test_client().get("/")
 

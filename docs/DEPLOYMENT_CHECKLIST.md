@@ -106,9 +106,21 @@ LINE Developers Console 檢查項目：
 - 若 Rich Menu 圖片或 assets 需要公開讀取，確認 `PUBLIC_BASE_URL` 是可由 LINE 存取的 HTTPS URL。
 - Render logs 中若出現 `Invalid LINE signature`，通常是 `LINE_CHANNEL_SECRET` 不一致、Webhook URL 指向錯服務，或請求不是 LINE 官方送出。
 
-## 4. `/healthz` 與 `/web-chat` 測試方式
+## 4. `/health` 與 `/web-chat` 測試方式
 
-目前程式碼沒有定義 `/healthz` route。若 Render 或外部監控健康檢查設定為 `/healthz`，目前會得到 404。現階段可以先用 `/` 作為 HTTP availability smoke test，或在未來另行新增 `/healthz` route 後再切換監控設定。
+正式 Health Endpoint：`GET /health`
+
+```bash
+curl -i https://your-service.onrender.com/health
+```
+
+預期：
+
+- HTTP status 為 `200`
+- 回傳類型為 `application/json`
+- JSON 內容包含 `status: ok`、`service: ai-learning-tutor` 與 UTC ISO 8601 `timestamp`
+- 用於平台 availability / liveness check
+- 不代表 LLM、Memory 或任何外部服務健康
 
 首頁 availability：
 

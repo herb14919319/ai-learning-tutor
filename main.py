@@ -673,8 +673,20 @@ def messenger_enabled() -> bool:
 
 
 @app.get("/")
-def health_check():
+def home():
     return render_template("index.html")
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    timestamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return jsonify(
+        {
+            "status": "ok",
+            "service": "ai-learning-tutor",
+            "timestamp": timestamp,
+        }
+    )
 
 
 @app.get("/fa")
