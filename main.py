@@ -52,6 +52,7 @@ from models import (
 )
 from models.clients import model_client_config_for_provider, model_client_config_from_env
 from runtime_telemetry import aggregate_runtime_telemetry, utc_timestamp, write_runtime_telemetry
+from skills.fa import FaSkill
 
 
 load_dotenv()
@@ -244,6 +245,7 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
 
 tutor_agent = TutorAgent(ask_gpt)
 little_tree_agent = LittleTreeAgent(ask_gpt)
+fa_skill = FaSkill(ask_gpt)
 SOURCE_AGENT = "ai_learning_tutor"
 TUTOR_API_SOURCE = "ai-learning-tutor"
 TUTOR_API_MAX_CONTENT_LENGTH = 64 * 1024
@@ -255,6 +257,8 @@ ANSWER_QUESTION_CAPABILITY = "answer_question"
 SUPPORTED_AGENT_CAPABILITIES = {ANSWER_QUESTION_CAPABILITY}
 tutor_api_rate_limits: dict[str, list[float]] = {}
 tutor_api_rate_limits_lock = threading.Lock()
+fa_web_rate_limits: dict[str, list[float]] = {}
+fa_web_rate_limits_lock = threading.Lock()
 tutor_api_daily_quotas: dict[str, dict[str, int | str]] = {}
 tutor_api_daily_quotas_lock = threading.Lock()
 
@@ -413,15 +417,27 @@ def tutor_api_payload_too_large() -> bool:
 
 
 def tutor_api_rate_limit_exceeded(client_ip: str) -> bool:
+    return rate_limit_exceeded(tutor_api_rate_limits, tutor_api_rate_limits_lock, client_ip)
+
+
+def fa_web_rate_limit_exceeded(client_ip: str) -> bool:
+    return rate_limit_exceeded(fa_web_rate_limits, fa_web_rate_limits_lock, client_ip)
+
+
+def rate_limit_exceeded(
+    rate_limits: dict[str, list[float]],
+    rate_limits_lock: threading.Lock,
+    client_id: str,
+) -> bool:
     now = time.monotonic()
     window_start = now - TUTOR_API_RATE_LIMIT_WINDOW_SECONDS
-    with tutor_api_rate_limits_lock:
-        timestamps = [ts for ts in tutor_api_rate_limits.get(client_ip, []) if ts > window_start]
+    with rate_limits_lock:
+        timestamps = [ts for ts in rate_limits.get(client_id, []) if ts > window_start]
         if len(timestamps) >= TUTOR_API_RATE_LIMIT_REQUESTS:
-            tutor_api_rate_limits[client_ip] = timestamps
+            rate_limits[client_id] = timestamps
             return True
         timestamps.append(now)
-        tutor_api_rate_limits[client_ip] = timestamps
+        rate_limits[client_id] = timestamps
         return False
 
 
@@ -510,6 +526,17 @@ def generate_ai_reply(
     if truncate:
         return truncate_for_line(reply)
     return reply
+
+
+def generate_fa_answer(user_text: str) -> str:
+    provider = resolve_model_provider(ENTRYPOINT_WEB_CHAT)
+    provider_token = _active_model_provider.set(provider)
+    entrypoint_token = _active_entrypoint.set("fa_web_chat")
+    try:
+        return normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
+    finally:
+        _active_entrypoint.reset(entrypoint_token)
+        _active_model_provider.reset(provider_token)
 
 
 def reply_text(reply_token: str, text: str) -> None:
@@ -648,6 +675,11 @@ def health_check():
     return render_template("index.html")
 
 
+@app.get("/fa")
+def fa_page():
+    return render_template("fa.html")
+
+
 @app.post("/web-chat")
 def web_chat():
     payload = request.get_json(silent=True) or {}
@@ -661,6 +693,38 @@ def web_chat():
 
     raw_user_id = payload.get("user_id")
     user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else "web-demo"
+
+    raw_skill_id = payload.get("skill_id")
+    skill_id = raw_skill_id.strip().lower() if isinstance(raw_skill_id, str) else ""
+    if skill_id:
+        if skill_id != "fa":
+            return jsonify({"error": "unsupported_skill"}), 400
+
+        request_id = uuid.uuid4().hex
+        client_ip = tutor_api_client_ip()
+        if fa_web_rate_limit_exceeded(client_ip):
+            logger.warning(
+                "[FA_AUDIT] request_id=%s user_id=%s status=429 reason=rate_limit",
+                request_id,
+                user_id,
+            )
+            return jsonify({"error": "rate_limit_exceeded", "request_id": request_id}), 429
+
+        started_at = time.perf_counter()
+        try:
+            reply = generate_fa_answer(message)
+        except Exception as exc:
+            logger.exception("[FA_AUDIT] request_id=%s user_id=%s status=500 error=%s", request_id, user_id, exc)
+            return jsonify({"error": "fa_unavailable", "request_id": request_id}), 500
+
+        logger.info(
+            "[FA_AUDIT] request_id=%s user_id=%s status=200 question_length=%s duration_ms=%s",
+            request_id,
+            user_id,
+            len(message),
+            round((time.perf_counter() - started_at) * 1000),
+        )
+        return jsonify({"reply": reply, "skill_id": "fa", "request_id": request_id})
 
     reply = generate_ai_reply(message, user_id=user_id, truncate=False, entrypoint=ENTRYPOINT_WEB_CHAT)
     return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})

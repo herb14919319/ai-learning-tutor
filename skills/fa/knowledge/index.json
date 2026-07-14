@@ -1,0 +1,2371 @@
+{
+  "version": 1,
+  "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf",
+  "page_count": 197,
+  "chunks": [
+    {
+      "id": "fa-p001",
+      "text": "社區永續管理系統\nFacilities & Community SustainTech Automation",
+      "metadata": {
+        "module": "封面與目錄",
+        "section": "封面與目錄",
+        "page_start": 1,
+        "page_end": 1,
+        "user_side": "both",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p002",
+      "text": "目 錄\nA 文件管理 ------------------------------------------------------------------ 3\nB 瓦斯抄表 ------------------------------------------------------------------ 9\nC 生活資訊 ------------------------------------------------------------------ 17\nD 住戶資訊 ------------------------------------------------------------------ 22\nE 社區公告 ------------------------------------------------------------------ 39\nF 公設預約 ------------------------------------------------------------------ 46\nG 社區投票 ------------------------------------------------------------------ 66\nH 社區報修 ------------------------------------------------------------------ 74\nI 首頁輪播 ------------------------------------------------------------------- 90\nJ 組織管理 ------------------------------------------------------------------- 95\nK 訪客預約 ------------------------------------------------------------------ 117\nL 郵件包裹 ------------------------------------------------------------------ 138\nM 意見反映 ----------------------------------------------------------------- 149\nN 資產管理 ------------------------------------------------------------------ 157\nO 管理費 --------------------------------------------------------------------- 179\nP 維運管理 ------------------------------------------------------------------ 182\nQ 績效評估 ------------------------------------------------------------------ 188\nR 租售管理 ------------------------------------------------------------------ 191",
+      "metadata": {
+        "module": "封面與目錄",
+        "section": "封面與目錄",
+        "page_start": 2,
+        "page_end": 2,
+        "user_side": "both",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p003",
+      "text": "A、文件管理\n壹、 管理端操作說明\n一、 首頁\n管理者端首頁分頁籤除了全部文件、設備說明外，其他是依照該\n社區自訂義的類型所產生，可至文件類型新增、修改、刪除，後續會\n補充說明。\n首頁\n首頁",
+      "metadata": {
+        "module": "文件管理",
+        "section": "首頁",
+        "page_start": 3,
+        "page_end": 3,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p004",
+      "text": "二、建立文件\n點選首頁的建立文件，會顯示新增文件彈窗，每個內容皆為必\n填，類型可選擇其他並新增新類型，文件編號限輸入英文或數字且不\n能重複，輸入完成會做檢查，權限暫定可控制外部人員或住戶查閱，\n上傳文件格式限圖片(jpg、png、jpeg)、PDF、Excel(xlsx、xls、xlsb)、\nword(doc、docx)，檔案大小會自動計算，超過 20MB 會強制清除上傳\n檔案，生／失效日期選填。\n建立文件（一）\n建立文件（二）",
+      "metadata": {
+        "module": "文件管理",
+        "section": "建立文件",
+        "page_start": 4,
+        "page_end": 4,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p005",
+      "text": "三、文件編輯\n首頁點選編輯，會跳出編輯彈窗，可調整編號、名稱、內容、上\n傳檔案、閱讀權限，生／失效日期。\n編輯文件（一）\n編輯文件（二）",
+      "metadata": {
+        "module": "文件管理",
+        "section": "文件編輯",
+        "page_start": 5,
+        "page_end": 5,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p006",
+      "text": "四、打開文件\n文件列表中，點選該文件的名稱，可下載或打開文件內容，電腦\n端會直接打開檔案，手機端則會開啟新分頁查看檔案。\n首頁\nPDF 電腦端跳轉",
+      "metadata": {
+        "module": "文件管理",
+        "section": "打開文件",
+        "page_start": 6,
+        "page_end": 6,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p007",
+      "text": "五、文件類型管理\n點選首頁上方類型，會顯示類型管理彈窗，可調整文件類型顯示\n順序及刪除，無使用中的分類才可以刪除，點選下方新增類型可進行\n新增，僅需輸入類型名稱即可，新增的類型會出現於首頁分頁籤中，\n亦可點選上方編輯按鈕進行編輯。\n文件類型（一）\n文件類型（二）",
+      "metadata": {
+        "module": "文件管理",
+        "section": "文件類型管理",
+        "page_start": 7,
+        "page_end": 7,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p008",
+      "text": "貳、住戶端操作說明\n一、 首頁\n住戶端首頁有三個分頁，文件會列出全部住戶可查閱之文件，點\n選文件名稱會於瀏覽器開啟新分頁並顯示該檔案。\n住戶端首頁（文件）\n住戶端開啟檔案",
+      "metadata": {
+        "module": "文件管理",
+        "section": "首頁",
+        "page_start": 8,
+        "page_end": 8,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p009",
+      "text": "B、瓦斯抄錶\n壹、管理端操作說明\n一、首頁\n管理者端首頁會表列出所有抄錶中及已過期的抄錶紀錄，若是當\n期抄錶中的案件，會顯示通知全住戶按鈕，若當日已通知過，會變為\n已通知且不能點選，隔日 00:00 後即可再次通知。\n首頁\n首頁（已通知）",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "首頁",
+        "page_start": 9,
+        "page_end": 9,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p010",
+      "text": "二、新增抄錶\n點選首頁的新增瓦斯抄錶，會顯示新增彈窗，輸入本次抄錶截止\n日期後即可新增，若已有當期未過期的抄錶案件，則會顯示上期抄錶\n未過期等資訊並且取消新增。\n首頁\n新增瓦斯抄錶彈窗",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "新增抄錶",
+        "page_start": 10,
+        "page_end": 10,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p011",
+      "text": "三、詳細內容／編輯\n點選詳細內容，會談窗顯示當期抄錶狀況，管理端亦可協助指定\n住戶點選編輯執行抄錶，也可點選通知，各別通知抄錶。\n首頁\n詳細內容彈窗\n編輯彈窗",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "詳細內容／編輯",
+        "page_start": 11,
+        "page_end": 11,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p012",
+      "text": "四、各別／全體通知\n於詳細內容彈窗中，可點選通知未抄錶住戶，一次通知完成，或\n者點選指定用戶欄位中的通知進行各別通知，通知完成後按鈕會鎖定\n至當日 23:59:59，隔日 00:00 後即可再次通知。\n首頁（已通知）\n詳細內容彈窗（已各別通知）\n詳細內容彈窗（已通知）",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "各別／全體通知",
+        "page_start": 12,
+        "page_end": 12,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p013",
+      "text": "五、刪除抄錶\n點選指定抄錶案件的刪除按鈕，即可刪除該筆抄錶資料，且不能\n還原，請謹慎操作。\n首頁（已通知）\n刪除彈窗",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "刪除抄錶",
+        "page_start": 13,
+        "page_end": 13,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p014",
+      "text": "六、逾期處理方法\n點選首頁上方的逾期處理方法，會顯示處理方法說明彈窗，若原\n先無資料，則顯示空白，若已有填寫過，會顯示舊方法說明於欄位\n中。\n首頁（已通知）\n新增逾期處理方法彈窗",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "逾期處理方法",
+        "page_start": 14,
+        "page_end": 14,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p015",
+      "text": "貳、 住戶端操作說明\n一、 首頁\n住戶端頁面若當期有抄錶事件，則會顯示填寫框，若無則顯示目\n前尚未開放當期登記。\n住戶端首頁（可抄錶）\n住戶端首頁（不須抄錶）",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "首頁",
+        "page_start": 15,
+        "page_end": 15,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p016",
+      "text": "二、住戶抄錶\n住戶點選輸入格即可抄錶，完成後點選送出會出現重複確認彈\n窗，確認送出即可完成抄錶，於下方會顯示填寫度數及填表時間。\n住戶端抄錶彈窗\n住戶端完成抄錶",
+      "metadata": {
+        "module": "瓦斯抄錶",
+        "section": "住戶抄錶",
+        "page_start": 16,
+        "page_end": 16,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p017",
+      "text": "C、生活資訊\n壹、管理端操作說明\n一、首頁／詳細內容\n管理者端首頁會依照類別分別顯示各個分頁以及全部分頁，點選\n詳細內容可針對該資訊進行編輯，並設定生／失效時間。\n首頁\n詳細內容",
+      "metadata": {
+        "module": "生活資訊",
+        "section": "首頁／詳細內容",
+        "page_start": 17,
+        "page_end": 17,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p018",
+      "text": "二、新增資訊\n點選首頁的新增資訊，會顯示新增彈窗，可於新增該資訊時，設\n定生／失效日期。\n首頁\n新增資訊",
+      "metadata": {
+        "module": "生活資訊",
+        "section": "新增資訊",
+        "page_start": 18,
+        "page_end": 18,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p019",
+      "text": "三、刪除\n點選刪除，會與使用者重複確認是否刪除該筆資訊，送出後該筆\n資訊立即刪除。\n首頁\n刪除彈窗",
+      "metadata": {
+        "module": "生活資訊",
+        "section": "刪除",
+        "page_start": 19,
+        "page_end": 19,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p020",
+      "text": "貳、關聯資料表\n一、 類別管理\n點選首頁上方的資訊類別，會顯示類別彈窗，可點選編輯、刪\n除、新增以及修改排序等功能進行管理。\n首頁\n資訊類別彈窗",
+      "metadata": {
+        "module": "生活資訊",
+        "section": "類別管理",
+        "page_start": 20,
+        "page_end": 20,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p021",
+      "text": "參、 住戶端操作說明\n一、首頁\n住戶端會依照類別顯示分頁，超過四個可向左滑動尋找分頁，點\n選資訊會顯示該資訊的詳細內容。\n住戶端首頁\n住戶端詳細內容",
+      "metadata": {
+        "module": "生活資訊",
+        "section": "首頁",
+        "page_start": 21,
+        "page_end": 21,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p022",
+      "text": "D、住戶資訊\n壹、管理端操作說明\n一、首頁\n管理者端首頁分頁籤共有三個，第一個是住戶資訊及綁定\nQRCode，第二個是管委成員，第三個是歷屆管委會文件。\n首頁（住戶資訊）\n首頁（綁定管理）\n首頁（管委成員）",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "首頁",
+        "page_start": 22,
+        "page_end": 22,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p023",
+      "text": "二、 新增資訊\n點選首頁新增資訊，輸入前會有注意事項提示，若要給予管理權\n限，需先選擇帳號後才能執行，會有紅框提示，權限設定可點選全選\n一次給予完成，有紅色＊標記為必填欄位。\n新增資訊（一）\n新增資訊（無帳號）\n新增資訊（二）",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "新增資訊",
+        "page_start": 23,
+        "page_end": 23,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p024",
+      "text": "三、住戶明細\n首頁點選詳細內容，會彈窗顯示該戶全部的住戶資訊，若未綁定\n帳號，帳號欄位會顯示未綁定，為保護個資，會於資料第一層做個資\n隱藏開關，點選眼睛可查看完整資料，可點選解除綁定來管理該戶綁\n定住戶。\n首頁（住戶資訊）\n住戶資訊詳細內容彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "住戶明細",
+        "page_start": 24,
+        "page_end": 24,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p025",
+      "text": "四、編輯指定資訊\n在彈窗中點選編輯，會轉跳出編輯彈窗，若未綁定帳號，會顯示\n該戶尚未綁定明細的帳號清單，供使用者做綁定連結，其餘欄位皆可\n編輯修改，也可點選調整為管理委員，賦予管理權限（需先選擇帳\n號） 。\n住戶資訊詳細內容彈窗\n住戶編輯彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "編輯指定資訊",
+        "page_start": 25,
+        "page_end": 25,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p026",
+      "text": "五、刪除住戶資訊\n點選刪除紐，可刪除指定住戶資訊，會關閉詳細資訊彈窗，並開\n啟刪除確認彈窗，避免誤觸刪除。\n住戶資訊詳細內容彈窗\n刪除住戶資訊彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "刪除住戶資訊",
+        "page_start": 26,
+        "page_end": 26,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p027",
+      "text": "六、Excel 匯入住戶資訊\n點選匯入住戶資訊，會顯示匯入彈窗，點選範例會有 excel 範本，\n依照欄位填寫正確並點選上傳後，會先於下方預覽。\n首頁（住戶資訊）\n匯入住戶資訊彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "Excel 匯入住戶資訊",
+        "page_start": 27,
+        "page_end": 27,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p028",
+      "text": "七、綁定管理分頁\n點選租客總表，可匯出社區目前身份為租客的全部清單。\n首頁",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "綁定管理分頁",
+        "page_start": 28,
+        "page_end": 28,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p029",
+      "text": "八、管委成員分頁\n此分頁會顯示有管理權限的管理委員，點選詳細內容，可以編輯\n該委員的詳細資訊，並調整功能權限。\n首頁（管委成員）\n管委成員詳細內容彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "管委成員分頁",
+        "page_start": 29,
+        "page_end": 29,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p030",
+      "text": "九、解除管理委員委任\n點選解除委任，會顯示刪除彈窗，確認送出後，會刪除該帳號的\n管理權限及職位，住戶資訊明細則會保留。\n首頁（管委成員）\n解除管委委任彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "解除管理委員委任",
+        "page_start": 30,
+        "page_end": 30,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p031",
+      "text": "十、職稱管理\n點選職稱管理會顯示該功能的彈窗，可編輯、刪除、新增職稱，\n完成後會重新整理頁面。\n職稱管理彈窗（一）\n職稱管理彈窗（二）",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "職稱管理",
+        "page_start": 31,
+        "page_end": 31,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p032",
+      "text": "十一、門禁／鑰匙管理\n點選門禁／鑰匙管理，會轉址至門禁管理頁面，並表列出所有門\n禁／鑰匙。\n首頁（管委成員）\n門禁管理彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "門禁／鑰匙管理",
+        "page_start": 32,
+        "page_end": 32,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p033",
+      "text": "十二、門禁／鑰匙新增\n點選新增門禁／鑰匙，會顯示新增彈窗，每個欄位皆為必填，失\n效日預設 2099/12/31，保管人選單為綁定管理中心帳號或有管理權限\n的住戶帳號。\n門禁管理彈窗\n新增門禁／鑰匙彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "門禁／鑰匙新增",
+        "page_start": 33,
+        "page_end": 33,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p034",
+      "text": "十三、編輯門禁／鑰匙\n點選編輯，會顯示編輯彈窗，所有內容皆可異動，無異動也能送\n出，點選刪除則直接刪除，不再顯示彈窗。\n門禁管理彈窗\n編輯門禁／鑰匙彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "編輯門禁／鑰匙",
+        "page_start": 34,
+        "page_end": 34,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p035",
+      "text": "十四、門禁／鑰匙類別管理\n點選門禁類別管理，會顯示類別彈窗，可調整編輯名稱、排序及\n刪除指定類別，下方可新增類別，完成後會重新整理頁面。\n門禁／鑰匙類別管理彈窗\n（一）\n門禁／鑰匙類別管理彈窗（二）",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "門禁／鑰匙類別管理",
+        "page_start": 35,
+        "page_end": 35,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p036",
+      "text": "十五、歷屆管委會分頁\n此分頁會表列先前上傳的管委會名單，點選新增委員名單會顯示\n新增彈窗，欄位皆為必填，上傳文件後會計算大小，超過 20MB 會有\n提示，並清空上傳檔案，下方可調整閱讀權限，點選文件名稱即可查\n閱，住戶端若可查閱，則顯示於文件管理中。\n首頁（歷屆管委會）\n新增管委名單文件彈窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "歷屆管委會分頁",
+        "page_start": 36,
+        "page_end": 36,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p037",
+      "text": "十六、編輯／刪除歷屆管委名單\n點選編輯會顯示編輯彈窗，可修改該文件全部內容，欄位格\n式如新增彈窗內容一樣，點選刪除則顯示重複確認彈窗訊息。\n首頁（歷屆管委會）\n編輯歷屆管委名單彈\n窗\n刪除歷屆管委名單彈\n窗",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "編輯／刪除歷屆管委名單",
+        "page_start": 37,
+        "page_end": 37,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p038",
+      "text": "貳、住戶端操作說明\n一、住戶資訊頁面\n進入後本身帳號尚未與明細連結，會顯示該戶資訊清單，可選擇\n後修改並連結，只有姓名為必填欄位，其餘可自由選擇，下方包裹通\n知設定預設為全戶，可選擇推播資訊給個人或全戶，送出完成後畫面\n會再次刷新，名稱欄位則改顯示為之前綁定之名稱及內容。\n住戶端未綁定\n住戶端已綁定",
+      "metadata": {
+        "module": "住戶資訊",
+        "section": "住戶資訊頁面",
+        "page_start": 38,
+        "page_end": 38,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p039",
+      "text": "E、社區公告\n壹、管理端操作說明\n一、首頁／詳細內容\n管理者端分為兩個分頁，公共訊息、個人訊息，每個訊息都會有\n詳細內容按鈕，點選後會顯示該訊息的詳細內容。\n首頁（公共訊息）\n公共訊息詳細內容",
+      "metadata": {
+        "module": "社區公告",
+        "section": "首頁／詳細內容",
+        "page_start": 39,
+        "page_end": 39,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p040",
+      "text": "二、新增公共訊息\n點選首頁的新增訊息，會顯示新增彈窗，選擇公共訊息，並依照\n欄位填入資訊，並設定公告顯示時間，亦可選擇置頂常駐於公告之\n首。\n首頁（公共訊息）\n新增公告訊息（一）\n新增公告訊息（二）",
+      "metadata": {
+        "module": "社區公告",
+        "section": "新增公共訊息",
+        "page_start": 40,
+        "page_end": 40,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p041",
+      "text": "三、新增個人訊息\n於新增彈窗中選擇個人訊息，欄位會切換至個人訊息欄位，可以\n選擇單個或多個住戶發送訊息。\n首頁（公共訊息）\n新增個人訊息",
+      "metadata": {
+        "module": "社區公告",
+        "section": "新增個人訊息",
+        "page_start": 41,
+        "page_end": 41,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p042",
+      "text": "貳、關聯資料表\n一、訊息類別\n點選首頁上方的訊息類別，會顯示該社區的訊息類別彈窗，可點\n選編輯修改名稱以及刪除、新增、修改排序等功能進行管理。\n訊息類別管理（ㄧ）\n訊息類別管理（二）",
+      "metadata": {
+        "module": "社區公告",
+        "section": "訊息類別",
+        "page_start": 42,
+        "page_end": 42,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p043",
+      "text": "二、預設訊息管理\n點選首頁上方的包裹類型，會顯示該社區的包裹類型資料彈窗，\n可點選刪除、新增、修改排序等功能進行管理。\n首頁（公共訊息）\n預設訊息管理\n新增預設訊息",
+      "metadata": {
+        "module": "社區公告",
+        "section": "預設訊息管理",
+        "page_start": 43,
+        "page_end": 43,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p044",
+      "text": "參、住戶端操作說明\n一、首頁\n住戶端有兩個分頁，公共訊息、個人訊息，會依照社區公告之訊\n息類別排列，若為新的未讀訊息，於訊息右上方會有 New 字樣，已讀\n後會消失，訊息較多時，也可使用搜尋列找尋指定公告。\n住戶端首頁（公共訊息）\n住戶端首頁（個人訊息）",
+      "metadata": {
+        "module": "社區公告",
+        "section": "首頁",
+        "page_start": 44,
+        "page_end": 44,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p045",
+      "text": "二、詳細內容\n點選該公告後，會轉跳至該公告的詳細內容頁面，可查看指\n定公告內容並可下載附帶檔案。\n住戶端詳細內容（公共訊息）\n住戶端詳細內容（個人訊息）",
+      "metadata": {
+        "module": "社區公告",
+        "section": "詳細內容",
+        "page_start": 45,
+        "page_end": 45,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p046",
+      "text": "F、公設預約\n壹、管理端操作說明\n一、首頁\n管理者端首頁會有三個分頁，公設預約、活動預約、匯出預約資\n料。\n首頁（公設預約）\n首頁（活動預約）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "首頁",
+        "page_start": 46,
+        "page_end": 46,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p047",
+      "text": "二、新增公設／活動\n1. 點選首頁的新增公設，會顯示新增彈窗，上方會有公設／活\n動分頁，新增公設分為兩個區域，詳細內容及管理辦法，依\n照欄位填寫即可新增。\n首頁（公設預約）\n新增公設彈窗（一）\n新增公設彈窗（二）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "新增公設／活動",
+        "page_start": 47,
+        "page_end": 47,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p048",
+      "text": "2.點選首頁的新增公設，會顯示新增彈窗，上方會有公設／\n活動分頁，新增活動也分為兩個區域，詳細內容及管理辦\n法，與公設不同的是，可設定每戶人數上限，其餘依照欄位\n填寫即可新增。\n首頁（公設預約）\n新增活動彈窗（一）\n新增活動彈窗（二）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "點選首頁的新增公設，會顯示新增彈窗，上方會有公設／",
+        "page_start": 48,
+        "page_end": 48,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p049",
+      "text": "三、詳細內容／編輯\n點選公設／活動的設施/活動內容，會彈窗顯示該案件的詳細內\n容，亦可直接修改編輯全部資料，再點選彈窗下方送出按鈕，完成編\n輯。\n首頁（公設預約）\n公設詳細內容彈窗（一）\n公設詳細內容彈窗（二）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "詳細內容／編輯",
+        "page_start": 49,
+        "page_end": 49,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p050",
+      "text": "四、預約開放／關閉\n公設預約／活動預約分頁中，於每個公設／活動中都有開放／關\n閉按鈕可點選，點選後會切換該公設／活動開放／關閉狀態，開放後\n住戶端即可預約。\n首頁（公設預約）\n取消住戶預約彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "預約開放／關閉",
+        "page_start": 50,
+        "page_end": 50,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p051",
+      "text": "五、取消住戶預約\n點選指定公設／活動中的取消住戶預約，會顯示提醒彈窗，與使\n用者確認取消明天以後的預約，該按鈕會於公設／活動關閉預約時出\n現。\n首頁（公設預約）\n取消住戶預約彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "取消住戶預約",
+        "page_start": 51,
+        "page_end": 51,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p052",
+      "text": "六、黑名單\n公設／活動預約分頁中，都會有黑名單按鈕於分頁下方，點選後\n會顯示黑名單列表彈窗，可管理黑名單住戶，以及新增黑名單住戶。\n黑名單彈窗\n新增黑名單彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "黑名單",
+        "page_start": 52,
+        "page_end": 52,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p053",
+      "text": "七、公設／活動預約狀況\n首頁上方點選公設／活動預約狀況按鈕，會顯示該分類的預約狀\n況行事曆，點選預約按鈕後，會顯示預約報到彈窗，若住戶確實有使\n用，點選報到即可完成預約。\n首頁（公設預約）\n公設預約行事曆彈窗\n報到彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "公設／活動預約狀況",
+        "page_start": 53,
+        "page_end": 53,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p054",
+      "text": "八、住戶點數管理\n1. 點選首頁上方的住戶點數管理按鈕，會顯示住戶點數彈窗，\n初始值皆為空，需先點選設置住戶每月贈與點數按鈕，彈窗\n內會有範本，依照欄位填寫即可，完成後再點選新增住戶點\n數。\n首頁（公設預約）\n住戶點數管理彈窗\n設置點數彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "住戶點數管理",
+        "page_start": 54,
+        "page_end": 54,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p055",
+      "text": "2.完成初始點數配額的設置後，點選新增住戶贈與點數，依\n照範本填寫住戶繳費狀態及點數有效期，完成並上傳後，住\n戶的贈與點數欄位就會有配額點數供使用。\n住戶點數管理彈窗\n新增點數彈窗\n住戶點數管理彈窗（完成）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "完成初始點數配額的設置後，點選新增住戶贈與點數，依",
+        "page_start": 55,
+        "page_end": 55,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p056",
+      "text": "3.點數管理中每戶都有現金儲值按鈕，點選後輸入點數，送\n出後會顯示於該戶的現金儲值欄位中。\n住戶點數管理彈窗（完成）\n現金儲值點數彈窗\n住戶點數管理彈窗（現金）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "點數管理中每戶都有現金儲值按鈕，點選後輸入點數，送",
+        "page_start": 56,
+        "page_end": 56,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p057",
+      "text": "4.點選指定住戶的點數紀錄，會顯示除了初始設置外的點數\n使用紀錄。\n住戶點數管理彈窗（現金）\n點數紀錄彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "點選指定住戶的點數紀錄，會顯示除了初始設置外的點數",
+        "page_start": 57,
+        "page_end": 57,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p058",
+      "text": "5.點選指定住戶的修改贈與點數按鈕，會顯示修改贈與點數\n彈窗，輸入該戶的預設贈與點數並送出後，會修改該戶初始\n設置的每月贈與點數。\n住戶點數管理彈窗（現金）\n修改贈與點數彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "點選指定住戶的修改贈與點數按鈕，會顯示修改贈與點數",
+        "page_start": 58,
+        "page_end": 58,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p059",
+      "text": "九、扣點管理\n點選首頁上方的扣點按鈕，會顯示扣點管理彈窗，點選新增可直\n接手動新增扣點事項。\n首頁（公設預約）\n扣點管理彈窗\n新增扣點彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "扣點管理",
+        "page_start": 59,
+        "page_end": 59,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p060",
+      "text": "十、匯出預約紀錄\n點選匯出預約紀錄分頁，會列出該社區全部預約紀錄，點選下載\n按鈕，可產出預約紀錄 excel 報表。\n首頁（匯出預約紀錄）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "匯出預約紀錄",
+        "page_start": 60,
+        "page_end": 60,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p061",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端有四個分頁，第一分頁設施預約，第二分頁活動預約，第\n三分頁預約紀錄、第四分頁點數紀錄。\n住戶端首頁（公設預約）\n住戶端首頁（活動預約）",
+      "metadata": {
+        "module": "公設預約",
+        "section": "首頁",
+        "page_start": 61,
+        "page_end": 61,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p062",
+      "text": "二、 公設／活動預約\n1. 住戶點選設施／活動預約，會顯示該項目的使用規則、使用\n方法、注意事項，閱讀完畢後點選前往預約進入預約畫面。\n住戶端公設預約彈窗\n住戶端活動預約彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "公設／活動預約",
+        "page_start": 62,
+        "page_end": 62,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p063",
+      "text": "2.預約畫面可選擇日期、時段、人數，並計算使用點數及扣除使\n用點數後的剩餘點數資料，確認送出後，會於預約紀錄分頁顯示\n該筆預約資料。\n住戶端公設預約畫面\n住戶端活動預約畫面",
+      "metadata": {
+        "module": "公設預約",
+        "section": "預約畫面可選擇日期、時段、人數，並計算使用點數及扣除使",
+        "page_start": 63,
+        "page_end": 63,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p064",
+      "text": "三、預約紀錄\n住戶端點選預約紀錄分頁，會列表顯示該戶全部的公設／活動預\n約資料，若於可取消期限內的預約，下方會顯示取消預約按鈕，點選\n後會彈窗確認是否取消該筆預約。\n住戶端預約紀錄\n住戶端取消預約彈窗",
+      "metadata": {
+        "module": "公設預約",
+        "section": "預約紀錄",
+        "page_start": 64,
+        "page_end": 64,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p065",
+      "text": "四、點數紀錄\n住戶端點選點數紀錄分頁會列表顯示該戶點數使用的歷史紀錄以\n及點數類別、到期日期等資訊。\n住戶端點數紀錄",
+      "metadata": {
+        "module": "公設預約",
+        "section": "點數紀錄",
+        "page_start": 65,
+        "page_end": 65,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p066",
+      "text": "G、社區投票\n壹、管理端操作說明\n一、首頁／新增投票\n管理者端首頁有兩個分頁，開放中、已截止，點選上方的新增投\n票，會顯示新增彈窗，分為兩個部分，新增主題、題目及選項，若選\n項大於兩個，可點選新增選項來新增。\n首頁（開放中）\n新增投票（一）\n新增投票（二）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "首頁／新增投票",
+        "page_start": 66,
+        "page_end": 66,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p067",
+      "text": "二、編輯內容\n尚未開始投票的案件，會顯示編輯內容按鈕，可調整內容及投票\n選項。\n首頁（開放中）\n更多資訊（一）\n更多資訊（二）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "編輯內容",
+        "page_start": 67,
+        "page_end": 67,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p068",
+      "text": "三、複製\n不論未開始、進行中或結束的案件，都有複製按鈕，以利使用者\n快速重啟相似投票案件。\n首頁（開放中）\n複製（一）\n複製（二）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "複製",
+        "page_start": 68,
+        "page_end": 68,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p069",
+      "text": "四、結束投票\n投票進行中的案件，會顯示結束投票按鈕，可提早結束投票。\n首頁（開放中）\n結束投票",
+      "metadata": {
+        "module": "社區投票",
+        "section": "結束投票",
+        "page_start": 69,
+        "page_end": 69,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p070",
+      "text": "五、已截止\n已截止分頁，可查看指定案件的更多資訊，更多資訊彈窗，可選\n投票住戶查看該選項的投票結果，會彈窗顯示此選項的住戶名單、未\n投票名單。\n首頁（已截止）\n更多資訊（有投票）\n更多資訊（住戶明細）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "已截止",
+        "page_start": 70,
+        "page_end": 70,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p071",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端有兩個分頁，進行中的案件會列於開放中，已過投票結束\n日期的案件會列於已截止，新的未讀案件會有 New 字樣，投票結束於\n已截止尚未查看過的案件也會有 New 字樣。\n住戶端首頁（開放中）\n住戶端首頁（已截止）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "首頁",
+        "page_start": 71,
+        "page_end": 71,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p072",
+      "text": "二、詳細內容\n1 點擊指定案件後會轉跳至該案件的詳細內容頁面，未投\n票案件可點選欲投之選項後送出即可完成投票。\n住戶端詳細內容（一）\n住戶端詳細內容（二） （未投票）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "詳細內容",
+        "page_start": 72,
+        "page_end": 72,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p073",
+      "text": "2.若案件投票時間尚未截止，投完還可點選取消投票，並重\n新投票或不投，若案件已過截止日期，就只能查看結果，住\n戶端有投的話會勾選投票選項。\n住戶端詳細內容（二） （已投\n票）\n已截止詳細內容（有投票）\n已截止詳細內容（未投票）",
+      "metadata": {
+        "module": "社區投票",
+        "section": "若案件投票時間尚未截止，投完還可點選取消投票，並重",
+        "page_start": 73,
+        "page_end": 73,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p074",
+      "text": "H、社區報修\n壹、管理端操作說明\n一、首頁\n管理者端首頁會有五個分頁，分別是未處理、處理中、待付款、\n已結案、匯出資料。\n首頁（未處理）\n首頁（未處理）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "首頁",
+        "page_start": 74,
+        "page_end": 74,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p075",
+      "text": "二、新增報修\n點選首頁的新增報修，會顯示新增彈窗，新增報修會有三個區\n域，欄位皆為必填，維修區域及維修類別皆可選其他來新增新的區域\n或類別。\n首頁（未處理）\n新增報修",
+      "metadata": {
+        "module": "社區報修",
+        "section": "新增報修",
+        "page_start": 75,
+        "page_end": 75,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p076",
+      "text": "三、詳細內容／編輯\n勾選指定報修案件，再點選詳細內容／編輯按鈕，會彈窗顯示該\n案件的詳細內容，亦可直接修改編輯案件號碼，再點選彈窗下方送\n出，完成編輯。\n首頁（未處理） （有勾選）\n詳細內容彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "詳細內容／編輯",
+        "page_start": 76,
+        "page_end": 76,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p077",
+      "text": "四、初勘時間\n於未處理分頁中，案件皆未安排廠商來勘查，若已安排廠商來\n勘，需點選初勘時間，並填上來勘日期。\n首頁（未處理）\n初勘時間彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "初勘時間",
+        "page_start": 77,
+        "page_end": 77,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p078",
+      "text": "五、報修訊息\n點選指定案件的報修訊息按鈕，會彈窗顯示該案件的住戶與管理\n端對話框，並自動拉自最新訊息。\n首頁（未處理）\n報修訊息彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "報修訊息",
+        "page_start": 78,
+        "page_end": 78,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p079",
+      "text": "六、報價修繕\n初勘完成後，案件會轉跳到處理中分頁，點選報價修繕，會出現\n報價彈窗，勾選報價修繕會顯示上傳報價單按鈕，亦可在付款選項選\n擇不需付款。\n首頁（處理中）\n報修訊息彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "報價修繕",
+        "page_start": 79,
+        "page_end": 79,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p080",
+      "text": "七、付款\n初勘完成後，會根據報價與否決定需不需要付款：\n1. 需付款：點選付款會出現確認付款彈窗，完成付款後才可進行修\n繕完工確認。\n2. 不須付款：可直接進行修繕完工確認。\n首頁（付款按鈕）\n確認付款彈窗\n首頁（付款按鈕）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "付款",
+        "page_start": 80,
+        "page_end": 80,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p081",
+      "text": "八、修繕完成\n住戶端點選修繕完畢後，畫面中的報修完成按鈕會解除鎖定，變\n成可點選狀態，點選後會顯示完成彈窗，可依據時間修繕結果選擇完\n畢或無法修繕，並上傳照片及說明，完成送出後，該案件會移至已結\n案列表中。\n首頁（報修完成按鈕解鎖）\n報修完成彈窗\n報修完成彈窗（無法修繕）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "修繕完成",
+        "page_start": 81,
+        "page_end": 81,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p082",
+      "text": "九、匯出資料分頁\n點選匯出資料分頁可查看所有修繕案件，點選框線中的下載圖\n案，會下載修繕案件的 excel 表格。\n首頁（匯出資料）\n報修訊息彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "匯出資料分頁",
+        "page_start": 82,
+        "page_end": 82,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p083",
+      "text": "貳、關聯資料表\n一、報修區域管理\n點選首頁上方的報修區域按鈕，會彈窗顯示該社區的公區、室內\n可選擇的報修區域，點選彈窗上方的新增報修地點，會再顯示一個新\n增彈窗，選擇並填寫完成後即可送出，點選編輯可調整名稱。\n維修區域彈窗\n新增區域彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "報修區域管理",
+        "page_start": 83,
+        "page_end": 83,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p084",
+      "text": "二、維修類別管理\n點選首頁上方的維修類別按鈕，會彈窗顯示該社區的預設及自己\n新增的維修類別，下方欄位填寫完成後點選確認即可新增類別，點選\n編輯可調整名稱。\n首頁（未處理）\n維修類別彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "維修類別管理",
+        "page_start": 84,
+        "page_end": 84,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p085",
+      "text": "三、保固內容及修繕工作天數管理\n1. 點選首頁上方的保固內容按鈕，會顯示該社區的設備保固清\n單、修繕項目的預估工作天數列表。\n保固內容彈窗\n新增保固彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "保固內容及修繕工作天數管理",
+        "page_start": 85,
+        "page_end": 85,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p086",
+      "text": "2.點選預估工作天數分頁會顯示該社區新增的修繕項目預估\n工作天數，點選上方新增預估，可自由新增修繕項目預估工\n作天數。\n保固內容彈窗\n新增保固彈窗",
+      "metadata": {
+        "module": "社區報修",
+        "section": "點選預估工作天數分頁會顯示該社區新增的修繕項目預估",
+        "page_start": 86,
+        "page_end": 86,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p087",
+      "text": "參、住戶端操作說明\n一、首頁\n住戶端首頁有三個分頁，第一頁為新增報修表，第二頁會列出已\n報修待處理中的案件，第三頁會列出已結案的案件。\n住戶端首頁（新增）\n住戶端首頁（處理中）\n住戶端首頁（已結案）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "首頁",
+        "page_start": 87,
+        "page_end": 87,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p088",
+      "text": "二、新增報修\n住戶新增報修分為三個步驟，依照步驟填寫完成即可送出報修，\n其中報修上傳檔案，可上傳五張照片或一部影片。\n住戶端新增報修（步驟一）\n住戶端新增報修（步驟二）\n住戶端新增報修（步驟三）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "新增報修",
+        "page_start": 88,
+        "page_end": 88,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p089",
+      "text": "三、處理中／已結案的案件明細\n住戶端點選處理中／已結案的案件，點選後會轉跳至該案明細頁\n面，若尚未處理則顯示未處理，若已進行至報價，則會顯示報價單欄\n位，若點選的是已結案案件，會多一個修繕完畢欄位。\n住戶端報修明細\n住戶端報修明細（有報價單）\n住戶端報修明細（有已結案）",
+      "metadata": {
+        "module": "社區報修",
+        "section": "處理中／已結案的案件明細",
+        "page_start": 89,
+        "page_end": 89,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p090",
+      "text": "I、首頁輪播\n壹、管理端操作說明\n一、首頁\n管理端的首頁有兩個區域，第一個區域可新增、修改、刪除\nLogo，第二區域可新增、刪除、修改排序輪播圖片。\n首頁\n首頁",
+      "metadata": {
+        "module": "首頁輪播",
+        "section": "首頁",
+        "page_start": 90,
+        "page_end": 90,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p091",
+      "text": "二、上傳／更換 Logo\n點選更換圖片，會顯示更換圖片彈窗，上傳檔案後，下方會顯示\n圖片預覽，送出即可新增。\n首頁\nLogo 彈窗",
+      "metadata": {
+        "module": "首頁輪播",
+        "section": "上傳／更換 Logo",
+        "page_start": 91,
+        "page_end": 91,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p092",
+      "text": "三、新增輪播圖\n點選第二區域的新增輪播圖，會出現彈窗，上傳檔案及網址為必\n填欄位，送出後立即新增輪播圖。\n首頁\n新增輪播圖彈窗",
+      "metadata": {
+        "module": "首頁輪播",
+        "section": "新增輪播圖",
+        "page_start": 92,
+        "page_end": 92,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p093",
+      "text": "四、調整輪播圖排序／刪除\n點選往上／往下，可直接調整輪播圖的順序，點選刪除會顯示確\n認刪除彈窗，送出後立即刪除輪播圖。\n首頁（多張輪播圖）\n首頁（順序異動過）\n刪除彈窗",
+      "metadata": {
+        "module": "首頁輪播",
+        "section": "調整輪播圖排序／刪除",
+        "page_start": 93,
+        "page_end": 93,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p094",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端首頁點選會開啟新的網頁，並引導至該輪播圖所設定之網\n站。\n住戶端首頁\n外部網站示意圖",
+      "metadata": {
+        "module": "首頁輪播",
+        "section": "首頁",
+        "page_start": 94,
+        "page_end": 94,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p095",
+      "text": "J、組織管理\n壹、管理端操作說明\n一、人員管理首頁\n管理者端首頁共有三個分頁，第一分頁為住戶資訊，第二分頁為\n有管理權限的管理委員名單，第三分頁為歷屆管委會文件清單。\n首頁（人員資訊）\n首頁（管委成員）\n首頁（歷屆管委會）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "人員管理首頁",
+        "page_start": 95,
+        "page_end": 95,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p096",
+      "text": "二、新增資訊\n1 點選首頁新增資訊，會顯示新增彈窗，第一分頁帳號選單為\n綁定管理中心的帳號，輸入前會有注意事項提示，需先綁定\n完成，才能執行此功能，紅色＊標記為必填欄位，填寫完成\n後需拉至下方選擇權限。\n新增管理人員（個人資訊）\n新增管理人員（權限設定）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "新增資訊",
+        "page_start": 96,
+        "page_end": 96,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p097",
+      "text": "2.第二分頁為調整內部帳號為管理人員用，選擇完戶別後，\n會顯示該戶非管理人員之帳號，並於下方選單選擇要賦予的\n管理權限及職稱。\n新增管委成員（個人資訊）\n新增管委成員（權限設定）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "第二分頁為調整內部帳號為管理人員用，選擇完戶別後，",
+        "page_start": 97,
+        "page_end": 97,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p098",
+      "text": "三、 人員資訊分頁\n1 此分頁會表列綁定管理中心的帳號，若已有連結個人資訊，\n則會如錯誤! 找不到參照來源。，若該帳號上未填寫個人資\n訊，則顯示新增資訊按鈕，點選後會轉址至新增資訊步驟。\n首頁（有帳號無資訊）\n首頁（人員資訊）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "人員資訊分頁",
+        "page_start": 98,
+        "page_end": 98,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p099",
+      "text": "2.點選詳細內容，會顯示該帳號的資訊明細，同時可編輯修改，\n並於下方調整權限，完成後點選送出，會重新整理畫面。\n首頁（人員資訊）\n外部人員彈窗（一）\n外部人員彈窗（二）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "點選詳細內容，會顯示該帳號的資訊明細，同時可編輯修改，",
+        "page_start": 99,
+        "page_end": 99,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p100",
+      "text": "3.點選外部人員的解除委任按鈕，會將該帳號的系統訪問權\n限刪除，並解除綁定，需再次重新掃描管理中心的 QR Code\n才能使用。\n首頁（人員資訊）\n外部人員解除委任彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "點選外部人員的解除委任按鈕，會將該帳號的系統訪問權",
+        "page_start": 100,
+        "page_end": 100,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p101",
+      "text": "四、Excel 匯入人員資訊\n點選匯入住戶資訊，會顯次匯入彈窗，點選範例會有 excel 範本，\n依照欄位填寫正確並點選上傳後，會先於下方預覽。\n首頁（人員資訊）\n匯入人員資訊彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "Excel 匯入人員資訊",
+        "page_start": 101,
+        "page_end": 101,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p102",
+      "text": "五、管委成員分頁\n管委成員分頁會列表顯示有管理權限的管理委員，點選詳細內容\n可以編輯該委員的詳細資訊，並調整功能權限。\n首頁（管委成員）\n管委明細彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "管委成員分頁",
+        "page_start": 102,
+        "page_end": 102,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p103",
+      "text": "六、解除管理委員委任\n點選解除委任，會顯示刪除彈窗，讓使用者重複確認是否解除。\n首頁（管委成員）\n解除委任彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "解除管理委員委任",
+        "page_start": 103,
+        "page_end": 103,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p104",
+      "text": "七、職稱管理\n點選職稱管理會顯示該功能的彈窗，可編輯、刪除、新增職稱，完成後會重新\n整理頁面。\n首頁（管委成員）\n職稱管理彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "職稱管理",
+        "page_start": 104,
+        "page_end": 104,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p105",
+      "text": "八、門禁／鑰匙管理\n點選門禁／鑰匙管理，會顯示門禁管理彈窗，並表列出所有門禁\n／鑰匙。\n首頁（管委成員）\n門禁管理彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "門禁／鑰匙管理",
+        "page_start": 105,
+        "page_end": 105,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p106",
+      "text": "九、門禁／鑰匙新增\n點選新增門禁／鑰匙，會顯示新增彈窗，每個欄位皆為必填，失\n效日預設 2099/12/31，保管人選單為綁定管理中心帳號或有管理權限\n的住戶帳號。\n門禁管理彈窗\n新增門禁／鑰匙彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "門禁／鑰匙新增",
+        "page_start": 106,
+        "page_end": 106,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p107",
+      "text": "十、編輯門禁／鑰匙\n點選編輯，會顯示編輯彈窗，所有內容皆可異動，點選刪除則直\n接刪除，不再顯示彈窗。\n門禁管理彈窗\n編輯門禁／鑰匙彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "編輯門禁／鑰匙",
+        "page_start": 107,
+        "page_end": 107,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p108",
+      "text": "十一、門禁／鑰匙類別管理\n點選門禁類別管理，會顯示類別彈窗，可調整排序及刪除指\n定類別，下方可新增類別，完成後會重新整理頁面。\n門禁管理頁面\n門禁／鑰匙類別管理彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "門禁／鑰匙類別管理",
+        "page_start": 108,
+        "page_end": 108,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p109",
+      "text": "十二、廠商管理分頁\n此分頁會顯示外部廠商名單，若沒有與目前資料有聯結的廠\n商，會顯示刪除按紐，有連結則顯示詳細內容，點選詳細內容可\n查看該廠商的明細，再點選編輯可開啟編輯功能，點選刪除則會\n顯示刪除確認彈窗，送出後就完成刪除。\n首頁（廠商管理）\n廠商詳細內容彈窗\n廠商詳細內容彈窗（編輯\n中）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "廠商管理分頁",
+        "page_start": 109,
+        "page_end": 109,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p110",
+      "text": "十三、新增廠商\n點選建立廠商，會轉址至建立頁面，填寫完成後會導回上一個頁面。\n首頁（廠商管理）\n建立廠商彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "新增廠商",
+        "page_start": 110,
+        "page_end": 110,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p111",
+      "text": "十四、歷屆管委會分頁\n此分頁會表列先前上傳的管委會名單，點選新增委員名單會\n顯示新增彈窗，欄位皆為必填，上傳文件後會計算大小，超過\n20MB 會有提示，並清空上傳檔案，下方可調整閱讀權限，點選\n文件名稱即可查閱，住戶端若可查閱，則顯示於文件管理中。\n首頁（歷屆管委會）\n新增管委名單文件彈窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "歷屆管委會分頁",
+        "page_start": 111,
+        "page_end": 111,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p112",
+      "text": "十五、編輯/刪除歷屆管委名單\n點選編輯會顯示編輯彈窗可修改該文件全部內容，欄位格式\n如新增彈窗內容一樣，點選刪除則顯示重複確認彈窗訊息。\n首頁（歷屆管委會）\n編輯歷屆管委名單彈\n窗\n刪除歷屆管委名單彈\n窗",
+      "metadata": {
+        "module": "組織管理",
+        "section": "編輯/刪除歷屆管委名單",
+        "page_start": 112,
+        "page_end": 112,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p113",
+      "text": "十六、打卡\n1. 點選組織管理的打卡功能，會挑轉至打卡畫面，此功能\n需連接感應卡機才能使用，點選上班並感應管理人員已\n登錄的門禁卡，即可完成上班打卡，打卡成功會顯示打\n卡完成彈窗。\n首頁（打卡） （開導行列）\n打卡完成（上班）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "打卡",
+        "page_start": 113,
+        "page_end": 113,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p114",
+      "text": "2.點選下班，並感應卡片後，若鍵盤切換到非英文時，會顯\n示錯誤提示，切換完畢後，再次刷卡即可成功。\n首頁（打卡） （打卡錯誤）\n打卡完成（下班）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "點選下班，並感應卡片後，若鍵盤切換到非英文時，會顯",
+        "page_start": 114,
+        "page_end": 114,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p115",
+      "text": "十七、出勤紀錄\n點選組織管理的出勤紀錄功能，會跳轉至出勤紀錄頁面，可查看打卡紀錄，若\n要切換調閱週期，點選上方日期欄位，即可選擇想要的區間。\n首頁（出勤紀錄） （開導行列）\n首頁（出勤紀錄）",
+      "metadata": {
+        "module": "組織管理",
+        "section": "出勤紀錄",
+        "page_start": 115,
+        "page_end": 115,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p116",
+      "text": "貳、住戶端操作說明\n一、住戶資訊頁面\n進入後本身帳號尚未與明細連結，會顯示該戶資訊清單，可選擇\n後修改並連結，只有姓名為必填欄位，其餘可自由選擇，下方包裹通\n知設定預設為全戶，可選擇推播資訊給個人或全戶，送出完成後畫面\n會再次刷新，名稱欄位則改顯示為之前綁定之名稱及內容。\n住戶端未綁定\n住戶端已綁定",
+      "metadata": {
+        "module": "組織管理",
+        "section": "住戶資訊頁面",
+        "page_start": 116,
+        "page_end": 116,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p117",
+      "text": "K、訪客預約\n壹、管理端操作說明\n一、首頁\n訪客預約首頁，會有兩個分頁，訪客管理、訪客紀錄，尚未離開\n且有預約但未抵達時間沒有過期的訪客會表列在訪客管理清單中，已\n離開或預約未抵達但時間過期者，表列於訪客紀錄中，並按照月份分\n類。\n首頁（訪客管理）\n首頁（訪客紀錄）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "首頁",
+        "page_start": 117,
+        "page_end": 117,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p118",
+      "text": "二、預約登記\n1. 點選預約登記，會顯示登記彈窗，連絡電話須為手機號碼，\n預計抵達、離開日期會有格式判斷，於標題旁會有提示，選\n擇 QR Code 者，會發送 API 與 TA 請求 QR Code，並寫入此\n訪客的資料裡，再由管理端給予使用者進行 QR Code 通關\n用。\n首頁（訪客管理）\n預約登記（QR Code）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "預約登記",
+        "page_start": 118,
+        "page_end": 118,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p119",
+      "text": "2.若是無勾選 QR Code 且選擇的是訪客已抵達，可同時選擇\n是否需要換證，都沒有勾選，僅需填寫預計抵達時間即可。\n預約登記（無勾選）\n預約登記（勾選已抵達）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "若是無勾選 QR Code 且選擇的是訪客已抵達，可同時選擇",
+        "page_start": 119,
+        "page_end": 119,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p120",
+      "text": "3.登記完成後，若是選用 QR Code 通關者且該社區有確實連\n線至 TA，會彈窗顯示 QR Code，原始通關方式則跳轉至訪客\n預約主畫面，若拜訪對象是住戶，會發出通知訊息給該住\n戶。\n預約登記（管理端）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "登記完成後，若是選用 QR Code 通關者且該社區有確實連",
+        "page_start": 120,
+        "page_end": 120,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p121",
+      "text": "4.若該社區有公設車位，則會顯示車位預約選項可勾選，選\n擇後依照日期、車位、時間選擇後，可同步預約車位，時段\n必須連續，避免預約爭議，若需要使用點數，下方會為該戶\n做預約計算。\n預約登記（預約車位）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "若該社區有公設車位，則會顯示車位預約選項可勾選，選",
+        "page_start": 121,
+        "page_end": 121,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p122",
+      "text": "三、訪客詳細內容／編輯\n點選該訪客的詳細內容時，列出該訪客詳細資訊，亦可編輯，未\n抵達可編輯欄位如錯誤! 找不到參照來源。，已抵達可編輯欄位如錯\n誤! 找不到參照來源。，已離開或預約未抵達且過期者，僅能編輯備\n註欄位。\n詳細內容（未抵達）\n詳細內容（已抵達）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "訪客詳細內容／編輯",
+        "page_start": 122,
+        "page_end": 122,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p123",
+      "text": "四、訪客抵達\n若訪客已抵達且沒有成功使用 QR Code 通關，可請管理台點選訪\n客抵達，會彈窗詢問是否辦理換證，亦可選擇不需換證直接通行。\n訪客換證彈窗（換證）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "訪客抵達",
+        "page_start": 123,
+        "page_end": 123,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p124",
+      "text": "五、訪客離開\n若訪客離開，且須管理端確認時，管理端可點選訪客離開，若訪客\n有借用門禁，則會提示。\n訪客離開（有借用）\n訪客離開（無借用）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "訪客離開",
+        "page_start": 124,
+        "page_end": 124,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p125",
+      "text": "六、訪客紀錄\n1. 訪客紀錄總表以月份為區分，方便使用者管理及查看，點選\n詳細內容，條列出當月預約資訊。\n首頁（訪客紀錄）\n訪客紀錄詳細內容列表",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "訪客紀錄",
+        "page_start": 125,
+        "page_end": 125,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p126",
+      "text": "2.點選單筆訪客預約的詳細內容，可顯示該訪客的詳細資\n料，點選編輯僅可編輯備註。\n訪客紀錄詳細內容列表\n訪客紀錄（訪客詳細內容）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "點選單筆訪客預約的詳細內容，可顯示該訪客的詳細資",
+        "page_start": 126,
+        "page_end": 126,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p127",
+      "text": "貳、關聯內容管理\n一、 門禁／鑰匙管理／新增\n點選訪客預約首頁中的門禁/鑰匙管理按鈕，會顯示門禁／鑰匙管\n理彈窗，點選新增門禁／鑰匙，可於新增彈窗填寫相關資料後新增門\n禁卡。\n門禁／鑰匙管理彈窗\n新增門禁／鑰匙",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "門禁／鑰匙管理／新增",
+        "page_start": 127,
+        "page_end": 127,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p128",
+      "text": "二、門禁／鑰匙編輯\n點選指定門禁／鑰匙的編輯按鈕，會顯示該筆的詳細資料，並同\n時可進行編輯。\n門禁／鑰匙管理彈窗\n編輯門禁彈窗",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "門禁／鑰匙編輯",
+        "page_start": 128,
+        "page_end": 128,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p129",
+      "text": "三、門禁／鑰匙類別管理\n點選門禁類別管理，會顯示類別管理彈窗，可對類型進行編輯名\n稱、新增、刪除、修改排序。\n門禁／鑰匙管理彈窗\n門禁類別管理彈窗",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "門禁／鑰匙類別管理",
+        "page_start": 129,
+        "page_end": 129,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p130",
+      "text": "四、抵押證件類別管理\n點選訪客預約首頁中的抵押證件類別管理按鈕，會顯示類別管理\n彈窗，可對類型進行編輯名稱、新增、刪除、修改排序。\n首頁（訪客管理）\n抵押證件類別管理彈窗",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "抵押證件類別管理",
+        "page_start": 130,
+        "page_end": 130,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p131",
+      "text": "參、住戶端操作說明\n一、 新增訪客\n1. 訪客資訊填寫，會核對手機號碼格式、日期不能小於現在時間。\n住戶端預約登記（一）\n住戶端預約登記（二）\n2.可選擇上傳訪客照片，以利管理員辨識，若點選 QR Code 通過門禁，需\n填寫預計離開時間，以利設定 QR Code 有效區間，此欄位格式不能小於預\n計到達時間。",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "新增訪客",
+        "page_start": 131,
+        "page_end": 131,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p132",
+      "text": "住戶端預約登記（三）\n住戶端預約登記（四）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "新增訪客",
+        "page_start": 132,
+        "page_end": 132,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p133",
+      "text": "3.填寫完成送出後，若選擇 QR Code 會帶出 QR Code 圖以及\n相關提示，若為一般通關方式，則顯示換證提醒相關內容。\n住戶端預約登記（QR Code 彈窗）\n住戶端預約登記（完成彈窗）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "填寫完成送出後，若選擇 QR Code 會帶出 QR Code 圖以及",
+        "page_start": 133,
+        "page_end": 133,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p134",
+      "text": "4.填寫完成送出後，若選擇 QR Code 會帶出 QR Code 圖以及相關提示，若為一\n般通關方式，則顯示換證提醒相關內容。\n住戶端預約登記（QR Code 彈窗）\n住戶端預約登記（完成彈窗）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "填寫完成送出後，若選擇 QR Code 會帶出 QR Code 圖以及相關提示，若為一",
+        "page_start": 134,
+        "page_end": 134,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p135",
+      "text": "二、 預約中分頁\n1. 此分頁會列出目前尚未到訪及已經抵達的訪客資訊，若是新\n預約的訪客，會顯示 New 字條於右上方，點選取消預約可刪\n除此筆預約資料。\n住戶端首頁（預約中）\n住戶端取消預約",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "預約中分頁",
+        "page_start": 135,
+        "page_end": 135,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p136",
+      "text": "2.點選詳細內容，可以顯示此訪客詳細資訊，若有預約車位，則會新增車位資\n訊於下方。\n住戶端首頁（預約\n中）\n預約中詳細內容\n（一）\n預約中詳細內容\n（二）",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "點選詳細內容，可以顯示此訪客詳細資訊，若有預約車位，則會新增車位資",
+        "page_start": 136,
+        "page_end": 136,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p137",
+      "text": "三、紀錄分頁\n此分頁會列出過往的訪客紀錄，並顯示該訪客狀態，點選頭像，\n會顯示該訪客詳細資訊。\n住戶端首頁（紀錄）\n紀錄詳細內容",
+      "metadata": {
+        "module": "訪客預約",
+        "section": "紀錄分頁",
+        "page_start": 137,
+        "page_end": 137,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p138",
+      "text": "L、郵件包裹\n壹、管理端操作說明\nㄧ、首頁／詳細內容\n管理者端有六個分頁，分別是未簽收、已簽收、退貨中、已退\n貨、未寄出、已寄出，點選指定包裹的詳細內容，會顯示該包裹／郵\n件的內容，並同時可進行編輯。\n首頁（未簽收）\n未簽收詳細內容彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "郵件包裹",
+        "page_start": 138,
+        "page_end": 138,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p139",
+      "text": "二、新增包裹／寄件\n點選首頁的新增包裹、寄件，會顯示該功能彈窗，可單筆或多筆\n（左上新增）新增包裹／郵件，照片為非必填欄位，寄件可寄給同社\n區住戶或外部。\n圖 壹-1 新增包裹\n新增寄件",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "新增包裹／寄件",
+        "page_start": 139,
+        "page_end": 139,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p140",
+      "text": "三、簽收\n於未簽收或退貨中或未寄出分頁中，勾選要簽收的包裹，點選簽\n收包裹按鈕會談窗顯示簽收板，可選擇簽名或不簽收提交，完成後可\n到已簽收、已退貨、已寄出分頁，點選要查看的包裹／郵件，再點選\n簽收圖片，即可查看簽名檔。\n首頁（有勾選）\n簽名板彈窗\n簽名圖片彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "簽收",
+        "page_start": 140,
+        "page_end": 140,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p141",
+      "text": "四、退貨\n於已簽收／未簽收分頁的包裹／郵件，皆可執行退貨功能（退回\n物流） ，點選後顯示退貨彈窗，完成後該包裹會轉至退貨中，待物流簽\n收。\n首頁（已簽收）\n退貨彈窗\n首頁（退貨中）",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "退貨",
+        "page_start": 141,
+        "page_end": 141,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p142",
+      "text": "五、取消退貨\n於退貨中分頁，可點選取消退貨，該筆包裹會回到未簽收狀態，\n待原收件人簽收領回。\n首頁（退貨中）\n取消退貨彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "取消退貨",
+        "page_start": 142,
+        "page_end": 142,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p143",
+      "text": "貳、關聯資料表\n一、放置地點管理\n點選首頁上方的放置地點，會顯示該社區的包裹放置地點彈窗，\n可點選編輯名稱、刪除、新增進行修改排序等功能進行管理。\n首頁（未簽收）\n放置地點管理彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "放置地點管理",
+        "page_start": 143,
+        "page_end": 143,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p144",
+      "text": "二、包裹類型管理\n點選首頁上方的包裹類型，會顯示該社區的包裹類型資料彈窗，\n可點選編輯名稱、刪除、新增、修改排序等功能進行管理。\n首頁（未簽收）\n包裹類型管理彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "包裹類型管理",
+        "page_start": 144,
+        "page_end": 144,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p145",
+      "text": "三、送件業者管理\n點選首頁上方的送件業者，會顯示該社區的送件業者資料彈窗，\n可點選刪除、新增、修改排序等功能進行管理。\n首頁（未簽收）\n送件業者管理彈窗",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "送件業者管理",
+        "page_start": 145,
+        "page_end": 145,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p146",
+      "text": "參、住戶端操作說明\n一、首頁\n住戶端有四個分頁，分別是未領取、已領取、退貨、寄件，會依\n照該戶的包裹狀態呈現於各分頁，點選該包裹會進入詳細內容畫面。\n住戶端首頁（未領取）\n住戶端詳細內容（未領取）",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "首頁",
+        "page_start": 146,
+        "page_end": 146,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p147",
+      "text": "二、住戶退貨\n若包裹需退貨，自行與物流公司聯絡完畢後，將包裹交給管理中\n心後，由管理中心點選退貨，此包裹案件會進到退貨中分頁，物流簽\n收完成後，會調整至已退貨分頁，住戶端可至該包裹詳細內容中查看\n狀態及簽收圖片。\n住戶詳細內容（退貨中）\n住戶端詳細內容（已退貨）",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "住戶退貨",
+        "page_start": 147,
+        "page_end": 147,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p148",
+      "text": "三、住戶寄件\n若須寄件給同社區住戶或者外部人員，可將包裹／郵件交給管理\n中心，由管理人員新增寄件，若為寄給同社區住戶，會同步通知該收\n件人，完成簽收該包裹狀態會改為已收件。\n住戶詳細內容（寄件中）\n住戶端詳細內容（已寄件）",
+      "metadata": {
+        "module": "郵件包裹",
+        "section": "住戶寄件",
+        "page_start": 148,
+        "page_end": 148,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p149",
+      "text": "M、意見反映\n壹、管理端操作說明\n一、首頁\n管理端的首頁有兩個分頁，分別是意見反映與已回覆，區分目前\n案件狀態。\n首頁（意見反映）\n首頁（已回覆）",
+      "metadata": {
+        "module": "意見反映",
+        "section": "首頁",
+        "page_start": 149,
+        "page_end": 149,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p150",
+      "text": "二、建立意見反映\n點選意見反映，可建立新案件，點選匿名則不顯示住戶。\n首頁（意見反映）\n建立意見彈窗\n建立意見彈窗（非匿\n名）",
+      "metadata": {
+        "module": "意見反映",
+        "section": "建立意見反映",
+        "page_start": 150,
+        "page_end": 150,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p151",
+      "text": "三、管理端回覆意見\n在意見反映分頁，點選回覆即可輸入欲回覆的內容，完成後會發\n送推播通知住戶，點選刪除則會顯示確認刪除彈窗提醒，避免誤觸。\n首頁（意見反映）\n回覆彈窗",
+      "metadata": {
+        "module": "意見反映",
+        "section": "管理端回覆意見",
+        "page_start": 151,
+        "page_end": 151,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p152",
+      "text": "四、已回覆分頁\n在已回覆分頁，回覆按鈕會改為編輯回覆，點選後會顯示編輯回\n覆彈窗，若有異動，確認按鈕會解鎖，送出後會發送推播通知給住\n戶。\n首頁（已回覆）\n編輯回覆（未修改）\n編輯回覆（有修改）",
+      "metadata": {
+        "module": "意見反映",
+        "section": "已回覆分頁",
+        "page_start": 152,
+        "page_end": 152,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p153",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端首頁有三個分頁，第一個為填寫頁面，一樣可點選匿名不\n顯示住戶資訊，送出會有確認彈窗，避免誤觸，送出後會發送推播通\n知給管理端。\n住戶端首頁\n住戶端送出彈窗",
+      "metadata": {
+        "module": "意見反映",
+        "section": "首頁",
+        "page_start": 153,
+        "page_end": 153,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p154",
+      "text": "二、已反映分頁\n1. 第二個分頁為已反映分頁，此分頁會顯示已填寫的案件，尚\n未被點開查看明細的案件，右上會顯示 New 字樣，每個尚未\n回覆的案件會有刪除按鈕，讓住戶可刪除使用。\n住戶端首頁（已反映）\n住戶端刪除彈窗",
+      "metadata": {
+        "module": "意見反映",
+        "section": "已反映分頁",
+        "page_start": 154,
+        "page_end": 154,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p155",
+      "text": "2.點選案件主體皆會進入該案件明細頁面，頁面會顯示該案件目前狀態，若尚\n未回覆則顯示反映中，已回覆則顯示已回覆。\n住戶端首頁（已反映）\n反映中明細頁面",
+      "metadata": {
+        "module": "意見反映",
+        "section": "點選案件主體皆會進入該案件明細頁面，頁面會顯示該案件目前狀態，若尚",
+        "page_start": 155,
+        "page_end": 155,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p156",
+      "text": "3.第三個分頁為已回覆分頁，會顯示管理端已回覆的案件，\n若為管理端新回覆或編輯過回覆內容的案件，都會顯示 New\n字樣並且管理端會發送推播通知，但不會有刪除按鈕，以利\n區分狀態，點選明細則會顯示原內容以及回覆內容。\n住戶端首頁（已回覆）\n已回覆明細頁面",
+      "metadata": {
+        "module": "意見反映",
+        "section": "第三個分頁為已回覆分頁，會顯示管理端已回覆的案件，",
+        "page_start": 156,
+        "page_end": 156,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p157",
+      "text": "N、資產管理\n壹、管理端操作說明\nㄧ、首頁\n管理者端的資產管理首頁，會有四個分頁，分別是正常使用中及\n需保養、保養中以及已經報廢的項目，點選可以切換查看，若資產保\n養期限小於 30 天，會顯示於需保養分頁中。\n首頁（正常）\n首頁（需保養）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產管理",
+        "page_start": 157,
+        "page_end": 157,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p158",
+      "text": "二、建立資產\n1.點選建立資產，會顯示建立彈窗，需填寫三個類別的資料，第一個類別為該\n資產的資料，可自行選擇所在棟號或樓層，若有棟號才會顯示棟號選項，資產\n照片檔案限制為 PDF 或圖檔。\n首頁（正常）\n建立資產彈窗（資產明細）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "建立資產",
+        "page_start": 158,
+        "page_end": 158,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p159",
+      "text": "2..資產保固書或收據、發票檔案限制為 PDF 或圖檔，依起始日期，再輸入檢驗\n／保養週期時會自動帶出下次保養檢驗日，保管人裡是有管理權限的人員清單\n可做選擇，廠商的必填欄位：名稱、類型、電話。\n建立資產頁面（資產保固／成本）\n建立資產頁面（廠商）",
+      "metadata": {
+        "module": "資產管理",
+        "section": ".資產保固書或收據、發票檔案限制為 PDF 或圖檔，依起始日期，再輸入檢驗",
+        "page_start": 159,
+        "page_end": 159,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p160",
+      "text": "三、資產列表\n於首頁點選資產類型的詳細內容，進入後會列出該分類全部資\n產。\n首頁（正常）\n資產列表",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產列表",
+        "page_start": 160,
+        "page_end": 160,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p161",
+      "text": "四、匯出報表\n於首頁點選匯出報表，會列出資產總表、移交紀錄、保養紀錄、\n維修紀錄表可供選擇，再點選指定項目會匯出 xlsx 檔案，供使用者使\n用。\n首頁（正常）\n匯出報表選單",
+      "metadata": {
+        "module": "資產管理",
+        "section": "匯出報表",
+        "page_start": 161,
+        "page_end": 161,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p162",
+      "text": "五、資產詳細內容\n1. 點選該資產的詳細內容時，列出該資產詳細資訊，若該資產\n為報廢狀態則會帶出報廢日期及說明，若要修改可直接調整\n後點選送出即可。\n資產列表\n資產明細（一）\n資產明細（二）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產詳細內容",
+        "page_start": 162,
+        "page_end": 162,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p163",
+      "text": "2.若要修改該資產的廠商資料，除了既有廠商可選外，亦可選其他進行新\n增廠商。\n資產明細（二）\n資產明細（三）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "若要修改該資產的廠商資料，除了既有廠商可選外，亦可選其他進行新",
+        "page_start": 163,
+        "page_end": 163,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p164",
+      "text": "六、 資產報修／保養／檢驗功能\n1.點選保養／維修/檢驗按鈕，會出現彈窗，點選保養時，聯\n絡人及電話為必填欄位，填寫完成後，送出按鈕才能開啟點\n選送出後該資產狀態會調整至待處理。\n資產列表\n保養／檢驗彈窗",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產報修／保養／檢驗功能",
+        "page_start": 164,
+        "page_end": 164,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p165",
+      "text": "2.點選彈窗上的維修時，會切換對應內容，上傳前需附上毀\n損照片及報修說明，送出後該資產狀態會調整至待處理，居\n家修繕列表也會同步顯示該筆內容。\n圖 0-1 資產列表\n圖 0-2 報修彈窗",
+      "metadata": {
+        "module": "資產管理",
+        "section": "點選彈窗上的維修時，會切換對應內容，上傳前需附上毀",
+        "page_start": 165,
+        "page_end": 165,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p166",
+      "text": "七、資產保養／檢驗／維修紀錄\n1. 點選保養／檢驗／維修紀錄按鈕時，會彈窗顯示該筆資產歷\n史維修／保養／檢驗紀錄。\n資產列表\n保養／檢驗／維修紀錄",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產保養／檢驗／維修紀錄",
+        "page_start": 166,
+        "page_end": 166,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p167",
+      "text": "2.點選詳細內容，若為保養紀錄會顯示該筆保養資料，報價單檔案若為 PDF\n時，在 PC 則是下載，mobile 則是另開顯示視窗查看。\n保養／檢驗／維修紀錄\n列表\n保養／檢驗／維修紀錄\n內容（一）\n保養／檢驗／維修紀錄\n內容（二）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "點選詳細內容，若為保養紀錄會顯示該筆保養資料，報價單檔案若為 PDF",
+        "page_start": 167,
+        "page_end": 167,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p168",
+      "text": "3.點選詳細內容，若為維修紀錄會顯示該維修紀錄的詳細內\n容，報價單檔案若為 PDF 時，在 PC 則是下載，mobile 則是\n另開顯示視窗查看。\n保養／檢驗／維修紀錄（三）\n保養/檢驗/維修紀錄（四）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "點選詳細內容，若為維修紀錄會顯示該維修紀錄的詳細內",
+        "page_start": 168,
+        "page_end": 168,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p169",
+      "text": "八、資產報廢\n點選報廢，顯示報廢彈窗，必填欄位：說明、聯絡人、電話，送\n出後將會記錄此筆報修資訊，並將該資產狀態轉為報廢，可於報廢分\n頁查看。\n資產列表\n報廢彈窗",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產報廢",
+        "page_start": 169,
+        "page_end": 169,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p170",
+      "text": "九、移交紀錄\n於各分頁中的資產列表中，每個資產都有移交紀錄按鈕可點選，\n點選後會顯示該資產全部的移交紀錄，會以帳號呈現原、新保管人、\n移交時間。\n資產列表\n圖 0-3 移交記錄彈窗",
+      "metadata": {
+        "module": "資產管理",
+        "section": "移交紀錄",
+        "page_start": 170,
+        "page_end": 170,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p171",
+      "text": "十、需保養分頁\n若下次保養日小於 30 天的資產，會顯示於此分頁中，點選詳細\n內容會彈窗列出該類別需保養資產，可安排進行保養／檢測事宜。\n首頁（需保養）\n需保養資產列表",
+      "metadata": {
+        "module": "資產管理",
+        "section": "需保養分頁",
+        "page_start": 171,
+        "page_end": 171,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p172",
+      "text": "十一、保養中分頁\n1.若為維修中的資產，按鈕會顯示維修中，點選維修中按鈕會引導至社區報修\n分頁，若該資產維修完成後，會將此筆資產狀態調為正常。\n待處理分頁列表\n社區報修",
+      "metadata": {
+        "module": "資產管理",
+        "section": "保養中分頁",
+        "page_start": 172,
+        "page_end": 172,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p173",
+      "text": "2.若為保養中的資產，按鈕則顯示完成保養／檢驗，點選完成保養／\n檢驗會顯示彈窗，必填欄位：說明、驗收人、連絡電話，若廠商非原\n本保固／負責廠商，可直接填入新廠商資訊，送出後將會儲存此筆資\n料及調整該筆資產狀態為正常使用中。\n完成保養／檢驗彈窗（一）\n完成保養／檢驗彈窗（二）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "若為保養中的資產，按鈕則顯示完成保養／檢驗，點選完成保養／",
+        "page_start": 173,
+        "page_end": 173,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p174",
+      "text": "十二、報廢分頁\n此分頁會列出已報廢的資產，列表中的詳細內容可檢視該分類已\n報廢的資產項目，點選該資產的恢復正常按鈕將會直接將該筆資產轉\n為正常使用。\n首頁（報廢）\n報廢資產列表",
+      "metadata": {
+        "module": "資產管理",
+        "section": "報廢分頁",
+        "page_start": 174,
+        "page_end": 174,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p175",
+      "text": "貳、關聯內容管理\n一、 廠商管理\n1. 點選首頁的廠商管理，會表列出全部廠商，若該廠商目前沒有任\n何資料有關聯，才會顯示刪除按鈕，點選建立廠商可自行新增廠\n商資料。\n廠商管理彈窗\n1 建立廠商",
+      "metadata": {
+        "module": "資產管理",
+        "section": "廠商管理",
+        "page_start": 175,
+        "page_end": 175,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p176",
+      "text": "2.點選該廠商的詳細內容按鈕，會彈窗顯示該廠商明細，點選編輯可切換成編\n輯狀態，全部資料皆可修改，修改完成後將會重新顯示此畫面。\n廠商明細彈窗\n廠商明細彈窗（編輯模式）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "點選該廠商的詳細內容按鈕，會彈窗顯示該廠商明細，點選編輯可切換成編",
+        "page_start": 176,
+        "page_end": 176,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p177",
+      "text": "二、 資產／廠商類別管理\n點選首頁的類型管理，可察看目前廠商及資產類別，排序可調整顯示\n順位，若此類別無關連任何廠商、資產才會顯示刪除按鈕，點選編輯名\n稱、新增類型，可自行新增類別資料。\n首頁（正常）\n類型管理彈窗",
+      "metadata": {
+        "module": "資產管理",
+        "section": "資產／廠商類別管理",
+        "page_start": 177,
+        "page_end": 177,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p178",
+      "text": "參、住戶端操作說明\n一、 圖片目錄\n針對資產管理，住戶端僅有居家修繕功能會有相關聯，所以針對\n關聯做功能修改調整，選擇公區，再選擇完棟別、樓層後，資產名稱\n選單會帶出該區域的資產，若無則會自動選擇其他，自行填寫名稱、\n類別、位置，步驟二、三則無異動。\n住戶端居家修繕步驟\n（一）（有資產）\n住戶端居家修繕步驟\n（一）（無資產）",
+      "metadata": {
+        "module": "資產管理",
+        "section": "圖片目錄",
+        "page_start": 178,
+        "page_end": 178,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p179",
+      "text": "O、管理費\n壹、管理端操作說明\n一、首頁／新增管理費\n管理者端首頁有兩個分頁，未繳款、繳款紀錄，點選新增管理費\n會顯示新增彈窗，依照範本填寫當期管理費、住戶戶號、金額、繳款\n網址後上傳檔案並送出後即可新增，新增完成會同步通知住戶開放繳\n費。\n首頁（未繳費）\n新增管理費彈窗",
+      "metadata": {
+        "module": "管理費",
+        "section": "首頁／新增管理費",
+        "page_start": 179,
+        "page_end": 179,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p180",
+      "text": "二、更新繳款狀態\n點選首頁上方的更新繳款狀態，會顯示更新彈窗，參考範本填寫\n完畢後，上傳並送出，可更新住戶繳款狀態，完成繳款的清單會顯示\n於繳款紀錄表中。\n首頁（未繳費）\n更新繳款狀態彈窗\n首頁（繳款紀錄）",
+      "metadata": {
+        "module": "管理費",
+        "section": "更新繳款狀態",
+        "page_start": 180,
+        "page_end": 180,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p181",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端首頁會有兩種狀態，若當期尚未繳納，會顯示繳款網址、\n金額、截止日，若已繳費完成，則顯示尚無管理費需繳交，並顯示歷\n史繳款紀錄。\n住戶端首頁\n住戶端首頁（已繳費）",
+      "metadata": {
+        "module": "管理費",
+        "section": "首頁",
+        "page_start": 181,
+        "page_end": 181,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p182",
+      "text": "P、維運管理\n壹、管理端操作說明\n一、首頁\n管理者端首頁預設會有四個分頁，分別是年度設備管理維運計\n畫、設施設備危機處理與緊急應變計畫、長期修繕計畫、長期修繕財\n務籌措計畫。\n首頁\n首頁",
+      "metadata": {
+        "module": "維運管理",
+        "section": "首頁",
+        "page_start": 182,
+        "page_end": 182,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p183",
+      "text": "二、新增計畫\n點選首頁的新增計畫，會顯示新增計畫彈窗，可設定生／失效日\n期（非必填）及提醒功能（非必填） ，會於首頁行事曆標示所設之提醒\n區間，計畫類型可選擇其他並新增新類型，權限暫定可控制外部務業\n管理人員、住戶查閱，上傳文件格式限圖片(jpg、png、jpeg)、PDF、\nExcel(xlsx、xls、xlsb)、word(doc、docx)，檔案大小會自動計算，超過\n20MB 會強制清除上傳檔案。\n新增計畫（一）\n新增計畫（二）",
+      "metadata": {
+        "module": "維運管理",
+        "section": "新增計畫",
+        "page_start": 183,
+        "page_end": 183,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p184",
+      "text": "三、編輯計畫\n首頁點選編輯，會跳出編輯彈窗，可調整編號、名稱、生／失效\n日期、提醒開、結束日期、提醒週期、閱讀權限。\n詳細內容（一）\n詳細內容（二）",
+      "metadata": {
+        "module": "維運管理",
+        "section": "編輯計畫",
+        "page_start": 184,
+        "page_end": 184,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p185",
+      "text": "四、打開計畫\n計畫列表中，點選該計畫的名稱，可下載或打開文件內容，電腦\n端會直接打開檔案，手機端則會開啟新分頁查看檔案。\n首頁\nPDF 電腦端跳轉",
+      "metadata": {
+        "module": "維運管理",
+        "section": "打開計畫",
+        "page_start": 185,
+        "page_end": 185,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p186",
+      "text": "五、計畫類型\n點選首頁上方計畫類型，會顯示預設新增的四個類別，於彈窗下\n方可新增其他計畫類別。\n首頁\n類型彈窗",
+      "metadata": {
+        "module": "維運管理",
+        "section": "計畫類型",
+        "page_start": 186,
+        "page_end": 186,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p187",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端會列出全部住戶可查閱之文件，點選文件名稱會於瀏覽器\n開啟新分頁並顯示該檔案。\n住戶端首頁（文件）\n住戶端開啟檔案",
+      "metadata": {
+        "module": "維運管理",
+        "section": "首頁",
+        "page_start": 187,
+        "page_end": 187,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p188",
+      "text": "Q、績效評估\n壹、管理端操作說明\n一、首頁\n管理者端首頁，評估內容依照智慧建築建議內容會植入預設資\n料，使用者可自行修改新增，評估類型中的選單，會依照類型管理內\n容顯示。\n首頁\n評估類型",
+      "metadata": {
+        "module": "績效評估",
+        "section": "首頁",
+        "page_start": 188,
+        "page_end": 188,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p189",
+      "text": "二、新增評估項目\n點選首頁的新增評估項目，會顯示新增彈窗，可新增項目外，還\n可設定提醒，並於行事曆上顯示，亦可編輯既有項目及提醒功能。\n評估類型\n新增評估項目",
+      "metadata": {
+        "module": "績效評估",
+        "section": "新增評估項目",
+        "page_start": 189,
+        "page_end": 189,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p190",
+      "text": "三、評分紀錄\n首頁點選評分紀錄，會顯示歷史評分紀錄總表，點選該評分的詳\n細內容會顯示評分細項。\n首頁\n管理端編輯彈窗",
+      "metadata": {
+        "module": "績效評估",
+        "section": "評分紀錄",
+        "page_start": 190,
+        "page_end": 190,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p191",
+      "text": "R、租售管理\n壹、管理端操作說明\n一、首頁\n管理者端首頁。會列出該社區有登記出租、出售的房屋。\n首頁\n首頁",
+      "metadata": {
+        "module": "租售管理",
+        "section": "首頁",
+        "page_start": 191,
+        "page_end": 191,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p192",
+      "text": "二、建立刊登\n點選首頁的新增刊登，依照列表輸入、選擇後，即可建立該戶刊\n登資訊，一戶只能刊登一筆，新增會覆蓋舊資料。\n建立刊登（一）\n建立刊登（二）",
+      "metadata": {
+        "module": "租售管理",
+        "section": "建立刊登",
+        "page_start": 192,
+        "page_end": 192,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p193",
+      "text": "三、詳細內容\n首頁點選詳細內容，會顯示該刊登詳細資訊，並可調整、修改內\n容，完成後點選確定送出即可完成修改。\n首頁\n詳細內容",
+      "metadata": {
+        "module": "租售管理",
+        "section": "詳細內容",
+        "page_start": 193,
+        "page_end": 193,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p194",
+      "text": "四、 刪除\n刊登列表中，可以點選刪除，重複確認後即可完成刪除。\n首頁\n刪除確認彈窗",
+      "metadata": {
+        "module": "租售管理",
+        "section": "刪除",
+        "page_start": 194,
+        "page_end": 194,
+        "user_side": "management",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p195",
+      "text": "貳、住戶端操作說明\n一、首頁\n住戶端首頁有二個分頁，新增刊登後該筆資料會顯示於租售公告\n頁面，若使用者為該戶，會顯示編輯標記。\n住戶端首頁（新增）\n住戶端首頁（公告）",
+      "metadata": {
+        "module": "租售管理",
+        "section": "首頁",
+        "page_start": 195,
+        "page_end": 195,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p196",
+      "text": "二、編輯＆詳細內容\n若刊登資訊為使用者該戶，點選後可進入編輯模式，若非該戶則\n可查看詳細內容。\n地址：24159 新北市三重區重新路五段 609 巷 6 號 10 樓\n網址：https://www.tonnet.com.tw/\n通航官方LINE 好友：https://lin.ee/ELjjY9h\n智慧建築管理系統｜社區永續管理系統｜智慧安防門禁系統\n住戶端編輯\n住戶端詳細內容",
+      "metadata": {
+        "module": "租售管理",
+        "section": "編輯＆詳細內容",
+        "page_start": 196,
+        "page_end": 196,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    },
+    {
+      "id": "fa-p197",
+      "text": "智慧建築管理系統｜社區永續管理系統｜智慧安防門禁系統",
+      "metadata": {
+        "module": "租售管理",
+        "section": "編輯＆詳細內容",
+        "page_start": 197,
+        "page_end": 197,
+        "user_side": "resident",
+        "source_file": "docs/fa/社區永續管理系統(FA)_用戶手冊_1140424_V6.pdf"
+      }
+    }
+  ]
+}

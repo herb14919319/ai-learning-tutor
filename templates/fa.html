@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>FA 功能查詢小幫手</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #15352e;
+        --muted: #65756f;
+        --brand: #147d64;
+        --brand-dark: #0c5d4a;
+        --surface: #ffffff;
+        --soft: #edf7f3;
+        --line: #d9e7e2;
+        --error: #a53d3d;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; overflow-x: hidden; }
+      body {
+        background: linear-gradient(180deg, #e6f5ef 0, #f7faf9 42%, #f7faf9 100%);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+      }
+      main {
+        width: min(100%, 760px);
+        min-height: 100dvh;
+        margin: 0 auto;
+        padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+      }
+      header { padding: 14px 4px 20px; }
+      h1 { margin: 0 0 8px; font-size: clamp(1.65rem, 7vw, 2.2rem); letter-spacing: -.03em; }
+      header p { margin: 0; color: var(--muted); line-height: 1.6; }
+      .quick-list { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 14px; scrollbar-width: thin; }
+      .quick {
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--brand-dark);
+        padding: 9px 13px;
+        font: inherit;
+        cursor: pointer;
+      }
+      .panel { border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: 0 16px 40px rgba(29, 75, 63, .08); overflow: hidden; }
+      #answer {
+        min-height: 240px;
+        max-height: 55dvh;
+        overflow-y: auto;
+        padding: 18px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        line-height: 1.65;
+      }
+      #answer.empty { color: var(--muted); }
+      #answer.error { color: var(--error); background: #fff8f8; }
+      form { border-top: 1px solid var(--line); padding: 12px; display: grid; gap: 10px; }
+      textarea {
+        width: 100%;
+        min-height: 88px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        color: var(--ink);
+        background: #fbfdfc;
+        font: inherit;
+        line-height: 1.45;
+      }
+      textarea:focus { outline: 3px solid rgba(20, 125, 100, .16); border-color: var(--brand); }
+      button[type="submit"] {
+        min-height: 46px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--brand);
+        color: white;
+        font: 700 1rem/1 system-ui, sans-serif;
+        cursor: pointer;
+      }
+      button[type="submit"]:hover { background: var(--brand-dark); }
+      button:disabled, textarea:disabled { cursor: wait; opacity: .65; }
+      .hint { margin: 12px 4px 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+      @media (min-width: 640px) {
+        main { padding-inline: 24px; }
+        form { grid-template-columns: 1fr auto; align-items: end; }
+        button[type="submit"] { min-width: 112px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>FA 功能查詢小幫手</h1>
+        <p>不知道功能在哪裡？直接輸入你想完成的事情</p>
+      </header>
+
+      <nav class="quick-list" aria-label="快捷問題">
+        <button class="quick" type="button">新增公告</button>
+        <button class="quick" type="button">包裹簽收</button>
+        <button class="quick" type="button">訪客預約</button>
+        <button class="quick" type="button">社區報修</button>
+        <button class="quick" type="button">公設預約</button>
+        <button class="quick" type="button">瓦斯抄錶</button>
+      </nav>
+
+      <section class="panel" aria-label="FA 文件導覽問答">
+        <div id="answer" class="empty" aria-live="polite">回答會顯示在這裡，並標示管理端／住戶端與手冊頁碼。</div>
+        <form id="fa-form">
+          <textarea id="question" maxlength="3000" placeholder="例如：如何新增社區公告？" aria-label="問題" required></textarea>
+          <button id="submit" type="submit">送出</button>
+        </form>
+      </section>
+      <p class="hint">本工具只提供操作手冊導覽，無法查詢 FA 正式系統中的即時資料。</p>
+    </main>
+
+    <script>
+      const form = document.querySelector("#fa-form");
+      const input = document.querySelector("#question");
+      const submit = document.querySelector("#submit");
+      const answer = document.querySelector("#answer");
+      const quickButtons = document.querySelectorAll(".quick");
+      const userId = localStorage.getItem("fa-user-id") || `fa-web-${crypto.randomUUID?.() || Date.now()}`;
+      localStorage.setItem("fa-user-id", userId);
+
+      quickButtons.forEach((button) => button.addEventListener("click", () => {
+        input.value = button.textContent.trim();
+        input.focus();
+      }));
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+
+        answer.className = "";
+        answer.textContent = "正在查詢操作手冊…";
+        submit.disabled = true;
+        input.disabled = true;
+        quickButtons.forEach((button) => { button.disabled = true; });
+
+        try {
+          const response = await fetch("/web-chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message, user_id: userId, skill_id: "fa"}),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            if (response.status === 429) throw new Error("查詢次數過多，請稍後再試。");
+            throw new Error("目前無法完成查詢，請稍後再試。");
+          }
+          answer.textContent = data.reply || "操作手冊中未找到足夠資訊";
+        } catch (error) {
+          answer.className = "error";
+          answer.textContent = error.message || "目前無法完成查詢，請稍後再試。";
+        } finally {
+          submit.disabled = false;
+          input.disabled = false;
+          quickButtons.forEach((button) => { button.disabled = false; });
+          input.focus();
+        }
+      });
+    </script>
+  </body>
+</html>
