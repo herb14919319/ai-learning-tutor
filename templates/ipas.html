@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7fbf8">
+    <title>iPAS AI 應用規劃師｜AI Learning Platform</title>
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" data-view-link="home" aria-label="回到 iPAS 學習平台首頁">
+        <span class="brand-mark" aria-hidden="true">iP</span>
+        <span>
+          <strong>iPAS AI 應用規劃師</strong>
+          <small>AI Learning Platform</small>
+        </span>
+      </a>
+      <span class="course-pill">L111 人工智慧概念</span>
+    </header>
+
+    <main class="app-shell">
+      <section class="view is-active" id="view-home" data-view="home">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="eyebrow">🎓 iPAS AI 應用規劃師</span>
+            <h1>一步一步，掌握<br>人工智慧核心概念</h1>
+            <p>從 10 個知識點開始學習，接著用 10 題測驗確認理解。</p>
+          </div>
+          <div class="progress-card" aria-label="L111 課程完成進度">
+            <div class="progress-ring" id="home-progress-ring" style="--progress: 0">
+              <span id="home-progress-value">0%</span>
+            </div>
+            <div>
+              <span class="label">目前完成</span>
+              <strong>L111</strong>
+              <small>人工智慧概念</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-grid" aria-label="學習功能">
+          <button class="action-card primary" type="button" data-view-target="learn">
+            <span class="action-icon" aria-hidden="true">📖</span>
+            <span><strong>開始學習</strong><small>瀏覽 10 個核心知識點</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card coral" type="button" data-view-target="quiz">
+            <span class="action-icon" aria-hidden="true">📝</span>
+            <span><strong>開始測驗</strong><small>用 10 題檢查學習成果</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card" type="button" data-view-target="cheatsheet">
+            <span class="action-icon" aria-hidden="true">📚</span>
+            <span><strong>查看重點</strong><small>考前快速複習 Cheat Sheet</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card" type="button" data-view-target="mistakes">
+            <span class="action-icon" aria-hidden="true">❌</span>
+            <span><strong>錯題複習</strong><small>集中查看需要再練習的題目</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card wide" type="button" data-view-target="progress">
+            <span class="action-icon" aria-hidden="true">📈</span>
+            <span><strong>學習進度</strong><small>查看各科目的開放與完成狀態</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="view" id="view-learn" data-view="learn" aria-labelledby="learn-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+          <span class="eyebrow">L111 · 10 個知識點</span>
+          <h2 id="learn-title">人工智慧概念</h2>
+          <p>依序閱讀每個主題，建立完整的考試知識架構。</p>
+        </div>
+        <div class="lesson-list" id="lesson-list"></div>
+      </section>
+
+      <section class="view" id="view-lesson" data-view="lesson" aria-live="polite">
+        <div id="lesson-detail"></div>
+      </section>
+
+      <section class="view" id="view-quiz" data-view="quiz" aria-labelledby="quiz-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+        </div>
+        <div class="quiz-intro" id="quiz-intro">
+          <span class="quiz-illustration" aria-hidden="true">📝</span>
+          <span class="eyebrow">L111 小測驗</span>
+          <h2 id="quiz-title">準備好檢查學習成果了嗎？</h2>
+          <p>共 10 題，每次顯示一題。送出後即可查看解析與來源。</p>
+          <button class="button button-primary" type="button" id="start-quiz">開始測驗</button>
+        </div>
+        <div class="quiz-stage is-hidden" id="quiz-stage"></div>
+      </section>
+
+      <section class="view" id="view-cheatsheet" data-view="cheatsheet" aria-labelledby="cheatsheet-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+          <span class="eyebrow">L111 · Cheat Sheet</span>
+          <h2 id="cheatsheet-title">十個考前重點</h2>
+          <p>用最短時間掃過主題與關鍵觀念。</p>
+        </div>
+        <div class="cheatsheet-grid" id="cheatsheet-list"></div>
+      </section>
+
+      <section class="view" id="view-mistakes" data-view="mistakes" aria-labelledby="mistakes-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+          <span class="eyebrow">L111 · 錯題複習</span>
+          <h2 id="mistakes-title">把不熟的地方，變成得分點</h2>
+        </div>
+        <div class="empty-state">
+          <span aria-hidden="true">🌱</span>
+          <h3>目前還沒有錯題紀錄</h3>
+          <p>錯題保存功能將在下一版加入；現在可以先完成 L111 測驗，熟悉題型與解析。</p>
+          <button class="button button-primary" type="button" data-view-target="quiz">前往測驗</button>
+        </div>
+      </section>
+
+      <section class="view" id="view-progress" data-view="progress" aria-labelledby="progress-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+          <span class="eyebrow">學習進度</span>
+          <h2 id="progress-title">iPAS 學習地圖</h2>
+          <p>目前開放 L111 人工智慧概念，其餘單元將陸續開放。</p>
+        </div>
+        <div class="course-list">
+          <article class="course-row is-open">
+            <div><span class="course-code">L111</span><h3>人工智慧概念</h3></div>
+            <div class="course-progress"><span><i id="course-progress-bar"></i></span><strong id="course-progress-value">0%</strong></div>
+          </article>
+          <article class="course-row"><div><span class="course-code">L112</span><h3>人工智慧技術應用</h3></div><span class="status-badge">尚未開放</span></article>
+          <article class="course-row"><div><span class="course-code">L113</span><h3>人工智慧導入規劃</h3></div><span class="status-badge">尚未開放</span></article>
+          <article class="course-row"><div><span class="course-code">L114</span><h3>人工智慧風險管理</h3></div><span class="status-badge">尚未開放</span></article>
+        </div>
+      </section>
+    </main>
+
+    <footer>iPAS AI 應用規劃師學習平台 · L111</footer>
+
+    <script id="knowledge-data" type="application/json">{{ knowledge_items | tojson }}</script>
+    <script id="question-data" type="application/json">{{ questions | tojson }}</script>
+    <script src="{{ url_for('asset_file', filename='ipas.js') }}" defer></script>
+  </body>
+</html>

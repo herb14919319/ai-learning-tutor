@@ -1,4 +1,5 @@
 import hmac
+import json
 import logging
 import os
 import threading
@@ -78,6 +79,13 @@ LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL", "")
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+IPAS_DATA_DIR = (
+    Path(__file__).resolve().parent
+    / "skills"
+    / "ipas_ai_application_planner"
+    / "knowledge"
+    / "processed"
+)
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
@@ -672,6 +680,20 @@ def health_check():
 @app.get("/fa")
 def fa_page():
     return render_template("fa.html")
+
+
+@app.get("/ipas")
+def ipas_page():
+    with (IPAS_DATA_DIR / "l111_knowledge.json").open(encoding="utf-8") as file:
+        knowledge_items = json.load(file)
+    with (IPAS_DATA_DIR / "l111_questions.json").open(encoding="utf-8") as file:
+        questions = json.load(file)
+
+    return render_template(
+        "ipas.html",
+        knowledge_items=knowledge_items,
+        questions=questions,
+    )
 
 
 @app.post("/web-chat")
