@@ -1,0 +1,209 @@
+[
+  {
+    "chapter_id": "ch01",
+    "chapter_number": 1,
+    "title": "第一章：國內外氣候變遷治理與因應",
+    "summary": "IPCC ：顧問與檢測報告 UNFCCC／COP ：業主與各國協調會議 政府政策 ：專案規範與驗收標準 企業 ：實際施工單位 碳盤查數據 ：感測器、電表與系統紀錄",
+    "headings": [
+      "一、先建立整張世界地圖",
+      "二、氣候變遷與自然氣候變異不同",
+      "三、IPCC 到底在做什麼？",
+      "四、氣候治理有兩條主線：減緩與調適",
+      "五、氣候變遷已經不是單純的環保問題",
+      "六、IEA：把淨零翻譯成能源路線圖",
+      "七、各國政策不用分開死背，要看共同模組",
+      "八、為什麼供應鏈會成為企業壓力來源？"
+    ],
+    "source_file": "ch01_climate_governance.md",
+    "source_path": "knowledge/processed/ch01_climate_governance.md",
+    "cards": [
+      "cards/ch01/iPAS淨零碳規劃師1-1.png",
+      "cards/ch01/iPAS淨零碳規劃師1-2.png",
+      "cards/ch01/iPAS淨零碳規劃師1-3.png",
+      "cards/ch01/iPAS淨零碳規劃師1-4.png",
+      "cards/ch01/iPAS淨零碳規劃師1-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch02",
+    "chapter_number": 2,
+    "title": "第二章：聯合國氣候變遷大會與 COP",
+    "summary": "IPCC ：技術研究與風險分析報告 UNFCCC ：系統 Charter 與治理框架 COP ：每年召開的架構審查與變更會議 巴黎協定 ：全球共同採用的核心協定 NDC ：各國自己的實施計畫與 KPI 全球盤點 GST ：定期系統稽核 氣候融資 ：落實專案所需的預算與資源",
+    "headings": [
+      "一、先建立整張架構圖",
+      "二、UNFCCC 是什麼？",
+      "核心定位",
+      "京都議定書的三大市場機制",
+      "巴黎協定最大的制度轉換",
+      "COP26：落實巴黎協定",
+      "COP27：損失與損害",
+      "COP28：全球盤點與化石燃料轉型",
+      "COP29：氣候融資"
+    ],
+    "source_file": "ch02_cop_unfccc_paris.md",
+    "source_path": "knowledge/processed/ch02_cop_unfccc_paris.md",
+    "cards": [
+      "cards/ch02/iPAS淨零碳規劃師2-1.png",
+      "cards/ch02/iPAS淨零碳規劃師2-2.png",
+      "cards/ch02/iPAS淨零碳規劃師2-3.png",
+      "cards/ch02/iPAS淨零碳規劃師2-4.png",
+      "cards/ch02/iPAS淨零碳規劃師2-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch03",
+    "chapter_number": 3,
+    "title": "第三章：國際重要倡議內容",
+    "summary": "永續揭露框架 要求企業「怎麼說清楚」 ↓ GRI：對利害關係人的永續報告 SASB：對投資人的產業別財務重大性揭露 TCFD：氣候相關財務風險揭露 TNFD：自然與生物多樣性相關財務揭露 IFRS / ISSB：全球永續揭露準則",
+    "headings": [
+      "一、先建立整張地圖",
+      "二、CDP：企業環境資料的問卷與評分系統",
+      "三、SBTi：企業減碳目標要符合科學",
+      "四、RE100：100% 使用再生能源",
+      "五、EP100 與 EV100：一個管能源效率，一個管交通電動化",
+      "六、報告框架：GRI、SASB、TCFD、TNFD、IFRS"
+    ],
+    "source_file": "ch03_international_initiatives.md",
+    "source_path": "knowledge/processed/ch03_international_initiatives.md",
+    "cards": [
+      "cards/ch03/iPAS淨零碳規劃師3-1.png",
+      "cards/ch03/iPAS淨零碳規劃師3-2.png",
+      "cards/ch03/iPAS淨零碳規劃師3-3.png",
+      "cards/ch03/iPAS淨零碳規劃師3-4.png",
+      "cards/ch03/iPAS淨零碳規劃師3-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch04",
+    "chapter_number": 4,
+    "title": "第四章：國際碳稅關貿政策",
+    "summary": "這章最容易混的是： 碳稅、碳費、碳關稅／CBAM 。",
+    "headings": [
+      "一、先釐清三個容易混的詞",
+      "二、為什麼會有碳關稅？核心是「碳洩漏」",
+      "三、歐盟 CBAM 是什麼？",
+      "四、CBAM 管哪些產品？",
+      "五、CBAM 的時程：先申報，後付錢",
+      "六、CBAM 申報到底要什麼？",
+      "七、CBAM 跟 ISO 14064 有什麼不同？",
+      "八、英國 CBAM：不是只有歐盟在做",
+      "九、CBAM 對企業的真正影響",
+      "十、企業應該怎麼因應？"
+    ],
+    "source_file": "ch04_carbon_tax_cbam.md",
+    "source_path": "knowledge/processed/ch04_carbon_tax_cbam.md",
+    "cards": [
+      "cards/ch04/iPAS淨零碳規劃師4-1.png",
+      "cards/ch04/iPAS淨零碳規劃師4-2.png",
+      "cards/ch04/iPAS淨零碳規劃師4-3.png",
+      "cards/ch04/iPAS淨零碳規劃師4-4.png",
+      "cards/ch04/iPAS淨零碳規劃師4-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch05",
+    "chapter_number": 5,
+    "title": "第五章：台灣 2050 淨零路徑",
+    "summary": "2050 淨零是目標，四大轉型是方向，十二項關鍵戰略是工具，氣候變遷因應法是制度化。",
+    "headings": [
+      "一、先建立整張地圖",
+      "二、台灣為什麼要做 2050 淨零？",
+      "1. 能源轉型",
+      "2. 產業轉型",
+      "3. 生活轉型",
+      "4. 社會轉型",
+      "1. 2050 淨零排放入法",
+      "2. 碳盤查與登錄",
+      "3. 碳費制度",
+      "4. 溫室氣體管理基金",
+      "5. 氣候調適",
+      "6. 公正轉型"
+    ],
+    "source_file": "ch05_taiwan_2050_net_zero.md",
+    "source_path": "knowledge/processed/ch05_taiwan_2050_net_zero.md",
+    "cards": [
+      "cards/ch05/iPAS淨零碳規劃師5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch06",
+    "chapter_number": 6,
+    "title": "第六章：碳資產交易管理架構導論",
+    "summary": "碳資產管理 ＝企業對碳成本、碳權、減量策略的整體控管",
+    "headings": [
+      "一、先建立整張地圖",
+      "二、碳權到底是什麼？",
+      "三、碳權與碳排放額度不要混",
+      "四、碳定價：讓排放變成成本",
+      "五、外顯碳價與內隱碳價",
+      "六、碳交易市場是怎麼運作的？",
+      "七、碳權品質：不是所有碳權都一樣",
+      "八、自然碳匯：森林、土壤、海洋都可能是碳資產",
+      "九、台灣碳費制度跟碳權有什麼關係？",
+      "十、企業為什麼要做碳資產管理？"
+    ],
+    "source_file": "ch06_carbon_asset_trading.md",
+    "source_path": "knowledge/processed/ch06_carbon_asset_trading.md",
+    "cards": [
+      "cards/ch06/iPAS淨零碳規劃師6-1.png",
+      "cards/ch06/iPAS淨零碳規劃師6-2.png",
+      "cards/ch06/iPAS淨零碳規劃師6-3.png",
+      "cards/ch06/iPAS淨零碳規劃師6-4.png",
+      "cards/ch06/iPAS淨零碳規劃師6-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch07",
+    "chapter_number": 7,
+    "title": "第七章：ISO 14068-1 碳中和標準",
+    "summary": "先算清楚，再努力減，剩下真的減不了的，才用高品質碳權抵換。",
+    "headings": [
+      "一、先建立整張地圖",
+      "二、碳中和與淨零排放不要混",
+      "三、ISO 14068-1 是什麼？",
+      "四、PAS 2060 與 ISO 14068-1 的差異",
+      "五、碳中和標的物：你到底要宣告什麼東西碳中和？",
+      "六、執行碳中和的六步驟",
+      "七、減量與移除是核心，不是裝飾",
+      "八、碳抵換是補充手段，而且要求更嚴格",
+      "九、碳中和報告與宣告：不是喊口號，要交證據"
+    ],
+    "source_file": "ch07_iso_14068_carbon_neutrality.md",
+    "source_path": "knowledge/processed/ch07_iso_14068_carbon_neutrality.md",
+    "cards": [
+      "cards/ch07/iPAS淨零碳規劃師7-1.png",
+      "cards/ch07/iPAS淨零碳規劃師7-2.png",
+      "cards/ch07/iPAS淨零碳規劃師7-3.png",
+      "cards/ch07/iPAS淨零碳規劃師7-4.png",
+      "cards/ch07/iPAS淨零碳規劃師7-5.png"
+    ]
+  },
+  {
+    "chapter_id": "ch08",
+    "chapter_number": 8,
+    "title": "第八章：ISO 14064 組織型溫室氣體盤查",
+    "summary": "ISO 14064 是企業的碳排放帳本標準。",
+    "headings": [
+      "一、先建立整張地圖",
+      "二、溫室氣體是什麼？",
+      "三、七大溫室氣體：考試必背",
+      "四、GWP：把不同氣體換算成 CO₂e",
+      "六、ISO 14064-1:2018 的重點更新",
+      "八、盤查最核心的概念：邊界",
+      "Scope 1：直接排放",
+      "Scope 2：能源間接排放",
+      "Scope 3：其他間接排放",
+      "十、排放量怎麼算？",
+      "十二、查證與確信：為什麼需要第三方？"
+    ],
+    "source_file": "ch08_iso_14064_ghg_inventory.md",
+    "source_path": "knowledge/processed/ch08_iso_14064_ghg_inventory.md",
+    "cards": [
+      "cards/ch08/iPAS淨零碳規劃師8-1.png",
+      "cards/ch08/iPAS淨零碳規劃師8-2.png",
+      "cards/ch08/iPAS淨零碳規劃師8-3.png",
+      "cards/ch08/iPAS淨零碳規劃師8-4.png",
+      "cards/ch08/iPAS淨零碳規劃師8-5.png"
+    ]
+  }
+]

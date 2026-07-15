@@ -1,0 +1,66 @@
+[
+  {
+    "source_id": "CH01",
+    "title": "第一章：國內外氣候變遷治理與因應",
+    "filename": "ch01_climate_governance.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "31355313bd6457c8a3fccf468e7d104e6eed57e1fef4014d62d2995a6802469c",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH02",
+    "title": "第二章：聯合國氣候變遷大會與 COP",
+    "filename": "ch02_cop_unfccc_paris.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "cf27d976fbd4943ed702f50d06fd24a89598a569102fd1319ced12c000a2c09d",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH03",
+    "title": "第三章：國際重要倡議內容",
+    "filename": "ch03_international_initiatives.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "793ba782451fabdb05a2f2bfc5789b93f5014ff8cde31933bde695a232fd012f",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH04",
+    "title": "第四章：國際碳稅關貿政策",
+    "filename": "ch04_carbon_tax_cbam.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "898090ffee342bcd79d44a2fec3883ac5c576d042a61f3c1c32c3d3544bf1b81",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH05",
+    "title": "第五章：台灣 2050 淨零路徑",
+    "filename": "ch05_taiwan_2050_net_zero.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "9ee6a281629e61c5a67b3f1af761e64db4b8e7391f7e0d85f3e57041acd9e7b7",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH06",
+    "title": "第六章：碳資產交易管理架構導論",
+    "filename": "ch06_carbon_asset_trading.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "0f3c13eb1e3ed6e0764669e7dcb2d9b83182701d4c7f5a98b25e56681aebaee7",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH07",
+    "title": "第七章：ISO 14068-1 碳中和標準",
+    "filename": "ch07_iso_14068_carbon_neutrality.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "c3f2b9ae1bd6c297f8b49ca327becfbd5579b14487a2a5053cb8a2fc2762cd55",
+    "parse_status": "success"
+  },
+  {
+    "source_id": "CH08",
+    "title": "第八章：ISO 14064 組織型溫室氣體盤查",
+    "filename": "ch08_iso_14064_ghg_inventory.md",
+    "source_role": "processed_course_chapter",
+    "sha256": "b01a064b0bfed953d3b52f5209cc210feb7e1b76cd8402e5445b56bcfd2d60af",
+    "parse_status": "success"
+  }
+]

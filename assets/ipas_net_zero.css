@@ -1,0 +1,220 @@
+.net-zero-page .hero-copy h1 {
+  max-width: 15ch;
+}
+
+.net-zero-page .net-zero-search {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--green-border);
+  border-radius: var(--radius-card);
+  background: var(--surface-muted);
+}
+
+.net-zero-page .net-zero-search label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--green-dark);
+  font-weight: 800;
+}
+
+.net-zero-page .net-zero-search-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.net-zero-page .net-zero-search input {
+  min-width: 0;
+  flex: 1;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: white;
+  color: var(--ink);
+  font: inherit;
+}
+
+.net-zero-page .net-zero-search input:focus {
+  border-color: var(--green);
+  outline: 0;
+  box-shadow: var(--focus-shadow);
+}
+
+.net-zero-page #search-status {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
+.net-zero-page .lesson-row small {
+  max-width: 68ch;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.net-zero-page .net-zero-no-results {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-8);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-card);
+  color: var(--muted);
+  text-align: center;
+}
+
+.net-zero-page .net-zero-summary {
+  color: var(--muted);
+  font-size: var(--text-body);
+  line-height: 1.7;
+}
+
+.net-zero-page .markdown-body {
+  color: var(--ink);
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+.net-zero-page .markdown-body h2,
+.net-zero-page .markdown-body h3,
+.net-zero-page .markdown-body h4,
+.net-zero-page .markdown-body h5 {
+  margin: 1.6em 0 .65em;
+  color: var(--green-dark);
+  line-height: 1.35;
+}
+
+.net-zero-page .markdown-body h2 { font-size: 1.55rem; }
+.net-zero-page .markdown-body h3 { font-size: 1.3rem; }
+.net-zero-page .markdown-body h4,
+.net-zero-page .markdown-body h5 { font-size: 1.08rem; }
+
+.net-zero-page .markdown-body p,
+.net-zero-page .markdown-body ul,
+.net-zero-page .markdown-body ol {
+  margin: 0 0 var(--space-4);
+}
+
+.net-zero-page .markdown-body li + li { margin-top: var(--space-1); }
+
+.net-zero-page .markdown-body blockquote {
+  margin: var(--space-5) 0;
+  padding: var(--space-4) var(--space-5);
+  border-left: 4px solid var(--green);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--green-soft);
+}
+
+.net-zero-page .markdown-body pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: #17352c;
+  color: #f4fbf7;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.net-zero-page .markdown-body code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--surface-subtle);
+  font-size: .92em;
+}
+
+.net-zero-page .markdown-body pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.net-zero-page .markdown-table-wrap {
+  margin: var(--space-5) 0;
+  overflow-x: auto;
+}
+
+.net-zero-page .markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+}
+
+.net-zero-page .markdown-body th,
+.net-zero-page .markdown-body td {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.net-zero-page .markdown-body th {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.net-zero-page .net-zero-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.net-zero-page .net-zero-study-card {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.net-zero-page .net-zero-study-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: white;
+}
+
+.net-zero-page .net-zero-study-card figcaption {
+  padding: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-caption);
+  font-weight: 700;
+}
+
+.net-zero-page .net-zero-card-missing {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: var(--space-4);
+  color: var(--muted);
+  text-align: center;
+}
+
+.net-zero-page .option-button.is-correct {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.net-zero-page .option-button.is-wrong {
+  border-color: var(--coral);
+  background: var(--coral-soft);
+}
+
+.net-zero-page .net-zero-api-error {
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--coral-soft);
+  color: var(--ink);
+}
+
+.net-zero-page .course-error h1 {
+  max-width: none;
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+@media (max-width: 768px) {
+  .net-zero-page .net-zero-card-grid { grid-template-columns: 1fr; }
+  .net-zero-page .net-zero-search-row { align-items: stretch; flex-direction: column; }
+  .net-zero-page .lesson-row small { white-space: normal; }
+}

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7fbf8">
+    <title>iPAS 淨零碳規劃師｜AI Learning Platform</title>
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas_net_zero.css') }}">
+  </head>
+  <body
+    class="net-zero-page"
+    data-answer-url="{{ url_for('ipas_net_zero_answer') }}"
+    data-card-url-template="{{ url_for('ipas_net_zero_card', filename='__CARD__') }}"
+  >
+    <header class="site-header">
+      <a class="brand" href="#home" data-view-link="home" aria-label="回到淨零碳課程首頁">
+        <span class="brand-mark" aria-hidden="true">iP</span>
+        <span>
+          <strong>{{ course_info.get('title', 'iPAS 淨零碳規劃師') }}</strong>
+          <small>{{ course_info.get('platform_name', 'AI Learning Platform') }}</small>
+        </span>
+      </a>
+      <span class="course-pill">CH01–CH08 淨零碳核心課程</span>
+    </header>
+
+    <main class="app-shell">
+      {% if error_message %}
+      <section class="view is-active" data-view="error">
+        <div class="empty-state course-error" role="alert">
+          <span aria-hidden="true">🌱</span>
+          <h1>課程暫時無法載入</h1>
+          <p>{{ error_message }}</p>
+        </div>
+      </section>
+      {% else %}
+      <section class="view is-active" id="view-home" data-view="home">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="eyebrow">{{ course_info.eyebrow }}</span>
+            <h1>{{ course_info.headline }}</h1>
+            <p class="hero-lead">{{ course_info.description }}</p>
+            <div class="hero-action-row">
+              <button class="hero-cta" type="button" data-open-chapter="{{ course_info.first_chapter_id }}">
+                <span>
+                  <strong>開始學習</strong>
+                  <small>從第一章建立淨零碳知識架構</small>
+                </span>
+                <span class="hero-cta-arrow" aria-hidden="true">→</span>
+              </button>
+              <span class="hero-meta">{{ course_info.chapter_count }} 章 · {{ course_info.card_count }} 張圖卡 · {{ questions | length }} 題測驗</span>
+            </div>
+          </div>
+          <aside class="progress-card" aria-label="課程內容摘要">
+            <div class="progress-heading">
+              <span>課程範圍</span>
+              <strong>{{ course_info.chapter_count }} 章</strong>
+            </div>
+            <div class="progress-track" style="--progress: 100" aria-hidden="true"><span></span></div>
+            <div class="progress-course">
+              <span class="progress-course-code">NZ</span>
+              <span>
+                <strong>淨零碳規劃核心</strong>
+                <small>治理、碳管理與國際標準</small>
+              </span>
+            </div>
+            <p>教材與圖卡均來自本地整理內容，章節頁會標示可追溯來源。</p>
+          </aside>
+        </div>
+
+        <div class="action-grid" aria-label="學習功能">
+          <button class="action-card" type="button" data-view-target="chapters">
+            <span class="action-icon" aria-hidden="true">📚</span>
+            <span><strong>瀏覽八章</strong><small>搜尋教材並依序閱讀</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card coral" type="button" data-view-target="quiz">
+            <span class="action-icon" aria-hidden="true">📝</span>
+            <span><strong>開始測驗</strong><small>由後端批改並顯示來源</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="view" id="view-chapters" data-view="chapters" aria-labelledby="chapters-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+          <span class="eyebrow">CH01–CH08 · 課程章節</span>
+          <h2 id="chapters-title">淨零碳課程地圖</h2>
+          <p>輸入關鍵字搜尋章節標題、重點與完整教材內容。</p>
+        </div>
+        <div class="net-zero-search" role="search">
+          <label for="chapter-search">搜尋章節內容</label>
+          <div class="net-zero-search-row">
+            <input id="chapter-search" type="search" placeholder="例如：CBAM、台灣 2050、碳中和、ISO 14064" autocomplete="off">
+            <button class="button" type="button" id="clear-search">清除</button>
+          </div>
+          <p id="search-status" aria-live="polite"></p>
+        </div>
+        <div class="lesson-list" id="chapter-list"></div>
+      </section>
+
+      <section class="view" id="view-lesson" data-view="lesson" aria-live="polite">
+        <div id="chapter-detail"></div>
+      </section>
+
+      <section class="view" id="view-quiz" data-view="quiz" aria-labelledby="quiz-title">
+        <div class="page-heading">
+          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
+        </div>
+        <div class="quiz-intro" id="quiz-intro">
+          <span class="quiz-illustration" aria-hidden="true">📝</span>
+          <span class="eyebrow">淨零碳章節測驗</span>
+          <h2 id="quiz-title">準備好檢查學習成果了嗎？</h2>
+          <p>共 {{ questions | length }} 題。答案送至後端批改後，才會顯示正確答案、解析與來源。</p>
+          <button class="button button-primary" type="button" id="start-quiz">開始測驗</button>
+        </div>
+        <div class="quiz-stage is-hidden" id="quiz-stage"></div>
+      </section>
+      {% endif %}
+    </main>
+
+    <footer>iPAS 淨零碳規劃師學習平台 · CH01–CH08</footer>
+
+    <script id="course-data" type="application/json">{{ course_info | tojson }}</script>
+    <script id="chapter-data" type="application/json">{{ chapters | tojson }}</script>
+    <script id="question-data" type="application/json">{{ questions | tojson }}</script>
+    {% if not error_message %}
+    <script src="{{ url_for('asset_file', filename='ipas_net_zero.js') }}" defer></script>
+    {% endif %}
+  </body>
+</html>
