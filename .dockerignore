@@ -1,6 +1,62 @@
-venv/
-.env
+# Exclude Git history and metadata from the production build context.
 .git/
-__pycache__/
+
+# Exclude the local Python virtual environment; dependencies are installed in the image.
+venv/
+
+# Exclude local secrets; Render supplies production environment variables separately.
+.env
+
+# Exclude Python bytecode cache directories generated during local development.
+**/__pycache__/
+
+# Exclude compiled Python bytecode files generated outside cache directories.
 *.pyc
+
+# Exclude pytest's local cache; it is not used by the application runtime.
 .pytest_cache/
+
+# Exclude the test suite from the production image.
+tests/
+
+# Exclude repository documentation and source manuals from the production image.
+docs/
+
+# Exclude review output; it is a development artifact and is not read at runtime.
+review.patch
+
+# Exclude the review file list; it is not read by the application runtime.
+changed_files.txt
+
+# Exclude the review diff summary; it is not read by the application runtime.
+diff_stat.txt
+
+# Exclude the review report; it is development-only documentation.
+REVIEW.md
+
+# Exclude the agent card; it documents the project but is not read by the runtime.
+AGENT_CARD.md
+
+# Exclude Net Zero source PDFs; runtime reads processed Markdown and cards instead.
+skills/ipas_net_zero_planner/knowledge/source/
+
+# Exclude the Net Zero preprocessing script; production serves already-processed material.
+skills/ipas_net_zero_planner/scripts/
+
+# Exclude AI Planner source documents; runtime reads processed JSON instead.
+skills/ipas_ai_application_planner/knowledge/source/
+
+# Exclude pending AI Planner source documents that have not entered the runtime index.
+skills/ipas_ai_application_planner/knowledge/source_pending/
+
+# Exclude the AI Planner preprocessing tools; production reads generated JSON directly.
+skills/ipas_ai_application_planner/scripts/
+
+# Exclude the FA index builder; production only needs the generated knowledge/index.json.
+skills/fa/knowledge/build_index.py
+
+# Exclude the Hung-Yi README portrait; the application never serves this documentation asset.
+skills/hung-yi-lee-skill/assets/
+
+# Exclude the generated interactive graph viewer; runtime graph queries use graph.json.
+skills/hung-yi-lee-skill/wiki/graph/graph.html
