@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import tempfile
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,6 +42,79 @@ EXPECTED_SOURCES = {
     },
 }
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+CHAPTER_REQUIRED_FIELDS = {
+    "chapter_id",
+    "lesson_code",
+    "title",
+    "order",
+    "source_file",
+    "status",
+}
+LEGACY_CHAPTER_FIELDS = {"topic_code", "processing_status"}
+FORMAL_CHAPTERS = (
+    {
+        "chapter_id": "CH-01",
+        "lesson_code": "L111",
+        "title": "人工智慧概念",
+        "order": 1,
+        "source_file": "ch01_ai_concepts.md",
+        "core_sections": [
+            "1.1 AI 的能力範疇分類",
+            "1.2 AI 應用領域與產業對應",
+            "1.3 AI 治理三層人機監督模式",
+            "1.4 可解釋 AI（XAI）四大技術",
+            "1.5 臺灣在地 AI 法規與機構",
+        ],
+    },
+    {
+        "chapter_id": "CH-02",
+        "lesson_code": "L112",
+        "title": "資料處理與分析概念",
+        "order": 2,
+        "source_file": "ch02_data_processing_and_analysis.md",
+        "core_sections": ["第 2 章 【L112】資料處理與分析概念"],
+    },
+    {
+        "chapter_id": "CH-03",
+        "lesson_code": "L113",
+        "title": "機器學習概念",
+        "order": 3,
+        "source_file": "ch03_machine_learning_concepts.md",
+        "core_sections": ["第 3 章 【L113】機器學習概念"],
+    },
+    {
+        "chapter_id": "CH-04",
+        "lesson_code": "L114",
+        "title": "鑑別式 AI 與生成式 AI 概念",
+        "order": 4,
+        "source_file": "ch04_discriminative_and_generative_ai_concepts.md",
+        "core_sections": ["第 4 章 【L114】鑑別式 AI 與生成式 AI 概念"],
+    },
+    {
+        "chapter_id": "CH-05",
+        "lesson_code": "L121",
+        "title": "No-Code／Low-Code 概念",
+        "order": 5,
+        "source_file": "ch05_no_code_low_code_concepts.md",
+        "core_sections": ["第 5 章 【L121】No Code / Low Code 概念"],
+    },
+    {
+        "chapter_id": "CH-06",
+        "lesson_code": "L122",
+        "title": "生成式 AI 應用領域與工具使用",
+        "order": 6,
+        "source_file": "ch06_generative_ai_applications_and_tools.md",
+        "core_sections": ["第 6 章 【L122】生成式 AI 應用領域與工具使用"],
+    },
+    {
+        "chapter_id": "CH-07",
+        "lesson_code": "L123",
+        "title": "生成式 AI 導入評估規劃",
+        "order": 7,
+        "source_file": "ch07_generative_ai_adoption_evaluation_and_planning.md",
+        "core_sections": ["第 7 章 【L123】生成式 AI 導入評估規劃"],
+    },
+)
 
 
 def _element_text(element: ET.Element) -> str:
@@ -112,19 +187,67 @@ def build_manifest(parsed: dict[str, dict], processed_at: str) -> list[dict]:
     return items
 
 
-def build_chapter_index() -> list[dict]:
-    chapters = [
-        ("CH-01", "L111", "人工智慧概念", ["1.1 AI 的能力範疇分類", "1.2 AI 應用領域與產業對應", "1.3 AI 治理三層人機監督模式", "1.4 可解釋 AI（XAI）四大技術", "1.5 臺灣在地 AI 法規與機構"]),
-        ("CH-02", "L112", "資料處理與分析概念", ["第 2 章 【L112】資料處理與分析概念"]),
-        ("CH-03", "L113", "機器學習概念", ["第 3 章 【L113】機器學習概念"]),
-        ("CH-04", "L114", "鑑別式 AI 與生成式 AI 概念", ["第 4 章 【L114】鑑別式 AI 與生成式 AI 概念"]),
-        ("CH-05", "L121", "No Code / Low Code 概念", ["第 5 章 【L121】No Code / Low Code 概念"]),
-        ("CH-06", "L122", "生成式 AI 應用領域與工具使用", ["第 6 章 【L122】生成式 AI 應用領域與工具使用"]),
-        ("CH-07", "L123", "生成式 AI 導入評估規劃", ["第 7 章 【L123】生成式 AI 導入評估規劃"]),
-    ]
+def validate_chapter_index(chapters: object, processed_dir: Path) -> list[dict]:
+    if not isinstance(chapters, list):
+        raise ValueError("chapter_index 必須是 JSON 陣列。")
+    if len(chapters) != len(FORMAL_CHAPTERS):
+        raise ValueError(f"chapter_index 必須包含 {len(FORMAL_CHAPTERS)} 章，實際為 {len(chapters)} 章。")
+
+    validated = []
+    for position, item in enumerate(chapters, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"chapter_index 第 {position} 筆必須是物件。")
+        missing = sorted(CHAPTER_REQUIRED_FIELDS - item.keys())
+        if missing:
+            raise ValueError(f"chapter_index 第 {position} 筆缺少欄位：{'、'.join(missing)}。")
+        legacy = sorted(LEGACY_CHAPTER_FIELDS & item.keys())
+        if legacy:
+            raise ValueError(f"chapter_index 第 {position} 筆包含舊欄位：{'、'.join(legacy)}。")
+        for field in ("chapter_id", "lesson_code", "title", "source_file", "status"):
+            if not isinstance(item[field], str) or not item[field].strip():
+                raise ValueError(f"chapter_index 第 {position} 筆的 {field} 必須是非空字串。")
+        if not isinstance(item["order"], int) or isinstance(item["order"], bool):
+            raise ValueError(f"chapter_index 第 {position} 筆的 order 必須是整數。")
+        validated.append(dict(item))
+
+    for field in ("chapter_id", "lesson_code", "order", "source_file"):
+        values = [item[field] for item in validated]
+        normalized = [value.casefold() if isinstance(value, str) else value for value in values]
+        if len(normalized) != len(set(normalized)):
+            raise ValueError(f"chapter_index 欄位 {field} 不可重複。")
+
+    expected_orders = list(range(1, len(FORMAL_CHAPTERS) + 1))
+    actual_orders = [item["order"] for item in validated]
+    if actual_orders != expected_orders:
+        raise ValueError(f"chapter_index 順序必須為 {expected_orders}，實際為 {actual_orders}。")
+
+    for item, expected in zip(validated, FORMAL_CHAPTERS, strict=True):
+        for field in ("chapter_id", "lesson_code", "title", "order", "source_file"):
+            if item[field] != expected[field]:
+                raise ValueError(
+                    f"chapter_index {expected['chapter_id']} 的 {field} 必須為 {expected[field]!r}，"
+                    f"實際為 {item[field]!r}。"
+                )
+        if item["status"] != "completed":
+            raise ValueError(f"chapter_index {item['chapter_id']} 的 status 必須為 completed。")
+        source_file = str(item["source_file"])
+        if Path(source_file).name != source_file or Path(source_file).suffix.casefold() != ".md":
+            raise ValueError(f"chapter_index {item['chapter_id']} 的 source_file 必須是安全的 Markdown 檔名。")
+        if not (processed_dir / source_file).is_file():
+            raise FileNotFoundError(
+                f"chapter_index {item['chapter_id']} 缺少正式教材 Markdown：{source_file}；未覆寫既有索引。"
+            )
+    return validated
+
+
+def build_chapter_index(processed_dir: Path = DEFAULT_OUTPUT_DIR) -> list[dict]:
     result = []
-    for chapter_id, topic_code, title, core_sections in chapters:
-        if topic_code == "L111":
+    for metadata in FORMAL_CHAPTERS:
+        chapter_id = metadata["chapter_id"]
+        lesson_code = metadata["lesson_code"]
+        title = metadata["title"]
+        core_sections = metadata["core_sections"]
+        if lesson_code == "L111":
             source_ids = ["SRC-CORE-001", "SRC-EXAM-001", "SRC-GENAI-001"]
             source_sections = {
                 "SRC-CORE-001": core_sections,
@@ -136,24 +259,24 @@ def build_chapter_index() -> list[dict]:
                 "SRC-EXAM-001：第六章 L11101–L11102（題型與名詞補充）",
                 "SRC-GENAI-001：第 9 章 9-6–9-7（治理與 XAI 補充）",
             ]
-            status = "processed_mvp"
         else:
             source_ids = ["SRC-CORE-001"]
             source_sections = {"SRC-CORE-001": core_sections}
-            references = [f"SRC-CORE-001：{core_sections[0]}（僅建立章節索引，尚未產生知識內容）"]
-            status = "indexed_only"
+            references = [f"SRC-CORE-001：{core_sections[0]}"]
         result.append(
             {
                 "chapter_id": chapter_id,
-                "topic_code": topic_code,
+                "lesson_code": lesson_code,
                 "title": title,
+                "order": metadata["order"],
+                "source_file": metadata["source_file"],
                 "source_ids": source_ids,
                 "source_sections": source_sections,
                 "page_or_section_reference": references,
-                "processing_status": status,
+                "status": "completed",
             }
         )
-    return result
+    return validate_chapter_index(result, Path(processed_dir))
 
 
 def build_knowledge() -> list[dict]:
@@ -306,8 +429,44 @@ def build_questions() -> list[dict]:
     return q
 
 
+def _serialized_json(payload: object) -> str:
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    json.loads(serialized)
+    return serialized
+
+
 def write_json(path: Path, payload: object) -> None:
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    """Atomically replace a JSON file after a durable temp-file write and validation."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    serialized = _serialized_json(payload)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            temporary.write(serialized)
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        json.loads(temporary_path.read_text(encoding="utf-8"))
+        os.replace(temporary_path, path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+def write_chapter_index(path: Path, payload: object, processed_dir: Path | None = None) -> None:
+    target = Path(path)
+    validated = validate_chapter_index(payload, Path(processed_dir or target.parent))
+    write_json(target, validated)
 
 
 def process(source_dir: Path, output_dir: Path) -> None:
@@ -322,11 +481,18 @@ def process(source_dir: Path, output_dir: Path) -> None:
     if failed:
         raise RuntimeError("教材章節驗證失敗，未產生輸出：" + "、".join(failed))
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    chapter_index = build_chapter_index(output_dir)
+    knowledge = build_knowledge()
+    questions = build_questions()
+    for payload in (manifest, knowledge, questions, chapter_index):
+        _serialized_json(payload)
+
+    # Legacy L111 artifacts remain for compatibility. The formal index is
+    # replaced last, so a legacy-write failure cannot damage or regress it.
     write_json(output_dir / "source_manifest.json", manifest)
-    write_json(output_dir / "chapter_index.json", build_chapter_index())
-    write_json(output_dir / "l111_knowledge.json", build_knowledge())
-    write_json(output_dir / "l111_questions.json", build_questions())
+    write_json(output_dir / "l111_knowledge.json", knowledge)
+    write_json(output_dir / "l111_questions.json", questions)
+    write_chapter_index(output_dir / "chapter_index.json", chapter_index, output_dir)
     print(f"processed {len(parsed)} sources; 10 knowledge points; 10 questions -> {output_dir}")
 
 
