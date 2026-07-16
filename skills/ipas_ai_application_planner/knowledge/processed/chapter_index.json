@@ -1,8 +1,10 @@
 [
   {
     "chapter_id": "CH-01",
-    "topic_code": "L111",
+    "lesson_code": "L111",
     "title": "人工智慧概念",
+    "order": 1,
+    "source_file": "ch01_ai_concepts.md",
     "source_ids": [
       "SRC-CORE-001",
       "SRC-EXAM-001",
@@ -30,12 +32,14 @@
       "SRC-EXAM-001：第六章 L11101–L11102（題型與名詞補充）",
       "SRC-GENAI-001：第 9 章 9-6–9-7（治理與 XAI 補充）"
     ],
-    "processing_status": "processed_mvp"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-02",
-    "topic_code": "L112",
+    "lesson_code": "L112",
     "title": "資料處理與分析概念",
+    "order": 2,
+    "source_file": "ch02_data_processing_and_analysis.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -45,14 +49,16 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 2 章 【L112】資料處理與分析概念（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 2 章 【L112】資料處理與分析概念"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-03",
-    "topic_code": "L113",
+    "lesson_code": "L113",
     "title": "機器學習概念",
+    "order": 3,
+    "source_file": "ch03_machine_learning_concepts.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -62,14 +68,16 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 3 章 【L113】機器學習概念（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 3 章 【L113】機器學習概念"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-04",
-    "topic_code": "L114",
+    "lesson_code": "L114",
     "title": "鑑別式 AI 與生成式 AI 概念",
+    "order": 4,
+    "source_file": "ch04_discriminative_and_generative_ai_concepts.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -79,14 +87,16 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 4 章 【L114】鑑別式 AI 與生成式 AI 概念（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 4 章 【L114】鑑別式 AI 與生成式 AI 概念"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-05",
-    "topic_code": "L121",
-    "title": "No Code / Low Code 概念",
+    "lesson_code": "L121",
+    "title": "No-Code／Low-Code 概念",
+    "order": 5,
+    "source_file": "ch05_no_code_low_code_concepts.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -96,14 +106,16 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 5 章 【L121】No Code / Low Code 概念（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 5 章 【L121】No Code / Low Code 概念"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-06",
-    "topic_code": "L122",
+    "lesson_code": "L122",
     "title": "生成式 AI 應用領域與工具使用",
+    "order": 6,
+    "source_file": "ch06_generative_ai_applications_and_tools.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -113,14 +125,16 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 6 章 【L122】生成式 AI 應用領域與工具使用（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 6 章 【L122】生成式 AI 應用領域與工具使用"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   },
   {
     "chapter_id": "CH-07",
-    "topic_code": "L123",
+    "lesson_code": "L123",
     "title": "生成式 AI 導入評估規劃",
+    "order": 7,
+    "source_file": "ch07_generative_ai_adoption_evaluation_and_planning.md",
     "source_ids": [
       "SRC-CORE-001"
     ],
@@ -130,8 +144,8 @@
       ]
     },
     "page_or_section_reference": [
-      "SRC-CORE-001：第 7 章 【L123】生成式 AI 導入評估規劃（僅建立章節索引，尚未產生知識內容）"
+      "SRC-CORE-001：第 7 章 【L123】生成式 AI 導入評估規劃"
     ],
-    "processing_status": "indexed_only"
+    "status": "completed"
   }
 ]
