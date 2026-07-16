@@ -7,75 +7,68 @@
     <title>iPAS AI 應用規劃師｜AI Learning Platform</title>
     <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas.css') }}">
   </head>
-  <body>
+  <body data-answer-url="{{ url_for('ipas_ai_answer') }}">
     <header class="site-header">
-      <a class="brand" href="#home" data-view-link="home" aria-label="回到 iPAS 學習平台首頁">
+      <a class="brand" href="#home" data-view-link="home" aria-label="回到 iPAS AI 應用規劃師課程首頁">
         <span class="brand-mark" aria-hidden="true">iP</span>
         <span>
-          <strong>iPAS AI 應用規劃師</strong>
+          <strong>{{ course_info.get('title', 'iPAS AI 應用規劃師正式課程') }}</strong>
           <small>AI Learning Platform</small>
         </span>
       </a>
-      <span class="course-pill">L111 人工智慧概念</span>
+      <span class="course-pill">七章正式教材</span>
     </header>
 
     <main class="app-shell">
+      {% if error_message %}
+      <section class="view is-active" data-view="error">
+        <div class="empty-state" role="alert">
+          <span aria-hidden="true">📚</span>
+          <h1>課程暫時無法載入</h1>
+          <p>{{ error_message }}</p>
+        </div>
+      </section>
+      {% else %}
       <section class="view is-active" id="view-home" data-view="home">
         <div class="hero-card">
           <div class="hero-copy">
             <span class="eyebrow">iPAS AI 應用規劃師學習平台</span>
-            <h1>準備 iPAS，<br><span>從人工智慧概念開始</span></h1>
-            <p class="hero-lead">完成 L111 的 10 個核心知識點，再用 10 題測驗確認理解。</p>
+            <h1>準備 iPAS，<br><span>從正式七章建立完整架構</span></h1>
+            <p class="hero-lead">依序閱讀人工智慧、資料處理、機器學習、生成式 AI 與導入規劃教材，再以章末測驗確認理解。</p>
             <div class="hero-action-row">
-              <button class="hero-cta" type="button" data-view-target="learn">
-                <span>
-                  <strong>開始學習</strong>
-                  <small>從第 1 個知識點開始</small>
-                </span>
+              <button class="hero-cta" type="button" data-open-chapter="{{ course_info.first_chapter_id }}">
+                <span><strong>開始學習</strong><small>從第一章正式教材開始</small></span>
                 <span class="hero-cta-arrow" aria-hidden="true">→</span>
               </button>
-              <span class="hero-meta">L111 · 10 個知識點 · 10 題測驗</span>
+              <span class="hero-meta">{{ course_info.chapter_count }} 章 · {{ course_info.question_count }} 題章末測驗</span>
             </div>
           </div>
-          <aside class="progress-card" aria-label="L111 課程完成進度">
-            <div class="progress-heading">
-              <span>目前進度</span>
-              <strong id="home-progress-value">0%</strong>
-            </div>
-            <div class="progress-track" id="home-progress-ring" style="--progress: 0" aria-hidden="true">
-              <span></span>
-            </div>
+          <aside class="progress-card" aria-label="正式課程完成進度">
+            <div class="progress-heading"><span>整體學習進度</span><strong id="home-progress-value">0%</strong></div>
+            <div class="progress-track" id="home-progress-ring" style="--progress: 0" aria-hidden="true"><span></span></div>
             <div class="progress-course">
-              <span class="progress-course-code">L111</span>
-              <span>
-                <strong>人工智慧概念</strong>
-                <small>第一個開放單元</small>
-              </span>
+              <span class="progress-course-code">AI</span>
+              <span><strong>{{ course_info.chapter_count }} 章正式教材</strong><small>{{ course_info.question_count }} 題結構化題庫</small></span>
             </div>
-            <p>尚未開始。從第一個知識點建立你的學習進度。</p>
+            <p id="home-progress-copy">尚未開始。閱讀章節並完成各章測驗即可累積進度。</p>
           </aside>
         </div>
 
         <div class="action-grid" aria-label="學習功能">
-          <button class="action-card coral" type="button" data-view-target="quiz">
-            <span class="action-icon" aria-hidden="true">📝</span>
-            <span><strong>開始測驗</strong><small>用 10 題檢查學習成果</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
+          <button class="action-card" type="button" data-view-target="learn">
+            <span class="action-icon" aria-hidden="true">📚</span><span><strong>瀏覽七章</strong><small>依正式章序閱讀完整教材</small></span><span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="action-card coral" type="button" data-quiz-chapter="{{ course_info.first_chapter_id }}">
+            <span class="action-icon" aria-hidden="true">📝</span><span><strong>章末測驗</strong><small>每章 8 題，由後端安全批改</small></span><span class="arrow" aria-hidden="true">→</span>
           </button>
           <button class="action-card" type="button" data-view-target="cheatsheet">
-            <span class="action-icon" aria-hidden="true">📚</span>
-            <span><strong>查看重點</strong><small>考前快速複習 Cheat Sheet</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
+            <span class="action-icon" aria-hidden="true">📖</span><span><strong>查看重點</strong><small>從正式教材擷取章末整理</small></span><span class="arrow" aria-hidden="true">→</span>
           </button>
           <button class="action-card" type="button" data-view-target="mistakes">
-            <span class="action-icon" aria-hidden="true">❌</span>
-            <span><strong>錯題複習</strong><small>集中查看需要再練習的題目</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
+            <span class="action-icon" aria-hidden="true">❌</span><span><strong>錯題複習</strong><small>重新挑戰曾答錯的題目</small></span><span class="arrow" aria-hidden="true">→</span>
           </button>
           <button class="action-card" type="button" data-view-target="progress">
-            <span class="action-icon" aria-hidden="true">📈</span>
-            <span><strong>學習進度</strong><small>查看各科目的開放與完成狀態</small></span>
-            <span class="arrow" aria-hidden="true">→</span>
+            <span class="action-icon" aria-hidden="true">📈</span><span><strong>學習進度</strong><small>查看七章閱讀與測驗狀態</small></span><span class="arrow" aria-hidden="true">→</span>
           </button>
         </div>
       </section>
@@ -83,26 +76,22 @@
       <section class="view" id="view-learn" data-view="learn" aria-labelledby="learn-title">
         <div class="page-heading">
           <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
-          <span class="eyebrow">L111 · 10 個知識點</span>
-          <h2 id="learn-title">人工智慧概念</h2>
-          <p>依序閱讀每個主題，建立完整的考試知識架構。</p>
+          <span class="eyebrow">CH-01–CH-07 · 正式課程章節</span>
+          <h2 id="learn-title">七章課程地圖</h2>
+          <p>點選章節閱讀完整正文；閱讀狀態會保存在此瀏覽器。</p>
         </div>
         <div class="lesson-list" id="lesson-list"></div>
       </section>
 
-      <section class="view" id="view-lesson" data-view="lesson" aria-live="polite">
-        <div id="lesson-detail"></div>
-      </section>
+      <section class="view" id="view-lesson" data-view="lesson" aria-live="polite"><div id="lesson-detail"></div></section>
 
       <section class="view" id="view-quiz" data-view="quiz" aria-labelledby="quiz-title">
-        <div class="page-heading">
-          <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
-        </div>
+        <div class="page-heading"><button class="back-link" type="button" data-view-target="home">← 返回首頁</button></div>
         <div class="quiz-intro" id="quiz-intro">
           <span class="quiz-illustration" aria-hidden="true">📝</span>
-          <span class="eyebrow">L111 小測驗</span>
+          <span class="eyebrow" id="quiz-chapter-code">章末測驗</span>
           <h2 id="quiz-title">準備好檢查學習成果了嗎？</h2>
-          <p>共 10 題，每次顯示一題。送出後即可查看解析與來源。</p>
+          <p id="quiz-intro-copy">每章 8 題。答案送至後端批改後，才會顯示結果與說明。</p>
           <button class="button button-primary" type="button" id="start-quiz">開始測驗</button>
         </div>
         <div class="quiz-stage is-hidden" id="quiz-stage"></div>
@@ -111,9 +100,9 @@
       <section class="view" id="view-cheatsheet" data-view="cheatsheet" aria-labelledby="cheatsheet-title">
         <div class="page-heading">
           <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
-          <span class="eyebrow">L111 · Cheat Sheet</span>
-          <h2 id="cheatsheet-title">十個考前重點</h2>
-          <p>用最短時間掃過主題與關鍵觀念。</p>
+          <span class="eyebrow">七章 · Cheat Sheet</span>
+          <h2 id="cheatsheet-title">正式教材章末重點</h2>
+          <p>內容取自各章「本章重點整理」、「關鍵名詞」與「學習重點」。</p>
         </div>
         <div class="cheatsheet-grid" id="cheatsheet-list"></div>
       </section>
@@ -121,105 +110,39 @@
       <section class="view" id="view-mistakes" data-view="mistakes" aria-labelledby="mistakes-title">
         <div class="page-heading">
           <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
-          <span class="eyebrow">L111 · 錯題複習</span>
-          <h2 id="mistakes-title">把不熟的地方，變成得分點</h2>
+          <span class="eyebrow">七章 · 錯題複習</span>
+          <h2 id="mistakes-title">把不熟的地方變成得分點</h2>
         </div>
-        <div class="empty-state">
-          <span aria-hidden="true">🌱</span>
-          <h3>目前還沒有錯題紀錄</h3>
-          <p>錯題保存功能將在下一版加入；現在可以先完成 L111 測驗，熟悉題型與解析。</p>
-          <button class="button button-primary" type="button" data-view-target="quiz">前往測驗</button>
-        </div>
+        <div id="mistakes-list"></div>
       </section>
 
       <section class="view" id="view-progress" data-view="progress" aria-labelledby="progress-title">
         <div class="page-heading">
           <button class="back-link" type="button" data-view-target="home">← 返回首頁</button>
           <span class="eyebrow">學習進度</span>
-          <h2 id="progress-title">你的 iPAS 學習地圖</h2>
-          <p>掌握目前進度，從正在學習的章節繼續前進。</p>
+          <h2 id="progress-title">你的 iPAS 七章學習地圖</h2>
+          <p>閱讀章節與完成章末測驗都會計入整體進度。</p>
         </div>
-
-        <section class="progress-overview" aria-labelledby="current-course-title" data-progress-key="l111">
+        <section class="progress-overview" aria-labelledby="current-course-title">
           <div class="progress-overview-heading">
-            <div>
-              <span class="progress-label">目前課程</span>
-              <h3 id="current-course-title"><span>L111</span> 人工智慧概念</h3>
-            </div>
-            <div class="progress-total">
-              <strong id="course-progress-value">40%</strong>
-              <span>整體完成</span>
-            </div>
+            <div><span class="progress-label">正式課程</span><h3 id="current-course-title"><span>AI</span> 應用規劃師七章教材</h3></div>
+            <div class="progress-total"><strong id="course-progress-value">0%</strong><span>整體完成</span></div>
           </div>
-          <div class="overview-progress-track" role="progressbar" aria-label="L111 整體完成進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40">
-            <span id="course-progress-bar" style="width: 40%"></span>
-          </div>
-          <div class="progress-stats" aria-label="學習統計">
-            <span><strong>4 / 10</strong> 知識點</span>
-            <span><strong>0 / 10</strong> 測驗題</span>
-            <span><strong>1</strong> 已完成章節</span>
-          </div>
+          <div class="overview-progress-track" id="course-progress-track" role="progressbar" aria-label="正式課程整體完成進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="course-progress-bar" style="width: 0%"></span></div>
+          <div class="progress-stats" id="progress-stats" aria-label="學習統計"></div>
         </section>
-
         <section class="progress-section" aria-labelledby="chapter-progress-title">
-          <div class="progress-section-heading">
-            <div><span class="progress-label">L111</span><h3 id="chapter-progress-title">章節進度</h3></div>
-            <span class="progress-note">示意進度</span>
-          </div>
-          <div class="chapter-list">
-            <article class="chapter-card is-completed" data-chapter-id="l111-foundations">
-              <span class="chapter-state-icon" aria-hidden="true">✓</span>
-              <div class="chapter-content">
-                <div class="chapter-topline"><span>章節 1</span><span class="status-badge completed-badge">✓ 已完成</span></div>
-                <h4>AI 基礎概念與類型</h4>
-                <p>AI 定義、Weak AI、Strong AI、AGI 與 ASI</p>
-                <div class="chapter-progress-row">
-                  <span class="chapter-progress-track"><i style="width: 100%"></i></span>
-                  <strong>4 / 4</strong>
-                </div>
-              </div>
-            </article>
-            <article class="chapter-card is-learning" data-chapter-id="l111-governance">
-              <span class="chapter-state-icon" aria-hidden="true">2</span>
-              <div class="chapter-content">
-                <div class="chapter-topline"><span>章節 2</span><span class="status-badge learning-badge">學習中</span></div>
-                <h4>AI 治理與人類監督</h4>
-                <p>AI 治理、HITL、HOTL 與 HOOTL</p>
-                <div class="chapter-progress-row">
-                  <span class="chapter-progress-track"><i style="width: 25%"></i></span>
-                  <strong>1 / 4</strong>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section class="progress-section" aria-labelledby="upcoming-courses-title">
-          <div class="progress-section-heading">
-            <div><span class="progress-label">接下來</span><h3 id="upcoming-courses-title">後續單元</h3></div>
-          </div>
-          <div class="course-list">
-            <article class="course-row is-locked">
-              <div><span class="course-code">L112</span><div class="course-copy"><h4>人工智慧技術應用</h4><small>完成 L111 後陸續開放</small></div></div>
-              <span class="status-badge locked-badge">🔒 尚未開放</span>
-            </article>
-            <article class="course-row is-locked">
-              <div><span class="course-code">L113</span><div class="course-copy"><h4>人工智慧導入規劃</h4><small>課程內容準備中</small></div></div>
-              <span class="status-badge locked-badge">🔒 尚未開放</span>
-            </article>
-            <article class="course-row is-locked">
-              <div><span class="course-code">L114</span><div class="course-copy"><h4>人工智慧風險管理</h4><small>課程內容準備中</small></div></div>
-              <span class="status-badge locked-badge">🔒 尚未開放</span>
-            </article>
-          </div>
+          <div class="progress-section-heading"><div><span class="progress-label">CH-01–CH-07</span><h3 id="chapter-progress-title">章節進度</h3></div><span class="progress-note">瀏覽器本地紀錄</span></div>
+          <div class="chapter-list" id="chapter-progress-list"></div>
         </section>
       </section>
+      {% endif %}
     </main>
 
-    <footer>iPAS AI 應用規劃師學習平台 · L111</footer>
-
-    <script id="knowledge-data" type="application/json">{{ knowledge_items | tojson }}</script>
+    <footer>iPAS AI 應用規劃師學習平台 · 七章正式教材</footer>
+    <script id="course-data" type="application/json">{{ course_info | tojson }}</script>
+    <script id="chapter-data" type="application/json">{{ chapters | tojson }}</script>
     <script id="question-data" type="application/json">{{ questions | tojson }}</script>
-    <script src="{{ url_for('asset_file', filename='ipas.js') }}" defer></script>
+    {% if not error_message %}<script src="{{ url_for('asset_file', filename='ipas.js') }}" defer></script>{% endif %}
   </body>
 </html>

@@ -51,6 +51,7 @@ from models import (
 )
 from models.clients import model_client_config_for_provider, model_client_config_from_env
 from runtime_telemetry import aggregate_runtime_telemetry, utc_timestamp, write_runtime_telemetry
+from skills import ipas_ai_application_planner as ipas_ai_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
 from skills.fa import FaSkill
 
@@ -80,13 +81,6 @@ LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL", "")
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
-IPAS_DATA_DIR = (
-    Path(__file__).resolve().parent
-    / "skills"
-    / "ipas_ai_application_planner"
-    / "knowledge"
-    / "processed"
-)
 IPAS_NET_ZERO_CARDS_DIR = (
     Path(__file__).resolve().parent
     / "skills"
@@ -703,16 +697,75 @@ def fa_page():
 
 @app.get("/ipas")
 def ipas_page():
-    with (IPAS_DATA_DIR / "l111_knowledge.json").open(encoding="utf-8") as file:
-        knowledge_items = json.load(file)
-    with (IPAS_DATA_DIR / "l111_questions.json").open(encoding="utf-8") as file:
-        questions = json.load(file)
+    try:
+        course_info = ipas_ai_skill.get_course_info()
+        chapters = ipas_ai_skill.get_chapters()
+        questions = ipas_ai_skill.get_questions()
+    except ipas_ai_skill.DataUnavailableError:
+        logger.warning("iPAS AI application planner course materials are unavailable")
+        return render_template(
+            "ipas.html",
+            course_info={},
+            chapters=[],
+            questions=[],
+            error_message="課程教材暫時無法載入，請稍後再試。",
+        ), 503
+    except Exception:
+        logger.exception("Failed to load iPAS AI application planner course page")
+        return render_template(
+            "ipas.html",
+            course_info={},
+            chapters=[],
+            questions=[],
+            error_message="課程載入時發生錯誤，請稍後再試。",
+        ), 500
 
     return render_template(
         "ipas.html",
-        knowledge_items=knowledge_items,
+        course_info=course_info,
+        chapters=chapters,
         questions=questions,
+        error_message=None,
     )
+
+
+def ipas_ai_api_error(error: str, message: str, status_code: int):
+    return jsonify({"ok": False, "error": error, "message": message}), status_code
+
+
+@app.post("/api/ipas/answer")
+def ipas_ai_answer():
+    if not request.is_json:
+        return ipas_ai_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return ipas_ai_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
+
+    raw_question_id = payload.get("question_id")
+    question_id = raw_question_id.strip().upper() if isinstance(raw_question_id, str) else ""
+    if not question_id:
+        return ipas_ai_api_error("missing_question_id", "缺少 question_id。", 400)
+
+    raw_answer = payload.get("answer")
+    answer_value = raw_answer.strip().upper() if isinstance(raw_answer, str) else ""
+    if not answer_value:
+        return ipas_ai_api_error("missing_answer", "缺少 answer。", 400)
+    if answer_value not in {"A", "B", "C", "D"}:
+        return ipas_ai_api_error("invalid_answer", "answer 必須是 A、B、C 或 D。", 400)
+
+    try:
+        result = ipas_ai_skill.submit_answer(question_id, answer_value)
+    except ValueError:
+        return ipas_ai_api_error("question_not_found", "找不到指定的題目。", 404)
+    except ipas_ai_skill.DataUnavailableError:
+        logger.warning("iPAS AI application planner answer materials are unavailable")
+        return ipas_ai_api_error("skill_unavailable", "題庫暫時無法使用，請稍後再試。", 503)
+    except Exception:
+        logger.exception("Failed to grade iPAS AI application planner answer")
+        return ipas_ai_api_error("internal_error", "批改失敗，請稍後再試。", 500)
+
+    return jsonify({"ok": True, **result})
 
 
 @app.get("/ipas/net-zero-planner")

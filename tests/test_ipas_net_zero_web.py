@@ -14,8 +14,6 @@ from skills.ipas_net_zero_planner import DataUnavailableError, get_chapters
 
 ROOT = Path(__file__).resolve().parents[1]
 PROTECTED_FILE_HASHES = {
-    "templates/ipas.html": "273d19c222eaa25178aa9bd4702d22278b38d367009ec9720a1058bf770a603f",
-    "assets/ipas.js": "510c8c10a17649dff2e6dc5a8ea23274c12945262827a0af61042437c19d4431",
     "assets/ipas.css": "ba14f06cde01f4fae2bdd8375af10bd093ea31c64b77ce73f7db6ca73ea8f908",
 }
 
@@ -173,9 +171,10 @@ class IpasNetZeroWebTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("iPAS AI 應用規劃師｜AI Learning Platform", html)
-        self.assertIn("L111 人工智慧概念", html)
+        self.assertIn("iPAS AI 應用規劃師正式課程", html)
+        self.assertIn("七章正式教材", html)
 
-    def test_existing_ipas_ui_files_are_byte_identical(self):
+    def test_shared_ipas_css_is_byte_identical(self):
         for relative_path, expected_hash in PROTECTED_FILE_HASHES.items():
             with self.subTest(path=relative_path):
                 actual_hash = hashlib.sha256((ROOT / relative_path).read_bytes()).hexdigest()
