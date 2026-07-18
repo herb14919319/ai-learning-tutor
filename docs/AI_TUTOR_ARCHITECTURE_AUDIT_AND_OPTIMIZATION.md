@@ -360,7 +360,7 @@ There is no recursion because OpenAI failures are never passed back into fallbac
 
 The following were intentionally not changed:
 
-- Full request-ID/lifecycle telemetry: requires a schema and dashboard counting decision.
+- Request-ID/lifecycle telemetry: resolved by schema v2 in `docs/REQUEST_CORRELATION_TELEMETRY_CONTRACT.md`; distributed collection remains deferred.
 - Automatic Skill discovery: existing Skills do not share a folder manifest contract.
 - Little Tree deletion: legacy active-state behavior is explicitly tested and must be retired as a product decision.
 - Trusted proxy handling: requires confirmation of deployment header rewriting.
@@ -420,7 +420,7 @@ Expected error logs in negative-path tests (deliberate provider/skill/telemetry 
 
 ## 12. Remaining Risks
 
-- Telemetry is provider-attempt telemetry, not request-lifecycle telemetry.
+- Telemetry now has correlated schema-v2 request lifecycle and provider-attempt events; cross-process collection remains a deployment risk.
 - API and Web rate limits, daily quotas, LINE/Messenger deduplication, context, and Skill caches are process-local.
 - `X-Forwarded-For` trust can weaken IP limiting in a direct-access deployment.
 - Identified entrypoints do not apply a common namespace centrally; Messenger is explicitly namespaced, while LINE/API rely on their native IDs.
@@ -438,8 +438,8 @@ Expected error logs in negative-path tests (deliberate provider/skill/telemetry 
 4. **Do LINE, Web Chat, and APIs share one Tutor Runtime?** General questions do. Rich Menu, FA, and iPAS grading/course routes intentionally bypass it.
 5. **Is Little Tree completely removed?** No. New activation/registry routing is disabled, but imports, construction, active-skill check, prompt/runtime modules, and tests remain. Legacy active state can still execute it.
 6. **Is DeepSeek fallback reliable?** After this change, retryable 429/5xx/network/timeout failures fall back once to OpenAI; 401/other non-retryable errors do not. Empty invalid responses remain a gap.
-7. **Do all failure paths produce telemetry?** No. Provider attempts do; Guard blocks, validation/auth/rate-limit early returns, routing/Skill failures, and some deterministic flows do not.
-8. **Can telemetry rebuild a request by request ID?** No. Provider records have no request ID, Skill, route reason, or Guard result.
+7. **Do all failure paths produce telemetry?** In-scope Tutor requests now record validation, Guard, routing/Skill, provider, fallback, and terminal failures. Deterministic iPAS grading/course routes remain explicitly out of scope.
+8. **Can telemetry rebuild a request by request ID?** Yes for schema-v2 Tutor events. Legacy schema-v1 provider rows remain readable but cannot be retrospectively correlated.
 9. **Can an old script regress chapter-index schema?** AI Application Planner is now strongly protected by schema validation and atomic replacement tests. Net-Zero uses a separate, weaker direct-write index script and runtime does not treat that index as authoritative.
 10. **Does one Skill load failure stop the service?** Normally only that Skill/course is unavailable or Tutor falls back. Skills are lazy-loaded; iPAS material errors are handled per route. Import-time construction still exists for direct course modules, but current constructors do not eagerly read all content.
 11. **Can context cross Skill or user?** The fixed public Web Chat no longer shares context. Identified users are separated by key and protected by a lock. Context can follow the same user across Skill changes; there is no automatic history reset, so cross-Skill semantic contamination remains possible. A caller that deliberately reuses another entrypoint's raw ID can also collide outside Messenger's namespace.
@@ -450,7 +450,7 @@ Expected error logs in negative-path tests (deliberate provider/skill/telemetry 
 
 ## 14. Recommended Next Step
 
-Define and implement a backward-compatible **request correlation telemetry contract** that propagates one request ID through entrypoint, Guard result, route reason, selected Skill, provider attempts, fallback, and final outcome, with tests proving that dashboard request counts do not double-count fallback attempts.
+Run a single-instance staging soak and compare request-level totals, provider-attempt totals, and fallback totals against access logs before enabling schema-v2 dashboard data for routine operations.
 
 ## 15. Explicit Non-Goals
 
@@ -460,3 +460,15 @@ Define and implement a backward-compatible **request correlation telemetry contr
 - No model-selection order change beyond correcting retryable fallback behavior.
 - No public response-schema redesign.
 - No commit and no push.
+
+## 16. Stabilization Update: Request Correlation Telemetry
+
+The previously deferred request-correlation finding is now resolved for Tutor traffic:
+
+- Schema v2 assigns one request ID at the Tutor entry boundary and retains it through validation, Guard, route, Skill, provider attempts, fallback, and final result.
+- Request-level and provider-attempt-level events have separate counting semantics, so fallback does not inflate user-request totals.
+- The reader remains compatible with schema v1, missing fields, missing request IDs, and malformed JSONL lines.
+- The writer uses an explicit privacy allowlist and does not persist raw user identity, questions, prompts, answers, credentials, signatures, exception text, or context history.
+- The existing telemetry API and dashboard fields remain available; additive `provider_attempts` and `rejected` metrics clarify the new semantics.
+
+The normative contract, error taxonomy, event fields, privacy rules, tests, and deferred work are documented in `docs/REQUEST_CORRELATION_TELEMETRY_CONTRACT.md`.

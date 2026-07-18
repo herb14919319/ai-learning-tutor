@@ -50,7 +50,23 @@ from models import (
     resolve_model_provider,
 )
 from models.clients import model_client_config_for_provider, model_client_config_from_env
-from runtime_telemetry import aggregate_runtime_telemetry, utc_timestamp, write_runtime_telemetry
+from runtime_telemetry import (
+    RequestTelemetryContext,
+    activate_request_context,
+    aggregate_runtime_telemetry,
+    create_request_context,
+    current_request_context,
+    current_request_outcome,
+    emit_runtime_event,
+    mark_request_outcome,
+    next_provider_attempt,
+    record_request_received,
+    record_request_terminal,
+    record_request_validation,
+    utc_timestamp,
+    with_question_length,
+    write_runtime_telemetry,
+)
 from skills import ipas_ai_application_planner as ipas_ai_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
 from skills.fa import FaSkill
@@ -145,6 +161,7 @@ def complete_model_call(
     fallback_from: str | None = None,
 ) -> str:
     started_at = time.perf_counter()
+    provider_attempt = next_provider_attempt()
     if hasattr(client, "last_usage"):
         client.last_usage = None
 
@@ -156,20 +173,30 @@ def complete_model_call(
             client=client,
             status="error",
             error_type=type(exc).__name__,
+            error_category=categorize_provider_error(exc),
             fallback=fallback,
             fallback_from=fallback_from,
             started_at=started_at,
+            provider_attempt=provider_attempt,
         )
         raise
 
+    result_status = "success"
+    error_category = None
+    if result is None or (isinstance(result, str) and not result.strip()):
+        result_status = "error"
+        error_category = "provider_invalid_response"
+        mark_request_outcome("error", error_category)
     record_model_call_telemetry(
         provider=provider,
         client=client,
-        status="success",
+        status=result_status,
         error_type=None,
+        error_category=error_category,
         fallback=fallback,
         fallback_from=fallback_from,
         started_at=started_at,
+        provider_attempt=provider_attempt,
     )
     return result
 
@@ -180,11 +207,41 @@ def record_model_call_telemetry(
     client,
     status: str,
     error_type: str | None,
+    error_category: str | None,
     fallback: bool,
     fallback_from: str | None,
     started_at: float,
+    provider_attempt: int | None,
 ) -> None:
     usage = normalize_model_usage(getattr(client, "last_usage", None))
+    request_context = current_request_context()
+    if request_context is not None:
+        emit_runtime_event(
+            "provider_attempted",
+            status=status,
+            provider=provider,
+            provider_attempt=provider_attempt,
+            model=getattr(client, "model", model_client_config_for_provider(provider).model),
+            error_category=error_category,
+            fallback=fallback,
+            fallback_from=fallback_from,
+            latency_ms=round((time.perf_counter() - started_at) * 1000),
+            input_tokens=usage["input_tokens"],
+            output_tokens=usage["output_tokens"],
+            total_tokens=usage["total_tokens"],
+        )
+        if status == "error":
+            emit_runtime_event(
+                "provider_failed",
+                status="error",
+                provider=provider,
+                provider_attempt=provider_attempt,
+                model=getattr(client, "model", model_client_config_for_provider(provider).model),
+                error_category=error_category,
+                latency_ms=round((time.perf_counter() - started_at) * 1000),
+            )
+        return
+
     write_runtime_telemetry(
         {
             "timestamp": utc_timestamp(),
@@ -213,6 +270,21 @@ def normalize_model_usage(usage) -> dict:
     }
 
 
+def categorize_provider_error(error: Exception) -> str:
+    if isinstance(error, HTTPError):
+        if error.code == 401 or error.code == 403:
+            return "provider_auth_error"
+        if error.code == 429:
+            return "provider_rate_limit"
+        if 500 <= error.code <= 599:
+            return "provider_server_error"
+    if isinstance(error, TimeoutError):
+        return "provider_timeout"
+    if isinstance(error, URLError):
+        return "provider_network_error"
+    return "internal_error"
+
+
 def is_retryable_provider_error(error: Exception) -> bool:
     if isinstance(error, HTTPError):
         return error.code == 429 or 500 <= error.code <= 599
@@ -226,9 +298,17 @@ def fallback_to_openai(
     error: Exception,
 ) -> str:
     fallback_provider = "openai"
+    emit_runtime_event(
+        "provider_fallback",
+        status="selected",
+        fallback_from=original_provider,
+        fallback_to=fallback_provider,
+        error_category=categorize_provider_error(error),
+    )
     fallback_client = get_model_client(fallback_provider)
     status_code = getattr(error, "code", None)
     if not fallback_client:
+        mark_request_outcome("error", categorize_provider_error(error))
         logger.warning(
             "Model provider fallback unavailable original_provider=%s fallback_provider=%s status_code=%s",
             original_provider,
@@ -252,7 +332,8 @@ def fallback_to_openai(
             fallback=True,
             fallback_from=original_provider,
         )
-    except Exception:
+    except Exception as fallback_error:
+        mark_request_outcome("error", categorize_provider_error(fallback_error))
         logger.exception(
             "Model provider fallback failed original_provider=%s fallback_provider=%s status_code=%s",
             original_provider,
@@ -315,18 +396,72 @@ def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESP
     return answer
 
 
+def begin_external_request(
+    entrypoint: str,
+    *,
+    question_length: int = 0,
+    request_id: str | None = None,
+    route: str | None = None,
+    user_scope: str = "authenticated",
+) -> RequestTelemetryContext:
+    context = create_request_context(
+        entrypoint,
+        user_scope=user_scope,
+        question_length=question_length,
+        request_id=request_id,
+    )
+    record_request_received(context, route=route)
+    return context
+
+
+def reject_external_request(
+    context: RequestTelemetryContext,
+    error_category: str,
+) -> None:
+    context = record_request_validation(context, status="error", error_category=error_category)
+    record_request_terminal(context, status="error", error_category=error_category)
+
+
 def generate_tutor_answer(
     user_text: str,
     *,
     user_id: str | None = None,
     entrypoint: str = ENTRYPOINT_API,
     model_provider: str | None = None,
+    request_context: RequestTelemetryContext | None = None,
 ) -> str:
+    telemetry_context = request_context or create_request_context(
+        entrypoint,
+        user_scope="channel_user" if user_id else "anonymous",
+        question_length=len((user_text or "").strip()),
+    )
+    if request_context is None:
+        record_request_received(telemetry_context)
+    if not telemetry_context.validation_recorded:
+        telemetry_context = record_request_validation(telemetry_context, status="success")
+
     provider = model_provider or resolve_model_provider(entrypoint)
     provider_token = _active_model_provider.set(provider)
     entrypoint_token = _active_entrypoint.set(entrypoint)
     try:
-        return _generate_tutor_answer(user_text, user_id=user_id)
+        with activate_request_context(telemetry_context):
+            try:
+                answer = _generate_tutor_answer(user_text, user_id=user_id)
+            except Exception as exc:
+                record_request_terminal(
+                    telemetry_context,
+                    status="error",
+                    error_category=categorize_provider_error(exc),
+                )
+                raise
+
+            outcome, error_category = current_request_outcome()
+            record_request_terminal(
+                telemetry_context,
+                status=outcome,
+                error_category=error_category,
+            )
+            return answer
     finally:
         _active_entrypoint.reset(entrypoint_token)
         _active_model_provider.reset(provider_token)
@@ -335,14 +470,38 @@ def generate_tutor_answer(
 def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
     normalized_text = (user_text or "").strip()
     if normalized_text in LITTLE_TREE_EXIT_COMMANDS:
+        emit_runtime_event("guard_evaluated", status="skipped", guard_reason="active_skill_exit")
+        emit_runtime_event(
+            "route_selected",
+            status="success",
+            route=LITTLE_TREE_SKILL_NAME,
+            route_reason="active_skill_exit",
+        )
+        emit_runtime_event("skill_selected", status="success", skill_id=LITTLE_TREE_SKILL_NAME)
         clear_active_skill(user_id)
         return LITTLE_TREE_EXIT_MESSAGE
 
     if get_active_skill(user_id) == LITTLE_TREE_SKILL_NAME:
+        emit_runtime_event("guard_evaluated", status="skipped", guard_reason="active_skill")
+        emit_runtime_event(
+            "route_selected",
+            status="success",
+            route=LITTLE_TREE_SKILL_NAME,
+            route_reason="active_skill",
+        )
+        emit_runtime_event("skill_selected", status="success", skill_id=LITTLE_TREE_SKILL_NAME)
         return normalize_response(little_tree_agent.answer(user_text, user_id=user_id))
 
     guard_result = route_learning_boundary(user_text)
+    emit_runtime_event(
+        "guard_evaluated",
+        status="success" if guard_result.allowed else "rejected",
+        guard_result="allowed" if guard_result.allowed else "rejected",
+        guard_reason=guard_result.intent,
+        error_category=None if guard_result.allowed else "guard_rejected",
+    )
     if not guard_result.allowed:
+        mark_request_outcome("rejected", "guard_rejected")
         return guard_result.response or DEFAULT_FALLBACK_RESPONSE
 
     return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
@@ -378,15 +537,15 @@ def dispatch_agent_capability(
     question: str,
     user_id: str | None = None,
     entrypoint: str = ENTRYPOINT_API,
+    request_context: RequestTelemetryContext | None = None,
 ) -> tuple[str, str]:
     if task not in SUPPORTED_AGENT_CAPABILITIES:
         raise ValueError("unsupported_task")
     if task == ANSWER_QUESTION_CAPABILITY:
-        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(
-            question,
-            user_id=user_id,
-            entrypoint=entrypoint,
-        )
+        kwargs = {"user_id": user_id, "entrypoint": entrypoint}
+        if request_context is not None:
+            kwargs["request_context"] = request_context
+        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(question, **kwargs)
     raise ValueError("unsupported_task")
 
 
@@ -516,11 +675,16 @@ def log_tutor_api_audit(
     )
 
 
-def dispatch_tutor_api_request(tutor_request: dict) -> str:
+def dispatch_tutor_api_request(
+    tutor_request: dict,
+    *,
+    request_context: RequestTelemetryContext | None = None,
+) -> str:
     return generate_tutor_answer(
         tutor_request["question"],
         user_id=tutor_request["user_id"],
         entrypoint=ENTRYPOINT_API,
+        request_context=request_context,
     )
 
 
@@ -531,14 +695,17 @@ def generate_ai_reply(
     truncate: bool = True,
     entrypoint: str = ENTRYPOINT_API,
     model_provider: str | None = None,
+    request_context: RequestTelemetryContext | None = None,
 ) -> str:
     try:
-        reply = generate_tutor_answer(
-            user_text,
-            user_id=user_id,
-            entrypoint=entrypoint,
-            model_provider=model_provider,
-        )
+        kwargs = {
+            "user_id": user_id,
+            "entrypoint": entrypoint,
+            "model_provider": model_provider,
+        }
+        if request_context is not None:
+            kwargs["request_context"] = request_context
+        reply = generate_tutor_answer(user_text, **kwargs)
     except Exception:
         logger.exception("Unexpected AI Tutor response error")
         return ERROR_FALLBACK_RESPONSE
@@ -548,12 +715,33 @@ def generate_ai_reply(
     return reply
 
 
-def generate_fa_answer(user_text: str) -> str:
+def generate_fa_answer(
+    user_text: str,
+    *,
+    request_context: RequestTelemetryContext | None = None,
+) -> str:
     provider = resolve_model_provider(ENTRYPOINT_WEB_CHAT)
     provider_token = _active_model_provider.set(provider)
     entrypoint_token = _active_entrypoint.set("fa_web_chat")
     try:
-        return normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
+        if request_context is None:
+            return normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
+        with activate_request_context(request_context):
+            emit_runtime_event("guard_evaluated", status="skipped", guard_reason="explicit_skill")
+            emit_runtime_event("route_selected", status="success", route="fa", route_reason="explicit_skill")
+            emit_runtime_event("skill_selected", status="success", skill_id="fa")
+            try:
+                answer = normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
+            except Exception as exc:
+                record_request_terminal(
+                    request_context,
+                    status="error",
+                    error_category=categorize_provider_error(exc),
+                )
+                raise
+            outcome, error_category = current_request_outcome()
+            record_request_terminal(request_context, status=outcome, error_category=error_category)
+            return answer
     finally:
         _active_entrypoint.reset(entrypoint_token)
         _active_model_provider.reset(provider_token)
@@ -883,26 +1071,37 @@ def web_chat():
 
     raw_message = payload.get("message")
     message = raw_message.strip() if isinstance(raw_message, str) else ""
+    telemetry_context = begin_external_request(
+        "web_chat",
+        question_length=len(message),
+        route="/web-chat",
+        user_scope="anonymous",
+    )
     if not message:
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"reply": "請先輸入一個想討論的 AI 學習問題。"}), 400
     if len(message) > TUTOR_API_MAX_QUESTION_LENGTH:
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"reply": "問題內容過長，請縮短後再試。"}), 400
 
     client_ip = tutor_api_client_ip()
     if fa_web_rate_limit_exceeded(client_ip):
+        reject_external_request(telemetry_context, "rate_limit_error")
         return jsonify({"error": "rate_limit_exceeded"}), 429
 
     raw_skill_id = payload.get("skill_id")
     skill_id = raw_skill_id.strip().lower() if isinstance(raw_skill_id, str) else ""
     if skill_id:
         if skill_id != "fa":
+            reject_external_request(telemetry_context, "validation_error")
             return jsonify({"error": "unsupported_skill"}), 400
 
-        request_id = uuid.uuid4().hex
+        request_id = telemetry_context.request_id
+        telemetry_context = record_request_validation(telemetry_context, status="success")
 
         started_at = time.perf_counter()
         try:
-            reply = generate_fa_answer(message)
+            reply = generate_fa_answer(message, request_context=telemetry_context)
         except Exception as exc:
             logger.exception(
                 "[FA_AUDIT] request_id=%s user_id=%s status=500 error=%s",
@@ -923,26 +1122,47 @@ def web_chat():
 
     # Public Web Chat has no authenticated identity. Do not trust a caller-supplied
     # user_id or place unrelated visitors in one shared conversation bucket.
-    reply = generate_ai_reply(message, user_id=None, truncate=False, entrypoint=ENTRYPOINT_WEB_CHAT)
+    telemetry_context = record_request_validation(telemetry_context, status="success")
+    reply = generate_ai_reply(
+        message,
+        user_id=None,
+        truncate=False,
+        entrypoint=ENTRYPOINT_WEB_CHAT,
+        request_context=telemetry_context,
+    )
     return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
 
 
 @app.get("/test")
 def test_mode():
+    question = request.args.get("question", "").strip()
+    telemetry_context = begin_external_request(
+        "test",
+        question_length=len(question),
+        route="/test",
+    )
     authenticated, error_response = authenticate_tutor_api_request()
     if not authenticated:
+        reject_external_request(telemetry_context, "authentication_error")
         return error_response
 
-    question = request.args.get("question", "").strip()
-
     if not question:
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"error": "Missing required query parameter: question"}), 400
     if len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"error": "Invalid question"}), 400
     if tutor_api_rate_limit_exceeded(tutor_api_client_ip()):
+        reject_external_request(telemetry_context, "rate_limit_error")
         return jsonify({"error": "Rate limit exceeded"}), 429
 
-    answer = generate_ai_reply(question, truncate=False, entrypoint=ENTRYPOINT_API)
+    telemetry_context = record_request_validation(telemetry_context, status="success")
+    answer = generate_ai_reply(
+        question,
+        truncate=False,
+        entrypoint=ENTRYPOINT_API,
+        request_context=telemetry_context,
+    )
     return jsonify(
         {
             "question": question,
@@ -984,16 +1204,24 @@ def runtime_telemetry_api():
 def agent_ask():
     started_at = time.perf_counter()
     call_id = uuid.uuid4().hex
+    telemetry_context = begin_external_request(
+        "api_agent",
+        request_id=call_id,
+        route="/api/agent/ask",
+    )
 
     if tutor_api_payload_too_large():
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"ok": False, "error": "Payload too large"}), 413
 
     authenticated, error_response = authenticate_tutor_api_request()
     if not authenticated:
+        reject_external_request(telemetry_context, "authentication_error")
         return error_response
 
     client_ip = tutor_api_client_ip()
     if tutor_api_rate_limit_exceeded(client_ip):
+        reject_external_request(telemetry_context, "rate_limit_error")
         return jsonify({"ok": False, "error": "Rate limit exceeded"}), 429
 
     payload = request.get_json(silent=True) or {}
@@ -1003,12 +1231,14 @@ def agent_ask():
     caller = agent_request["caller"]
     task = agent_request["task"]
     question = agent_request["question"]
+    telemetry_context = with_question_length(telemetry_context, len(question))
     user_id = agent_request["user_id"]
     handled_by = task if task in SUPPORTED_AGENT_CAPABILITIES else None
 
     logger.info("[AGENT_API] received call_id=%s caller=%s task=%s", call_id, caller, task)
 
     if task not in SUPPORTED_AGENT_CAPABILITIES:
+        reject_external_request(telemetry_context, "validation_error")
         duration_ms = round((time.perf_counter() - started_at) * 1000)
         logger.warning(
             "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=unsupported_task",
@@ -1021,6 +1251,7 @@ def agent_ask():
         return jsonify({"ok": False, "error": "unsupported_task"}), 400
 
     if not question or len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
+        reject_external_request(telemetry_context, "validation_error")
         duration_ms = round((time.perf_counter() - started_at) * 1000)
         logger.warning(
             "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=missing_question",
@@ -1048,12 +1279,14 @@ def agent_ask():
         handled_by,
     )
 
+    telemetry_context = record_request_validation(telemetry_context, status="success")
     try:
         handled_by, answer = dispatch_agent_capability(
             task,
             question=question,
             user_id=user_id,
             entrypoint=ENTRYPOINT_API,
+            request_context=telemetry_context,
         )
     except Exception as exc:
         duration_ms = round((time.perf_counter() - started_at) * 1000)
@@ -1102,15 +1335,22 @@ def agent_ask():
 def tutor_ask():
     started_at = time.perf_counter()
     client_ip = tutor_api_client_ip()
+    telemetry_context = begin_external_request(
+        "api_tutor",
+        route="/api/tutor/ask",
+    )
 
     if tutor_api_payload_too_large():
+        reject_external_request(telemetry_context, "validation_error")
         return jsonify({"ok": False, "error": "Payload too large"}), 413
 
     authenticated, error_response = authenticate_tutor_api_request()
     if not authenticated:
+        reject_external_request(telemetry_context, "authentication_error")
         return error_response
 
     if tutor_api_rate_limit_exceeded(client_ip):
+        reject_external_request(telemetry_context, "rate_limit_error")
         status_code = 429
         log_tutor_api_audit(
             started_at=started_at,
@@ -1127,6 +1367,7 @@ def tutor_ask():
 
     question = validate_tutor_api_question(payload)
     if question is None:
+        reject_external_request(telemetry_context, "validation_error")
         tutor_request = normalize_tutor_api_request(payload)
         status_code = 400
         log_tutor_api_audit(
@@ -1139,8 +1380,10 @@ def tutor_ask():
         return jsonify({"ok": False, "error": "Invalid question"}), status_code
 
     tutor_request = normalize_tutor_api_request(payload)
+    telemetry_context = with_question_length(telemetry_context, len(question))
     api_key = request.headers.get("X-API-Key", "")
     if tutor_api_quota_exceeded(api_key):
+        reject_external_request(telemetry_context, "rate_limit_error")
         status_code = 403
         log_tutor_api_audit(
             started_at=started_at,
@@ -1151,8 +1394,12 @@ def tutor_ask():
         )
         return jsonify({"ok": False, "error": "Daily quota exceeded"}), status_code
 
+    telemetry_context = record_request_validation(telemetry_context, status="success")
     try:
-        answer = dispatch_tutor_api_request(tutor_request)
+        answer = dispatch_tutor_api_request(
+            tutor_request,
+            request_context=telemetry_context,
+        )
     except Exception:
         status_code = 500
         logger.exception(

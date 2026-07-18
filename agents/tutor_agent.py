@@ -9,6 +9,7 @@ from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from memory.conversation_context import add_turn
 from memory.conversation_context import build_contextual_prompt
 from memory.conversation_context import get_active_skill
+from runtime_telemetry import emit_runtime_event
 from skills.registry import configure as configure_skills
 from skills.registry import get_skill
 from skills.registry import get_runtime
@@ -53,6 +54,13 @@ class TutorAgent:
             else self.skill_runtime.route(request)
         )
         skill_name = decision.get("skill", "general")
+        emit_runtime_event(
+            "route_selected",
+            status="success",
+            route=skill_name,
+            route_reason=decision.get("reason"),
+        )
+        emit_runtime_event("skill_selected", status="success", skill_id=skill_name)
 
         if skill_name == "general":
             answer = self._general_teaching_answer(user_message, reason="router_general")
@@ -67,12 +75,14 @@ class TutorAgent:
             )
         except Exception:
             logger.exception("Skill failed: %s", skill_name)
+            self._record_skill_fallback(skill_name, "skill_exception")
             answer = self._general_teaching_answer(user_message, reason="skill_exception")
             add_turn(user_id, user_message, answer)
             return answer
 
         if not skill:
             logger.warning("Router selected unknown skill: %s", skill_name)
+            self._record_skill_fallback(skill_name, "unknown_skill")
             answer = self._general_teaching_answer(user_message, reason="unknown_skill")
             add_turn(user_id, user_message, answer)
             return answer
@@ -81,18 +91,35 @@ class TutorAgent:
             skill_answer = self._invoke_skill(skill, request)
         except Exception:
             logger.exception("Skill failed: %s", skill_name)
+            self._record_skill_fallback(skill_name, "skill_exception")
             answer = self._general_teaching_answer(user_message, reason="skill_exception")
             add_turn(user_id, user_message, answer)
             return answer
 
         if not skill_answer:
             logger.warning("Skill returned empty answer: %s", skill_name)
+            self._record_skill_fallback(skill_name, "empty_skill_answer")
             answer = self._general_teaching_answer(user_message, reason="empty_skill_answer")
             add_turn(user_id, user_message, answer)
             return answer
 
         add_turn(user_id, user_message, skill_answer)
         return skill_answer
+
+    @staticmethod
+    def _record_skill_fallback(skill_name: str, reason: str) -> None:
+        emit_runtime_event(
+            "skill_selected",
+            status="error",
+            skill_id=skill_name,
+            error_category="skill_unavailable",
+        )
+        emit_runtime_event(
+            "route_selected",
+            status="success",
+            route="general",
+            route_reason=reason,
+        )
 
     def _invoke_skill(self, skill, request) -> str:
         parameters = inspect.signature(skill.answer).parameters

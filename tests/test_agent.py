@@ -6,7 +6,7 @@ import hmac
 from io import BytesIO
 from types import SimpleNamespace
 from urllib.error import HTTPError
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import main
 from menu_router import is_menu_command
@@ -912,6 +912,7 @@ class WebChatTest(unittest.TestCase):
             user_id=None,
             truncate=False,
             entrypoint=main.ENTRYPOINT_WEB_CHAT,
+            request_context=ANY,
         )
 
     def test_web_chat_without_identity_is_stateless(self):
@@ -924,6 +925,7 @@ class WebChatTest(unittest.TestCase):
             user_id=None,
             truncate=False,
             entrypoint=main.ENTRYPOINT_WEB_CHAT,
+            request_context=ANY,
         )
 
     def test_web_chat_rejects_empty_message_without_calling_ai(self):
@@ -990,7 +992,12 @@ class TutorAskApiTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.get_json()["ok"])
-        generate.assert_called_once_with("What is MCP?", user_id=None, entrypoint=main.ENTRYPOINT_API)
+        generate.assert_called_once_with(
+            "What is MCP?",
+            user_id=None,
+            entrypoint=main.ENTRYPOINT_API,
+            request_context=ANY,
+        )
 
     def test_invalid_api_key_returns_401(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -1049,7 +1056,12 @@ class TutorAskApiTest(unittest.TestCase):
                 "source": "ai-learning-tutor",
             },
         )
-        generate.assert_called_once_with("What is MCP?", user_id="baeko", entrypoint=main.ENTRYPOINT_API)
+        generate.assert_called_once_with(
+            "What is MCP?",
+            user_id="baeko",
+            entrypoint=main.ENTRYPOINT_API,
+            request_context=ANY,
+        )
 
     def test_oversized_payload_returns_413(self):
         with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "test-key"}), patch.object(
@@ -1099,7 +1111,8 @@ class TutorAskApiTest(unittest.TestCase):
                 "user_id": "baeko",
                 "source": "baeko_callout",
                 "metadata": metadata,
-            }
+            },
+            request_context=ANY,
         )
 
     def test_empty_question_returns_400(self):
@@ -1592,6 +1605,7 @@ class TestEndpointSecurityTest(unittest.TestCase):
             "What is RAG?",
             truncate=False,
             entrypoint=main.ENTRYPOINT_API,
+            request_context=ANY,
         )
 
 

@@ -98,7 +98,7 @@
       </section>
       <section>
         <h2>By Provider</h2>
-        <table><thead><tr><th>Provider</th><th>Requests</th><th>Tokens</th><th>Errors</th></tr></thead><tbody id="providers"></tbody></table>
+        <table><thead><tr><th>Provider</th><th>Attempts</th><th>Tokens</th><th>Errors</th></tr></thead><tbody id="providers"></tbody></table>
       </section>
     </div>
     <section class="recent">
@@ -132,6 +132,8 @@
         ["Requests", data.total_requests],
         ["Success", data.success],
         ["Errors", data.error],
+        ["Rejected", data.rejected],
+        ["Provider Attempts", data.provider_attempts],
         ["Tokens", data.total_tokens],
         ["Fallbacks", data.fallback_count],
       ].map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${number(value)}</strong></div>`).join("");
