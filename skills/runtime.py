@@ -24,6 +24,12 @@ class SkillManifest:
     entrypoint: str
     priority: int = 0
     enabled: bool = True
+    status: str = "active"
+    skill_type: str = "runtime"
+    aliases: tuple[str, ...] = ()
+    content_root: str | None = None
+    chapter_index: str | None = None
+    source: str = ""
 
     def to_metadata(self) -> SkillMetadata:
         return SkillMetadata(
@@ -74,10 +80,14 @@ class SkillCatalog:
 
 
 class SkillRuntime:
-    def __init__(self, catalog: SkillCatalog):
+    def __init__(
+        self,
+        catalog: SkillCatalog,
+        loaded_skills: dict[str, ModuleSkillAdapter] | None = None,
+    ):
         self.catalog = catalog
         self.context = SkillContext()
-        self._skills: dict[str, ModuleSkillAdapter] = {}
+        self._skills: dict[str, ModuleSkillAdapter] = dict(loaded_skills or {})
 
     def configure(self, ask_gpt: AskGpt) -> None:
         self.context = SkillContext(ask_gpt=ask_gpt)
@@ -102,8 +112,14 @@ class SkillRuntime:
             logger.info("Skill is disabled: %s", skill_name)
             return None
         if skill_name not in self._skills:
-            module = import_module(manifest.entrypoint)
-            self._skills[skill_name] = ModuleSkillAdapter(module, manifest.to_metadata())
+            module_name, separator, attribute = manifest.entrypoint.partition(":")
+            target = import_module(module_name)
+            if separator:
+                factory = getattr(target, attribute)
+                target = factory()
+            if not callable(getattr(target, "answer", None)):
+                raise TypeError(f"Skill entrypoint does not provide answer(): {skill_name}")
+            self._skills[skill_name] = ModuleSkillAdapter(target, manifest.to_metadata())
             self._skills[skill_name].configure(self.context)
         return self._skills[skill_name]
 

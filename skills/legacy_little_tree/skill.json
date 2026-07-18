@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "skill_id": "little_tree_companion",
+  "display_name": "Little Tree Companion",
+  "description": "Retained legacy active-state compatibility path; not eligible for auto-activation.",
+  "status": "disabled",
+  "skill_type": "legacy",
+  "entrypoint": "skills.little_tree_companion",
+  "priority": 200,
+  "aliases": [],
+  "domains": [],
+  "keywords": [
+    "/小樹"
+  ],
+  "capabilities": [
+    "child_friendly_learning_companion"
+  ]
+}

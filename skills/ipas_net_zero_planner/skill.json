@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "skill_id": "ipas_net_zero_planner",
+  "display_name": "iPAS Net-Zero Planner",
+  "description": "Dedicated course web application with deterministic browsing, search, and grading.",
+  "status": "active",
+  "skill_type": "web",
+  "priority": 0,
+  "aliases": [],
+  "domains": [],
+  "keywords": [],
+  "capabilities": [
+    "chapter_browsing",
+    "search",
+    "deterministic_grading"
+  ],
+  "content_root": "knowledge/processed",
+  "chapter_index": "chapter_index.json"
+}

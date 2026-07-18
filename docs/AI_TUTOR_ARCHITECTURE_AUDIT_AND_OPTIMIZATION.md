@@ -133,16 +133,16 @@ LINE, general Web Chat, Messenger, `/api/agent/ask`, `/api/tutor/ask`, and authe
 
 ## 4. Skill Loading Lifecycle
 
-1. `skills/registry.py` constructs `SKILL_MANIFESTS` in Python.
-2. `SkillCatalog` exposes enabled metadata sorted by priority.
-3. `SkillRuntime.normalize_request()` creates `SkillRequest`.
-4. `SkillRuntime.route()` chooses the first metadata domain/keyword match and returns `metadata_match` or `default`.
-5. `SkillRuntime.get_skill()` lazily imports the manifest entrypoint.
-6. `ModuleSkillAdapter` configures the model callback and invokes module-level `answer()`.
-7. Loaded adapters remain cached for the process lifetime.
-8. Import/invocation failure is caught by `TutorAgent`, which uses the general teaching path.
+1. `skills/discovery.py` enumerates sorted direct child directories and reads fixed `skill.json` manifests.
+2. Manifests are validated before any Skill code import, including schema, enums, entrypoints, aliases, and content paths.
+3. Only active Runtime Skills are imported and structurally validated; failures remain isolated diagnostics.
+4. `skills/registry.py` projects validated manifests into `SkillCatalog` and preloaded adapters into `SkillRuntime`.
+5. `SkillCatalog` exposes enabled Runtime metadata sorted by priority.
+6. `SkillRuntime.normalize_request()` creates `SkillRequest`.
+7. `SkillRuntime.route()` chooses the first metadata match and returns `metadata_match` or `default`.
+8. `ModuleSkillAdapter` preserves module-level `answer()` and optional `configure()` compatibility.
 
-The contract is stable only for registry-backed chat skills. Adding one requires a module plus a new Python `SkillManifest`; folder metadata is not discovered. The iPAS AI course also requires direct imports/routes/templates/assets, and the net-zero course is not in `SKILL_MANIFESTS`. Therefore, “drop a folder, validate metadata, auto-discover” is not implemented.
+Runtime onboarding is now folder-driven for repository-local Tutor Skills. Dedicated Web applications, deterministic tools, UI routes, and content tooling remain explicitly wired and are classified rather than auto-registered.
 
 The iPAS AI Application Planner has a strict seven-chapter index schema and validates identity fields, order, status, source Markdown, titles, quizzes, and answers. Its processor validates before an atomic temp-file replace. The net-zero planner assumes eight chapters by filename pattern, builds its runtime view from Markdown rather than its generated index, and its index script uses direct `Path.write_text()`.
 
@@ -258,14 +258,14 @@ There is no recursion because OpenAI failures are never passed back into fallbac
 
 ### `AIT-P1-004`
 
-**Severity:** P1  
-**Title:** Adding a Skill still requires core Python wiring.  
-**Evidence:** `skills/registry.py:SKILL_MANIFESTS` is a hard-coded tuple; `SkillRuntime.get_skill()` imports only registered entrypoints. iPAS Net-Zero and FA are direct `main.py` imports/routes rather than generic registered Tutor skills.  
-**Impact:** A third/fourth/fifth Skill can be invisible to Tutor routing or require edits across registry, composition root, routes, UI, and tests.  
-**Trigger:** Adding a new course folder without editing core code.  
-**Recommendation:** First standardize one validated manifest contract across existing Skills; do not build a plugin framework.  
-**Change Risk:** High.  
-**Status:** Deferred.
+**Severity:** P1
+**Title:** Runtime Skill onboarding previously required core Python wiring.
+**Evidence:** The hard-coded tuple has been replaced by validated `skill.json` discovery. Existing Runtime, Web, and legacy packages now carry explicit classifications.
+**Impact:** A new repository-local Runtime Skill no longer requires edits to registry, Tutor Agent, or router. Dedicated Web/UI/deterministic integrations still require explicit wiring by design.
+**Trigger:** Adding a new course folder without editing core code.
+**Recommendation:** Keep Web route and deterministic-tool registration separate until those systems have their own narrow contracts; do not expand this into a plugin framework.
+**Change Risk:** High.
+**Status:** Resolved for Runtime Skill discovery; Web/UI/tool registration remains deferred.
 
 ### `AIT-P1-005`
 
@@ -361,7 +361,7 @@ There is no recursion because OpenAI failures are never passed back into fallbac
 The following were intentionally not changed:
 
 - Request-ID/lifecycle telemetry: resolved by schema v2 in `docs/REQUEST_CORRELATION_TELEMETRY_CONTRACT.md`; distributed collection remains deferred.
-- Automatic Skill discovery: existing Skills do not share a folder manifest contract.
+- Generic Web route/UI/deterministic-tool discovery: Runtime Skill manifest discovery is resolved, but these separate systems remain explicitly wired.
 - Little Tree deletion: legacy active-state behavior is explicitly tested and must be retired as a product decision.
 - Trusted proxy handling: requires confirmation of deployment header rewriting.
 - Router deletion: tests must first move to the production import path.
@@ -432,8 +432,8 @@ Expected error logs in negative-path tests (deliberate provider/skill/telemetry 
 
 ## 13. Answers to the 15 Questions
 
-1. **Platform or assembled courses?** It has a shared platform core, but Skill onboarding is still partly assembled by hand. Verdict: an extensible tutor shell with course-specific coupling, not yet folder-driven extensibility.
-2. **What must change for Skills 3–5?** At minimum `skills/registry.py` plus a Python entrypoint and tests. A course UI may also require `main.py`, template, assets, direct imports, and route tests. Net-Zero and FA demonstrate that coupling.
+1. **Platform or assembled courses?** Runtime Tutor Skills now have folder-driven manifest onboarding. Course Web applications and deterministic tools remain intentionally assembled through explicit routes and schemas.
+2. **What must change for Skills 3–5?** A Runtime Skill needs a direct child folder, `skill.json`, local entrypoint, and tests; no central registry/router edit. A course UI still requires explicit route, template, asset, and API work.
 3. **Guard, Skill Router, Prompt Policy overlap?** The Guard owns product-boundary allow/deny; SkillRuntime owns domain selection; prompts repeat some behavioral boundaries. Responsibilities are conceptually distinct but policy text is duplicated and routing keywords overlap.
 4. **Do LINE, Web Chat, and APIs share one Tutor Runtime?** General questions do. Rich Menu, FA, and iPAS grading/course routes intentionally bypass it.
 5. **Is Little Tree completely removed?** No. New activation/registry routing is disabled, but imports, construction, active-skill check, prompt/runtime modules, and tests remain. Legacy active state can still execute it.
@@ -441,16 +441,16 @@ Expected error logs in negative-path tests (deliberate provider/skill/telemetry 
 7. **Do all failure paths produce telemetry?** In-scope Tutor requests now record validation, Guard, routing/Skill, provider, fallback, and terminal failures. Deterministic iPAS grading/course routes remain explicitly out of scope.
 8. **Can telemetry rebuild a request by request ID?** Yes for schema-v2 Tutor events. Legacy schema-v1 provider rows remain readable but cannot be retrospectively correlated.
 9. **Can an old script regress chapter-index schema?** AI Application Planner is now strongly protected by schema validation and atomic replacement tests. Net-Zero uses a separate, weaker direct-write index script and runtime does not treat that index as authoritative.
-10. **Does one Skill load failure stop the service?** Normally only that Skill/course is unavailable or Tutor falls back. Skills are lazy-loaded; iPAS material errors are handled per route. Import-time construction still exists for direct course modules, but current constructors do not eagerly read all content.
+10. **Does one Skill load failure stop the service?** No. Manifest, content-path, import, dependency, factory, and runtime-interface failures are isolated per Skill and projected as unavailable diagnostics while other Skills load.
 11. **Can context cross Skill or user?** The fixed public Web Chat no longer shares context. Identified users are separated by key and protected by a lock. Context can follow the same user across Skill changes; there is no automatic history reset, so cross-Skill semantic contamination remains possible. A caller that deliberately reuses another entrypoint's raw ID can also collide outside Messenger's namespace.
 12. **Is Dashboard fully authenticated?** Telemetry data API and `/observability` are key-protected. `/dashboard` exposes only the HTML shell; it cannot fetch data without a key. Therefore data is protected, but route/documentation behavior is not uniform.
-13. **Three issues most likely to explode on next Skill?** Hard-coded `SKILL_MANIFESTS`; incompatible per-course schema/chapter assumptions; direct `main.py`/UI wiring outside `SkillRuntime`.
+13. **Three issues most likely to explode on next Skill?** Incompatible per-course schemas, explicit Web/UI wiring outside `SkillRuntime`, and unclear ownership when one package combines Runtime, deterministic, and Web responsibilities.
 14. **What is acceptable at single-instance low traffic?** In-memory context, quota/rate state, event deduplication, adapter cache, and thread-only telemetry append locking are acceptable documented limits while Docker remains one worker and traffic is low.
 15. **Three refactors not to do now?** Do not introduce a plugin/agent framework; do not add a database/Redis/queue for current process-local state; do not unify/rewrite all course schemas and chapter indexes in one migration.
 
 ## 14. Recommended Next Step
 
-Run a single-instance staging soak and compare request-level totals, provider-attempt totals, and fallback totals against access logs before enabling schema-v2 dashboard data for routine operations.
+Onboard one small non-course Runtime Skill through only a new folder, manifest, entrypoint, and tests as a staging proof that no central registry or routing edit is required.
 
 ## 15. Explicit Non-Goals
 
@@ -472,3 +472,17 @@ The previously deferred request-correlation finding is now resolved for Tutor tr
 - The existing telemetry API and dashboard fields remain available; additive `provider_attempts` and `rejected` metrics clarify the new semantics.
 
 The normative contract, error taxonomy, event fields, privacy rules, tests, and deferred work are documented in `docs/REQUEST_CORRELATION_TELEMETRY_CONTRACT.md`.
+
+## 17. Stabilization Update: Skill Manifest and Safe Discovery
+
+The hard-coded Runtime Skill registry finding is resolved:
+
+- Fixed-name `skill.json` manifests are validated before import.
+- Discovery is deterministic, direct-child-only, repository-local, and fail-isolated.
+- Active Runtime Skills are loaded through the existing adapter contract.
+- FA and Net-Zero are classified as dedicated Web packages and are not auto-registered as chat Skills.
+- Little Tree is classified as disabled legacy and is never auto-activated.
+- Duplicate IDs/aliases, unsafe paths, malformed content indexes, missing dependencies, import failures, and invalid factory results affect only the relevant Skill.
+- Existing Runtime IDs, routing metadata, APIs, provider behavior, telemetry, UI routes, and course schemas remain compatible.
+
+The normative schema, lifecycle, security boundaries, migration rules, diagnostics, and onboarding flow are documented in `docs/SKILL_MANIFEST_AND_DISCOVERY_CONTRACT.md`.

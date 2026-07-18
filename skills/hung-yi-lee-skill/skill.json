@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "skill_id": "hungyi_lee",
+  "display_name": "Hung-yi Lee AI Tutor",
+  "description": "AI, machine learning, deep learning, LLM, and generative AI tutoring based on Hung-yi Lee teaching materials.",
+  "status": "active",
+  "skill_type": "runtime",
+  "entrypoint": "skills.hungyi_lee_skill",
+  "priority": 100,
+  "aliases": [
+    "Hung-yi Lee",
+    "李宏毅"
+  ],
+  "domains": [
+    "AI",
+    "ML",
+    "LLM",
+    "deep learning",
+    "generative AI"
+  ],
+  "keywords": [
+    "Transformer",
+    "MCP",
+    "RAG",
+    "Agent",
+    "AI Agent",
+    "Tool Calling",
+    "Function Calling",
+    "Prompt",
+    "Embedding",
+    "Vector DB",
+    "Vector Database",
+    "fine-tune",
+    "attention",
+    "machine learning",
+    "深度學習",
+    "機器學習",
+    "生成式AI"
+  ],
+  "capabilities": [
+    "answer_ai_learning_question",
+    "grounded_tutoring"
+  ],
+  "content_root": "wiki"
+}

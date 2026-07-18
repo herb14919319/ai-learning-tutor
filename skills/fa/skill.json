@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "fa",
+  "display_name": "FA Knowledge Assistant",
+  "description": "Dedicated FA web application and local knowledge retrieval package.",
+  "status": "active",
+  "skill_type": "web",
+  "priority": 0,
+  "aliases": [],
+  "domains": [],
+  "keywords": [],
+  "capabilities": [
+    "knowledge_lookup"
+  ],
+  "content_root": "knowledge"
+}

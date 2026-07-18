@@ -33,6 +33,7 @@
 skills/ipas_ai_application_planner/
 ├── __init__.py
 ├── skill.py
+├── skill.json
 ├── README.md
 ├── scripts/
 │   └── process_sources.py
@@ -48,7 +49,7 @@ skills/ipas_ai_application_planner/
 
 ## 功能與呼叫方式
 
-Tutor router 會依 `skills/registry.py` 的 metadata 將 `iPAS`、`AI 應用規劃師`、`L111`、`HITL` 等明確查詢導向本 Skill。未帶 iPAS／L111 特徵的一般 AI 問題仍由原有 AI Tutor Skill 處理。
+Tutor router 會依本目錄 `skill.json` 經 discovery 投影出的 metadata，將 `iPAS`、`AI 應用規劃師`、`L111`、`HITL` 等明確查詢導向本 Skill。未帶 iPAS／L111 特徵的一般 AI 問題仍由原有 AI Tutor Skill 處理。
 
 模組亦提供可測試的最小函式：
 

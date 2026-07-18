@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "skill_id": "ipas_ai_application_planner",
+  "display_name": "iPAS AI Application Planner",
+  "description": "Grounded concept review and practice for the iPAS junior AI Application Planner exam.",
+  "status": "active",
+  "skill_type": "runtime",
+  "entrypoint": "skills.ipas_ai_application_planner",
+  "priority": 180,
+  "aliases": [
+    "iPAS AI",
+    "AI Application Planner"
+  ],
+  "domains": [
+    "iPAS",
+    "AI 應用規劃師"
+  ],
+  "keywords": [
+    "iPAS AI",
+    "AI應用規劃師",
+    "AI 應用規劃師",
+    "L111",
+    "L11101",
+    "L11102",
+    "弱 AI",
+    "弱AI",
+    "Strong AI",
+    "AGI",
+    "ASI",
+    "傳統 AI",
+    "機器學習與深度學習",
+    "HITL",
+    "HOTL",
+    "HOOTL",
+    "XAI",
+    "可解釋 AI",
+    "iPAS 測驗",
+    "iPAS 備考",
+    "iPAS 模擬考"
+  ],
+  "capabilities": [
+    "query_l111_concept",
+    "summarize_l111",
+    "get_l111_question",
+    "grade_l111_answer",
+    "trace_material_source"
+  ],
+  "content_root": "knowledge/processed",
+  "chapter_index": "chapter_index.json"
+}

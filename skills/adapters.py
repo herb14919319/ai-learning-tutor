@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from types import ModuleType
+from typing import Any
 
 from skills.contract import SkillContext, SkillRequest
 from skills.metadata import SkillMetadata
@@ -9,12 +9,14 @@ from skills.metadata import SkillMetadata
 class ModuleSkillAdapter:
     """Adapter for legacy skill modules that expose configure() and answer(question)."""
 
-    def __init__(self, module: ModuleType, metadata: SkillMetadata):
-        self.module = module
+    def __init__(self, target: Any, metadata: SkillMetadata):
+        self.target = target
+        # Backward-compatible attribute used by a few integrations.
+        self.module = target
         self.metadata = metadata
 
     def configure(self, context: SkillContext) -> None:
-        configure = getattr(self.module, "configure", None)
+        configure = getattr(self.target, "configure", None)
         if callable(configure) and context.ask_gpt:
             configure(context.ask_gpt)
 
@@ -30,4 +32,4 @@ class ModuleSkillAdapter:
             self.configure(context)
 
         question = request.text if isinstance(request, SkillRequest) else request
-        return self.module.answer(question)
+        return self.target.answer(question)
