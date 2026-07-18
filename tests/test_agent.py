@@ -1,6 +1,8 @@
 import unittest
 import json
 import os
+import hashlib
+import hmac
 from io import BytesIO
 from types import SimpleNamespace
 from urllib.error import HTTPError
@@ -289,6 +291,71 @@ class GeminiFallbackTest(unittest.TestCase):
         self.assertIn("fallback_provider=openai", log_text)
         self.assertIn("status_code=429", log_text)
         self.assertNotIn("secret", log_text)
+
+
+class ProviderFallbackPolicyTest(unittest.TestCase):
+    @staticmethod
+    def http_error(code: int) -> HTTPError:
+        return HTTPError(
+            url="https://api.deepseek.com/chat/completions",
+            code=code,
+            msg="provider error",
+            hdrs=None,
+            fp=BytesIO(b"provider error"),
+        )
+
+    def test_deepseek_retryable_server_error_falls_back_to_openai_once(self):
+        calls = []
+
+        class FailingDeepSeek:
+            model = "deepseek-chat"
+
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                calls.append("deepseek")
+                raise server_error
+
+        class AvailableOpenAI:
+            model = "gpt-test"
+
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                calls.append("openai")
+                return "fallback answer"
+
+        server_error = self.http_error(503)
+        token = main._active_model_provider.set("deepseek")
+        try:
+            with patch.object(main, "model_clients", {"deepseek": FailingDeepSeek()}), patch.object(
+                main,
+                "openai_client",
+                AvailableOpenAI(),
+            ), patch.object(main, "write_runtime_telemetry"):
+                reply = main.ask_gpt("system", "user")
+        finally:
+            main._active_model_provider.reset(token)
+
+        self.assertEqual(reply, "fallback answer")
+        self.assertEqual(calls, ["deepseek", "openai"])
+
+    def test_deepseek_authentication_error_does_not_fallback(self):
+        class UnauthorizedDeepSeek:
+            model = "deepseek-chat"
+
+            def complete(self, system_prompt: str, user_prompt: str) -> str:
+                raise auth_error
+
+        auth_error = self.http_error(401)
+        token = main._active_model_provider.set("deepseek")
+        try:
+            with patch.object(main, "model_clients", {"deepseek": UnauthorizedDeepSeek()}), patch.object(
+                main,
+                "openai_client",
+            ) as openai, patch.object(main, "write_runtime_telemetry"):
+                with self.assertRaises(HTTPError):
+                    main.ask_gpt("system", "user")
+        finally:
+            main._active_model_provider.reset(token)
+
+        openai.assert_not_called()
 
 
 def fake_line_event(
@@ -597,6 +664,19 @@ class LittleTreeCommandTest(unittest.TestCase):
 
 
 class AgentAskApiTest(unittest.TestCase):
+    def setUp(self):
+        main.tutor_api_rate_limits.clear()
+        self.auth_patcher = patch.object(
+            main,
+            "authenticate_tutor_api_request",
+            return_value=(True, None),
+        )
+        self.auth_patcher.start()
+
+    def tearDown(self):
+        self.auth_patcher.stop()
+        main.tutor_api_rate_limits.clear()
+
     def test_successful_agent_ask_returns_metadata(self):
         with patch.object(main, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="RAG retrieves context before generation."
@@ -772,6 +852,12 @@ class AgentAskApiTest(unittest.TestCase):
 
 
 class WebChatTest(unittest.TestCase):
+    def setUp(self):
+        main.fa_web_rate_limits.clear()
+
+    def tearDown(self):
+        main.fa_web_rate_limits.clear()
+
     def test_health_check_returns_liveness_without_dependencies(self):
         dependency_names = (
             "ask_gpt",
@@ -812,7 +898,7 @@ class WebChatTest(unittest.TestCase):
         self.assertIn("AI Agent 是什麼？", body)
         self.assertIn("/web-chat", body)
 
-    def test_web_chat_returns_reply_from_existing_ai_flow(self):
+    def test_web_chat_ignores_untrusted_user_id(self):
         with patch.object(main, "generate_ai_reply", return_value="RAG 會先檢索再生成。") as generate:
             response = main.app.test_client().post(
                 "/web-chat",
@@ -823,19 +909,19 @@ class WebChatTest(unittest.TestCase):
         self.assertEqual(response.get_json(), {"reply": "RAG 會先檢索再生成。"})
         generate.assert_called_once_with(
             "什麼是 RAG？",
-            user_id="web-demo",
+            user_id=None,
             truncate=False,
             entrypoint=main.ENTRYPOINT_WEB_CHAT,
         )
 
-    def test_web_chat_defaults_user_id_to_web_demo(self):
+    def test_web_chat_without_identity_is_stateless(self):
         with patch.object(main, "generate_ai_reply", return_value="answer") as generate:
             response = main.app.test_client().post("/web-chat", json={"message": "What is MCP?"})
 
         self.assertEqual(response.status_code, 200)
         generate.assert_called_once_with(
             "What is MCP?",
-            user_id="web-demo",
+            user_id=None,
             truncate=False,
             entrypoint=main.ENTRYPOINT_WEB_CHAT,
         )
@@ -847,6 +933,31 @@ class WebChatTest(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIsInstance(response.get_json(), dict)
         self.assertIn("請先輸入", response.get_json()["reply"])
+        generate.assert_not_called()
+
+    def test_web_chat_rejects_overlong_message_without_calling_ai(self):
+        with patch.object(main, "generate_ai_reply") as generate:
+            response = main.app.test_client().post(
+                "/web-chat",
+                json={"message": "A" * (main.TUTOR_API_MAX_QUESTION_LENGTH + 1)},
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("過長", response.get_json()["reply"])
+        generate.assert_not_called()
+
+    def test_web_chat_rate_limit_blocks_runtime(self):
+        main.fa_web_rate_limits["127.0.0.1"] = [
+            main.time.monotonic()
+        ] * main.TUTOR_API_RATE_LIMIT_REQUESTS
+        with patch.object(main, "generate_ai_reply") as generate:
+            response = main.app.test_client().post(
+                "/web-chat",
+                json={"message": "What is RAG?"},
+            )
+
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.get_json(), {"error": "rate_limit_exceeded"})
         generate.assert_not_called()
 
 
@@ -1255,12 +1366,14 @@ class MessengerWebhookFlowTest(unittest.TestCase):
     def setUp(self):
         self.original_executor = main.messenger_webhook._background_executor
         self.original_reply_generator = main.messenger_webhook._reply_generator
+        main.messenger_webhook._processed_message_ids.clear()
 
     def tearDown(self):
         main.messenger_webhook.configure_messenger_handler(
             reply_generator=self.original_reply_generator,
             executor=self.original_executor,
         )
+        main.messenger_webhook._processed_message_ids.clear()
 
     def messenger_payload(self, messaging_event):
         return {
@@ -1305,6 +1418,10 @@ class MessengerWebhookFlowTest(unittest.TestCase):
         )
 
         with patch.dict(os.environ, {"MESSENGER_ENABLED": "true"}), patch.object(
+            main.messenger_webhook,
+            "verify_request_signature",
+            return_value=True,
+        ), patch.object(
             main.messenger_webhook, "send_text_message", return_value=True
         ) as send_text:
             response = main.app.test_client().post("/webhook/messenger", json=payload)
@@ -1370,6 +1487,149 @@ class MessengerWebhookFlowTest(unittest.TestCase):
         self.assertFalse(submitted)
         self.assertEqual(executor.calls, [])
         send_text.assert_not_called()
+
+    def test_duplicate_message_id_is_not_submitted_or_pushed_twice(self):
+        executor = RecordingExecutor()
+        main.messenger_webhook.configure_messenger_handler(
+            reply_generator=lambda user_id, text: "answer",
+            executor=executor,
+        )
+        payload = self.messenger_payload(
+            {
+                "sender": {"id": "sender-1"},
+                "message": {"mid": "message-1", "text": "What is RAG?"},
+            }
+        )
+
+        with patch.object(main.messenger_webhook, "send_text_message", return_value=True) as send_text:
+            first = main.messenger_webhook.handle_messenger_event(payload)
+            second = main.messenger_webhook.handle_messenger_event(payload)
+
+        self.assertTrue(first)
+        self.assertFalse(second)
+        self.assertEqual(len(executor.calls), 1)
+        send_text.assert_called_once_with(
+            "sender-1",
+            main.messenger_webhook.MESSENGER_PROCESSING_MESSAGE,
+        )
+
+
+class AgentAskSecurityTest(unittest.TestCase):
+    def setUp(self):
+        main.tutor_api_rate_limits.clear()
+
+    def tearDown(self):
+        main.tutor_api_rate_limits.clear()
+
+    def test_agent_api_fails_closed_without_configured_key(self):
+        with patch.dict(os.environ, {}, clear=True):
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?"},
+            )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "server_not_configured"})
+
+    def test_agent_api_rejects_wrong_key(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "expected"}, clear=True):
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "What is RAG?"},
+                headers={"X-API-Key": "wrong"},
+            )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"ok": False, "error": "unauthorized"})
+
+    def test_agent_api_rejects_overlong_question_before_runtime(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "expected"}, clear=True), patch.object(
+            main,
+            "generate_tutor_answer",
+        ) as generate:
+            response = main.app.test_client().post(
+                "/api/agent/ask",
+                json={"question": "A" * (main.TUTOR_API_MAX_QUESTION_LENGTH + 1)},
+                headers={"X-API-Key": "expected"},
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json()["error"], "missing_question")
+        generate.assert_not_called()
+
+
+class TestEndpointSecurityTest(unittest.TestCase):
+    def setUp(self):
+        main.tutor_api_rate_limits.clear()
+
+    def tearDown(self):
+        main.tutor_api_rate_limits.clear()
+
+    def test_test_endpoint_rejects_anonymous_model_call(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "expected"}, clear=True), patch.object(
+            main,
+            "generate_ai_reply",
+        ) as generate:
+            response = main.app.test_client().get("/test?question=What+is+RAG%3F")
+
+        self.assertEqual(response.status_code, 401)
+        generate.assert_not_called()
+
+    def test_test_endpoint_accepts_authenticated_bounded_request(self):
+        with patch.dict(os.environ, {"AI_TUTOR_API_KEY": "expected"}, clear=True), patch.object(
+            main,
+            "generate_ai_reply",
+            return_value="answer",
+        ) as generate:
+            response = main.app.test_client().get(
+                "/test?question=What+is+RAG%3F",
+                headers={"X-API-Key": "expected"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["answer"], "answer")
+        generate.assert_called_once_with(
+            "What is RAG?",
+            truncate=False,
+            entrypoint=main.ENTRYPOINT_API,
+        )
+
+
+class MessengerWebhookSecurityTest(unittest.TestCase):
+    def test_signature_verifier_accepts_only_matching_sha256_digest(self):
+        body = b'{"object":"page"}'
+        digest = hmac.new(b"app-secret", body, hashlib.sha256).hexdigest()
+
+        self.assertTrue(
+            main.messenger_webhook.verify_request_signature(
+                body,
+                f"sha256={digest}",
+                "app-secret",
+            )
+        )
+        self.assertFalse(
+            main.messenger_webhook.verify_request_signature(
+                body,
+                "sha256=wrong",
+                "app-secret",
+            )
+        )
+
+    def test_messenger_route_rejects_invalid_signature_before_dispatch(self):
+        with patch.dict(
+            os.environ,
+            {"MESSENGER_ENABLED": "true", "MESSENGER_APP_SECRET": "app-secret"},
+            clear=True,
+        ), patch.object(main.messenger_webhook, "handle_messenger_event") as handle:
+            response = main.app.test_client().post(
+                "/webhook/messenger",
+                data=b'{"object":"page"}',
+                content_type="application/json",
+                headers={"X-Hub-Signature-256": "sha256=wrong"},
+            )
+
+        self.assertEqual(response.status_code, 403)
+        handle.assert_not_called()
 
 
 if __name__ == "__main__":

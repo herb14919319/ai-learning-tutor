@@ -1,5 +1,8 @@
 import hmac
+import hashlib
 import logging
+import threading
+import time
 from typing import Callable
 
 from messenger_client import send_text_message
@@ -15,6 +18,9 @@ MESSENGER_ERROR_FALLBACK_RESPONSE = (
 
 _reply_generator: Callable[[str, str], str] | None = None
 _background_executor = None
+_processed_message_ids: dict[str, float] = {}
+_processed_message_ids_lock = threading.Lock()
+MESSAGE_DEDUPLICATION_TTL_SECONDS = 600
 
 
 def configure_messenger_handler(*, reply_generator: Callable[[str, str], str], executor) -> None:
@@ -31,6 +37,20 @@ def handle_verify_request(args, verify_token: str | None = None):
     if mode == "subscribe" and verify_token is not None and hmac.compare_digest(token, verify_token):
         return challenge, 200
     return "Forbidden", 403
+
+
+def verify_request_signature(raw_body: bytes, signature: str, app_secret: str) -> bool:
+    if not raw_body or not signature or not app_secret:
+        return False
+    algorithm, separator, provided_digest = signature.partition("=")
+    if separator != "=" or algorithm.casefold() != "sha256" or not provided_digest:
+        return False
+    expected_digest = hmac.new(
+        app_secret.encode("utf-8"),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+    return hmac.compare_digest(provided_digest.casefold(), expected_digest)
 
 
 def process_messenger_text_async(sender_id: str, user_text: str) -> None:
@@ -57,6 +77,24 @@ def _is_text_message_event(messaging_event: dict) -> bool:
     return isinstance(message.get("text"), str) and bool(message.get("text").strip())
 
 
+def mark_message_if_new(message_id: str | None) -> bool:
+    if not message_id:
+        return True
+    now = time.monotonic()
+    with _processed_message_ids_lock:
+        expired = [
+            cached_id
+            for cached_id, cached_at in _processed_message_ids.items()
+            if now - cached_at > MESSAGE_DEDUPLICATION_TTL_SECONDS
+        ]
+        for cached_id in expired:
+            _processed_message_ids.pop(cached_id, None)
+        if message_id in _processed_message_ids:
+            return False
+        _processed_message_ids[message_id] = now
+        return True
+
+
 def handle_messenger_event(payload: dict) -> bool:
     if not isinstance(payload, dict) or payload.get("object") != "page":
         return False
@@ -71,13 +109,18 @@ def handle_messenger_event(payload: dict) -> bool:
             if not _is_text_message_event(messaging_event):
                 continue
 
+            message = messaging_event["message"]
+            if not mark_message_if_new(message.get("mid")):
+                logger.info("Skipping duplicate Messenger message: %s", message.get("mid"))
+                continue
+
             sender = messaging_event.get("sender") or {}
             sender_id = sender.get("id")
             if not sender_id:
                 logger.warning("Messenger text event has no sender id")
                 continue
 
-            user_text = messaging_event["message"]["text"].strip()
+            user_text = message["text"].strip()
             send_text_message(sender_id, MESSENGER_PROCESSING_MESSAGE)
             try:
                 if _background_executor is None:

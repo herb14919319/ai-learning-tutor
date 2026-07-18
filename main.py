@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from contextvars import ContextVar
 from datetime import date, datetime, timezone
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from agents.little_tree_agent import (
     EXIT_MESSAGE as LITTLE_TREE_EXIT_MESSAGE,
@@ -129,10 +129,10 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
 
     try:
         return complete_model_call(provider, client, system_prompt, user_prompt)
-    except HTTPError as exc:
-        if provider != "gemini" or exc.code != 429:
+    except Exception as exc:
+        if provider not in {"gemini", "deepseek"} or not is_retryable_provider_error(exc):
             raise
-        return fallback_from_gemini_rate_limit(system_prompt, user_prompt, exc)
+        return fallback_to_openai(provider, system_prompt, user_prompt, exc)
 
 
 def complete_model_call(
@@ -213,23 +213,35 @@ def normalize_model_usage(usage) -> dict:
     }
 
 
-def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error: HTTPError) -> str:
+def is_retryable_provider_error(error: Exception) -> bool:
+    if isinstance(error, HTTPError):
+        return error.code == 429 or 500 <= error.code <= 599
+    return isinstance(error, (URLError, TimeoutError))
+
+
+def fallback_to_openai(
+    original_provider: str,
+    system_prompt: str,
+    user_prompt: str,
+    error: Exception,
+) -> str:
     fallback_provider = "openai"
     fallback_client = get_model_client(fallback_provider)
+    status_code = getattr(error, "code", None)
     if not fallback_client:
         logger.warning(
             "Model provider fallback unavailable original_provider=%s fallback_provider=%s status_code=%s",
-            "gemini",
+            original_provider,
             fallback_provider,
-            error.code,
+            status_code,
         )
         return MODEL_RATE_LIMIT_FALLBACK_RESPONSE
 
     logger.warning(
         "Model provider fallback original_provider=%s fallback_provider=%s status_code=%s",
-        "gemini",
+        original_provider,
         fallback_provider,
-        error.code,
+        status_code,
     )
     try:
         return complete_model_call(
@@ -238,16 +250,21 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
             system_prompt,
             user_prompt,
             fallback=True,
-            fallback_from="gemini",
+            fallback_from=original_provider,
         )
     except Exception:
         logger.exception(
             "Model provider fallback failed original_provider=%s fallback_provider=%s status_code=%s",
-            "gemini",
+            original_provider,
             fallback_provider,
-            error.code,
+            status_code,
         )
         return MODEL_RATE_LIMIT_FALLBACK_RESPONSE
+
+
+def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error: HTTPError) -> str:
+    """Backward-compatible wrapper for the original Gemini 429 fallback helper."""
+    return fallback_to_openai("gemini", system_prompt, user_prompt, error)
 
 
 tutor_agent = TutorAgent(ask_gpt)
@@ -868,9 +885,12 @@ def web_chat():
     message = raw_message.strip() if isinstance(raw_message, str) else ""
     if not message:
         return jsonify({"reply": "請先輸入一個想討論的 AI 學習問題。"}), 400
+    if len(message) > TUTOR_API_MAX_QUESTION_LENGTH:
+        return jsonify({"reply": "問題內容過長，請縮短後再試。"}), 400
 
-    raw_user_id = payload.get("user_id")
-    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else "web-demo"
+    client_ip = tutor_api_client_ip()
+    if fa_web_rate_limit_exceeded(client_ip):
+        return jsonify({"error": "rate_limit_exceeded"}), 429
 
     raw_skill_id = payload.get("skill_id")
     skill_id = raw_skill_id.strip().lower() if isinstance(raw_skill_id, str) else ""
@@ -879,41 +899,48 @@ def web_chat():
             return jsonify({"error": "unsupported_skill"}), 400
 
         request_id = uuid.uuid4().hex
-        client_ip = tutor_api_client_ip()
-        if fa_web_rate_limit_exceeded(client_ip):
-            logger.warning(
-                "[FA_AUDIT] request_id=%s user_id=%s status=429 reason=rate_limit",
-                request_id,
-                user_id,
-            )
-            return jsonify({"error": "rate_limit_exceeded", "request_id": request_id}), 429
 
         started_at = time.perf_counter()
         try:
             reply = generate_fa_answer(message)
         except Exception as exc:
-            logger.exception("[FA_AUDIT] request_id=%s user_id=%s status=500 error=%s", request_id, user_id, exc)
+            logger.exception(
+                "[FA_AUDIT] request_id=%s user_id=%s status=500 error=%s",
+                request_id,
+                "public-web",
+                exc,
+            )
             return jsonify({"error": "fa_unavailable", "request_id": request_id}), 500
 
         logger.info(
             "[FA_AUDIT] request_id=%s user_id=%s status=200 question_length=%s duration_ms=%s",
             request_id,
-            user_id,
+            "public-web",
             len(message),
             round((time.perf_counter() - started_at) * 1000),
         )
         return jsonify({"reply": reply, "skill_id": "fa", "request_id": request_id})
 
-    reply = generate_ai_reply(message, user_id=user_id, truncate=False, entrypoint=ENTRYPOINT_WEB_CHAT)
+    # Public Web Chat has no authenticated identity. Do not trust a caller-supplied
+    # user_id or place unrelated visitors in one shared conversation bucket.
+    reply = generate_ai_reply(message, user_id=None, truncate=False, entrypoint=ENTRYPOINT_WEB_CHAT)
     return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
 
 
 @app.get("/test")
 def test_mode():
+    authenticated, error_response = authenticate_tutor_api_request()
+    if not authenticated:
+        return error_response
+
     question = request.args.get("question", "").strip()
 
     if not question:
         return jsonify({"error": "Missing required query parameter: question"}), 400
+    if len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
+        return jsonify({"error": "Invalid question"}), 400
+    if tutor_api_rate_limit_exceeded(tutor_api_client_ip()):
+        return jsonify({"error": "Rate limit exceeded"}), 429
 
     answer = generate_ai_reply(question, truncate=False, entrypoint=ENTRYPOINT_API)
     return jsonify(
@@ -957,6 +984,18 @@ def runtime_telemetry_api():
 def agent_ask():
     started_at = time.perf_counter()
     call_id = uuid.uuid4().hex
+
+    if tutor_api_payload_too_large():
+        return jsonify({"ok": False, "error": "Payload too large"}), 413
+
+    authenticated, error_response = authenticate_tutor_api_request()
+    if not authenticated:
+        return error_response
+
+    client_ip = tutor_api_client_ip()
+    if tutor_api_rate_limit_exceeded(client_ip):
+        return jsonify({"ok": False, "error": "Rate limit exceeded"}), 429
+
     payload = request.get_json(silent=True) or {}
     if not isinstance(payload, dict):
         payload = {}
@@ -981,7 +1020,7 @@ def agent_ask():
         )
         return jsonify({"ok": False, "error": "unsupported_task"}), 400
 
-    if not question:
+    if not question or len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
         duration_ms = round((time.perf_counter() - started_at) * 1000)
         logger.warning(
             "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=missing_question",
@@ -1164,6 +1203,13 @@ def messenger_verify():
 def messenger_callback():
     if not messenger_enabled():
         abort(404)
+
+    raw_body = request.get_data(cache=True)
+    app_secret = os.getenv("MESSENGER_APP_SECRET", "")
+    signature = request.headers.get("X-Hub-Signature-256", "")
+    if not messenger_webhook.verify_request_signature(raw_body, signature, app_secret):
+        logger.warning("Invalid Messenger webhook signature")
+        abort(403)
 
     payload = request.get_json(silent=True) or {}
     if not isinstance(payload, dict):

@@ -285,7 +285,7 @@
           const response = await fetch("/web-chat", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message, user_id: "web-demo"}),
+            body: JSON.stringify({message}),
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok) {
