@@ -1,0 +1,51 @@
+[
+  {
+    "id": "parenting",
+    "title": "親子助手",
+    "description": "陪你整理親子溝通、陪伴與家庭生活中的提問方向。",
+    "icon": "👨‍👩‍👧",
+    "route": "/little-tree/parenting"
+  },
+  {
+    "id": "learning",
+    "title": "學習助手",
+    "description": "協助釐清學習目標，找到適合的理解、練習與複習方式。",
+    "icon": "📚",
+    "route": "/little-tree/learning"
+  },
+  {
+    "id": "creative",
+    "title": "創作助手",
+    "description": "從靈感發想、內容結構到表達方式，探索更多創作可能。",
+    "icon": "🎨",
+    "route": "/little-tree/creative"
+  },
+  {
+    "id": "life",
+    "title": "生活助手",
+    "description": "整理日常需求與選擇，讓生活中的問題更容易開始處理。",
+    "icon": "🏡",
+    "route": "/little-tree/life"
+  },
+  {
+    "id": "work",
+    "title": "工作助手",
+    "description": "聚焦工作情境、任務與溝通需求，建立清楚的提問脈絡。",
+    "icon": "💼",
+    "route": "/little-tree/work"
+  },
+  {
+    "id": "companion",
+    "title": "陪伴助手",
+    "description": "提供溫和的自我整理入口，陪你辨認此刻想說與想問的事。",
+    "icon": "🤝",
+    "route": "/little-tree/companion"
+  },
+  {
+    "id": "business",
+    "title": "創業助手",
+    "description": "從想法、需求到行動假設，整理創業探索中的關鍵問題。",
+    "icon": "🌱",
+    "route": "/little-tree/business"
+  }
+]

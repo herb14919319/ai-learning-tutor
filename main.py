@@ -69,6 +69,7 @@ from runtime_telemetry import (
 )
 from skills import ipas_ai_application_planner as ipas_ai_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
+from skills import little_tree as little_tree_skill
 from skills.fa import FaSkill
 
 
@@ -898,6 +899,59 @@ def health():
 @app.get("/fa")
 def fa_page():
     return render_template("fa.html")
+
+
+@app.get("/little-tree")
+def little_tree_page():
+    return render_template("little_tree.html")
+
+
+def little_tree_api_error(error: str, message: str, status_code: int):
+    return jsonify({"ok": False, "error": error, "message": message}), status_code
+
+
+@app.get("/api/little-tree/categories")
+def little_tree_categories():
+    try:
+        categories = little_tree_skill.get_categories()
+    except little_tree_skill.DataUnavailableError:
+        logger.warning("Little Tree category content is unavailable")
+        return little_tree_api_error(
+            "skill_unavailable",
+            "分類內容暫時無法載入，請稍後再試。",
+            503,
+        )
+    except Exception:
+        logger.exception("Failed to load Little Tree categories")
+        return little_tree_api_error(
+            "internal_error",
+            "分類內容載入失敗，請稍後再試。",
+            500,
+        )
+
+    return jsonify({"ok": True, "categories": categories})
+
+
+@app.get("/api/little-tree/categories/parenting/scenarios")
+def little_tree_parenting_scenarios():
+    try:
+        scenarios = little_tree_skill.get_parenting_scenarios()
+    except little_tree_skill.DataUnavailableError:
+        logger.warning("Little Tree parenting scenario content is unavailable")
+        return little_tree_api_error(
+            "skill_unavailable",
+            "親子情境暫時無法載入，請稍後再試。",
+            503,
+        )
+    except Exception:
+        logger.exception("Failed to load Little Tree parenting scenarios")
+        return little_tree_api_error(
+            "internal_error",
+            "親子情境載入失敗，請稍後再試。",
+            500,
+        )
+
+    return jsonify({"ok": True, "scenarios": scenarios})
 
 
 @app.get("/ipas")

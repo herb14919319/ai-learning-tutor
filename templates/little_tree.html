@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f8f1">
+    <title>Little Tree｜AI Prompt Navigator</title>
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='little_tree.css') }}">
+  </head>
+  <body
+    data-categories-url="{{ url_for('little_tree_categories') }}"
+    data-parenting-scenarios-url="{{ url_for('little_tree_parenting_scenarios') }}"
+  >
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('little_tree_page') }}" aria-label="回到 Little Tree 首頁">
+        <span class="brand-mark" aria-hidden="true">🌳</span>
+        <span>
+          <strong>Little Tree</strong>
+          <small>AI Prompt Navigator</small>
+        </span>
+      </a>
+      <span class="phase-pill">Phase 2</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <span class="eyebrow">找到適合你的提問入口</span>
+        <h1 id="page-title">今天想從哪裡開始？</h1>
+        <p>選擇一個分類，逐步找到更清楚、更貼近情境的提問方向。</p>
+      </section>
+
+      <section class="category-section" aria-labelledby="category-title">
+        <div class="section-heading">
+          <h2 id="category-title">七種生活情境</h2>
+          <p id="category-status" role="status" aria-live="polite">正在載入分類…</p>
+        </div>
+        <div class="category-grid" id="category-grid" aria-busy="true"></div>
+        <noscript>
+          <p class="notice notice-error">請啟用 JavaScript 以載入分類。</p>
+        </noscript>
+      </section>
+
+      <section class="content-view" id="parenting-view" aria-labelledby="parenting-title" hidden>
+        <button class="back-button" type="button" data-back-to-categories>← 返回分類首頁</button>
+        <div class="view-heading">
+          <span class="eyebrow">親子助手</span>
+          <h2 id="parenting-title">想和孩子一起做什麼？</h2>
+          <p>選擇一個情境，取得可以直接複製、再與 AI 一起調整的探索式 Prompt。</p>
+        </div>
+        <p class="view-status" id="parenting-status" role="status" aria-live="polite"></p>
+        <div class="scenario-grid" id="parenting-scenario-grid" aria-busy="false"></div>
+      </section>
+
+      <section class="content-view prompt-view" id="prompt-view" aria-labelledby="prompt-title" hidden>
+        <div class="view-navigation">
+          <button class="back-button" type="button" data-back-to-parenting>← 返回親子情境</button>
+          <button class="back-button" type="button" data-back-to-categories>返回分類首頁</button>
+        </div>
+        <div class="prompt-card">
+          <span class="eyebrow">可直接使用的探索式 Prompt</span>
+          <h2 id="prompt-title" tabindex="-1"></h2>
+          <p class="prompt-description" id="prompt-description"></p>
+          <pre id="prompt-content" tabindex="0"></pre>
+          <div class="copy-row">
+            <button class="copy-button" type="button" id="copy-prompt">複製 Prompt</button>
+            <p id="copy-feedback" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="notice" id="coming-soon" role="status" aria-live="polite" hidden>
+        <span aria-hidden="true">🌱</span>
+        <div>
+          <strong id="coming-soon-title">Coming Soon</strong>
+          <p>這個分類正在準備中，後續階段將逐步加入內容。</p>
+        </div>
+        <button type="button" id="dismiss-notice" aria-label="關閉提示">×</button>
+      </section>
+    </main>
+
+    <footer>
+      <span>Little Tree</span>
+      <span>此階段提供固定 Prompt 導覽，不會動態產生 AI 內容。</span>
+    </footer>
+
+    <script src="{{ url_for('asset_file', filename='little_tree.js') }}" defer></script>
+  </body>
+</html>

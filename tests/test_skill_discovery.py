@@ -394,10 +394,12 @@ class ExistingSkillMigrationTest(unittest.TestCase):
 
         self.assertEqual(manifests["fa"].skill_type, "web")
         self.assertEqual(manifests["ipas_net_zero_planner"].skill_type, "web")
+        self.assertEqual(manifests["little_tree"].skill_type, "web")
         self.assertEqual(manifests["little_tree_companion"].skill_type, "legacy")
         self.assertFalse(manifests["little_tree_companion"].enabled)
         self.assertNotIn("fa", [metadata.name for metadata in list_skills()])
         self.assertNotIn("ipas_net_zero_planner", [metadata.name for metadata in list_skills()])
+        self.assertNotIn("little_tree", [metadata.name for metadata in list_skills()])
 
     def test_startup_diagnostics_do_not_expose_absolute_repository_paths(self):
         serialized = json.dumps(

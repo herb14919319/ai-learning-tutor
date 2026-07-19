@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "little_tree",
+  "display_name": "Little Tree Prompt Navigator",
+  "description": "Dedicated web application for browsing prompt-assistant categories without chat or AI generation.",
+  "status": "active",
+  "skill_type": "web",
+  "priority": 0,
+  "aliases": [],
+  "domains": [],
+  "keywords": [],
+  "capabilities": [
+    "category_navigation"
+  ],
+  "content_root": "content"
+}
