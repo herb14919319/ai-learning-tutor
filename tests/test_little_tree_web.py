@@ -38,7 +38,7 @@ SCENARIO_FIELDS = {"id", "title", "description", "prompt"}
 
 
 class LittleTreeContentTest(unittest.TestCase):
-    def test_categories_file_contains_the_seven_fixed_categories(self):
+    def test_categories_file_remains_compatible_with_phase_one_contract(self):
         categories = little_tree.get_categories()
 
         self.assertEqual([item["id"] for item in categories], CATEGORY_IDS)
@@ -53,7 +53,7 @@ class LittleTreeContentTest(unittest.TestCase):
             all(item["route"] == f"/little-tree/{item['id']}" for item in categories)
         )
 
-    def test_fixed_content_directories_exist(self):
+    def test_fixed_content_directories_remain_available(self):
         content_root = ROOT / "skills" / "little_tree" / "content"
 
         for category_id in CATEGORY_IDS:
@@ -78,7 +78,6 @@ class LittleTreeContentTest(unittest.TestCase):
         self.assertEqual([item["title"] for item in scenarios], SCENARIO_TITLES)
         self.assertTrue(all(set(item) == SCENARIO_FIELDS for item in scenarios))
         self.assertTrue(all("請先" in item["prompt"] for item in scenarios))
-        self.assertTrue(all("確認" in item["prompt"] for item in scenarios))
         self.assertTrue(all("繁體中文" in item["prompt"] for item in scenarios))
 
     def test_invalid_parenting_content_is_rejected(self):
@@ -86,8 +85,8 @@ class LittleTreeContentTest(unittest.TestCase):
             return {
                 "id": item_id,
                 "title": f"情境 {item_id}",
-                "description": "說明",
-                "prompt": "請先詢問必要資訊，確認後再繼續，並使用繁體中文。",
+                "description": "簡短說明",
+                "prompt": "請先詢問必要資訊，再用繁體中文逐步協助我探索。",
             }
 
         cases = (
@@ -116,21 +115,49 @@ class LittleTreeWebTest(unittest.TestCase):
     def setUp(self):
         self.client = main.app.test_client()
 
-    def test_home_page_returns_frontend_entry(self):
+    def test_home_page_returns_direct_parenting_entry(self):
         response = self.client.get("/little-tree")
         html = response.get_data(as_text=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("<title>Little Tree｜AI Prompt Navigator</title>", html)
-        self.assertIn('data-categories-url="/api/little-tree/categories"', html)
+        self.assertIn("<title>Little Tree 小樹｜親子 AI 探索入口</title>", html)
         self.assertIn(
-            'data-parenting-scenarios-url="/api/little-tree/categories/parenting/scenarios"',
+            'data-scenarios-url="/api/little-tree/categories/parenting/scenarios"',
+            html,
+        )
+        self.assertNotIn("data-categories-url", html)
+        self.assertIn("今天想和 AI", html)
+        self.assertIn("一起做什麼呢？", html)
+        self.assertIn(
+            "選一個喜歡的活動，複製提示詞，就可以和孩子一起開始探索。",
+            html,
+        )
+        self.assertIn(
+            "嗨，我是小樹！一起把孩子的想像力種進 AI 世界吧。",
             html,
         )
         self.assertIn("/assets/little_tree.css", html)
         self.assertIn("/assets/little_tree.js", html)
 
-    def test_categories_endpoint_returns_seven_public_cards(self):
+    def test_home_page_does_not_expose_general_category_ui_or_technical_copy(self):
+        html = self.client.get("/little-tree").get_data(as_text=True)
+
+        for copy in CATEGORY_TITLES[1:]:
+            with self.subTest(copy=copy):
+                self.assertNotIn(copy, html)
+        for copy in (
+            "Prompt Navigator",
+            "Prompt Engineering",
+            "Runtime Skill",
+            "API",
+            "Schema",
+            "Generator",
+            "Coming Soon",
+        ):
+            with self.subTest(copy=copy):
+                self.assertNotIn(copy, html)
+
+    def test_categories_endpoint_is_retained_for_contract_compatibility(self):
         with patch.object(main, "ask_gpt") as ask_gpt:
             response = self.client.get("/api/little-tree/categories")
 
@@ -166,28 +193,60 @@ class LittleTreeWebTest(unittest.TestCase):
 
         self.assertEqual(response.status_code, 405)
 
-    def test_frontend_has_parenting_prompt_and_copy_flow(self):
+    def test_frontend_has_direct_prompt_copy_and_fallback_flow(self):
         source = (ROOT / "assets" / "little_tree.js").read_text(encoding="utf-8")
 
-        self.assertIn("fetch(categoriesUrl", source)
-        self.assertIn("payload.categories.map(createCategoryCard)", source)
-        self.assertIn("fetch(parentingScenariosUrl", source)
-        self.assertIn("parentingScenarios.map(createScenarioCard)", source)
-        self.assertIn('category.id === "parenting"', source)
+        self.assertIn("fetch(scenariosUrl", source)
+        self.assertIn("payload.scenarios.map(createScenarioCard)", source)
         self.assertIn("promptContent.textContent = scenario.prompt", source)
-        self.assertIn("navigator.clipboard.writeText(selectedPrompt)", source)
-        self.assertIn("Prompt 已複製", source)
-        self.assertIn("Coming Soon", source)
+        self.assertIn(
+            "navigator.clipboard.writeText(selectedScenario.prompt)",
+            source,
+        )
+        self.assertIn('document.execCommand("copy")', source)
+        self.assertIn(
+            "複製成功！現在把它貼到你常用的 AI 吧。",
+            source,
+        )
+        self.assertIn("showLoadError()", source)
+        self.assertIn("showHome()", source)
+        self.assertNotIn("categoriesUrl", source)
+        self.assertNotIn("Coming Soon", source)
         self.assertNotIn("/web-chat", source)
         self.assertNotIn("/answer", source)
 
-    def test_other_categories_still_use_coming_soon(self):
-        source = (ROOT / "assets" / "little_tree.js").read_text(encoding="utf-8")
+    def test_prompt_detail_has_friendly_guidance_and_navigation(self):
+        template = (ROOT / "templates" / "little_tree.html").read_text(
+            encoding="utf-8"
+        )
 
-        self.assertIn("showComingSoon(category)", source)
-        self.assertIn('if (category.id === "parenting")', source)
+        self.assertIn('id="prompt-title"', template)
+        self.assertIn('id="prompt-description"', template)
+        self.assertIn('id="prompt-content"', template)
+        self.assertIn('id="copy-prompt"', template)
+        self.assertIn("複製提示詞", template)
+        self.assertIn("回到探索首頁", template)
+        self.assertIn(
+            "複製後，貼到 ChatGPT、Gemini、Claude 或你常用的 AI，就可以開始囉！",
+            template,
+        )
 
-    def test_unavailable_content_returns_safe_503(self):
+    def test_accessibility_and_reduced_motion_hooks_are_present(self):
+        template = (ROOT / "templates" / "little_tree.html").read_text(
+            encoding="utf-8"
+        )
+        stylesheet = (ROOT / "assets" / "little_tree.css").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('role="status"', template)
+        self.assertIn('aria-live="polite"', template)
+        self.assertIn('role="alert"', template)
+        self.assertIn('aria-busy="true"', template)
+        self.assertIn(":focus-visible", stylesheet)
+        self.assertIn("@media (prefers-reduced-motion: reduce)", stylesheet)
+
+    def test_unavailable_categories_content_returns_safe_503(self):
         with patch.object(
             main.little_tree_skill,
             "get_categories",
@@ -198,18 +257,6 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.get_json()["error"], "skill_unavailable")
         self.assertNotIn("private", response.get_data(as_text=True))
-
-    def test_internal_error_does_not_leak_local_details(self):
-        with patch.object(
-            main.little_tree_skill,
-            "get_categories",
-            side_effect=RuntimeError("D:\\secret\\categories.json"),
-        ):
-            response = self.client.get("/api/little-tree/categories")
-
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json()["error"], "internal_error")
-        self.assertNotIn("secret", response.get_data(as_text=True))
 
     def test_invalid_parenting_content_returns_safe_503(self):
         with patch.object(
@@ -224,6 +271,20 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.get_json()["error"], "skill_unavailable")
         self.assertNotIn("private", response.get_data(as_text=True))
+
+    def test_parenting_internal_error_does_not_leak_local_details(self):
+        with patch.object(
+            main.little_tree_skill,
+            "get_parenting_scenarios",
+            side_effect=RuntimeError("D:\\secret\\scenarios.json"),
+        ):
+            response = self.client.get(
+                "/api/little-tree/categories/parenting/scenarios"
+            )
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json()["error"], "internal_error")
+        self.assertNotIn("secret", response.get_data(as_text=True))
 
 
 if __name__ == "__main__":
