@@ -51,6 +51,8 @@ button {
 
 button:focus-visible,
 a:focus-visible,
+[type="text"]:focus-visible,
+textarea:focus-visible,
 [tabindex]:focus-visible {
   outline: 4px solid #f4ae46;
   outline-offset: 4px;
@@ -605,6 +607,40 @@ footer {
   line-height: 1.75;
 }
 
+.demo-panel {
+  margin: 0 0 18px;
+  overflow: hidden;
+  border: 2px solid rgba(88, 157, 190, 0.16);
+  border-radius: 22px;
+  background: #f4fbff;
+  box-shadow: 0 10px 24px rgba(86, 111, 96, 0.1);
+}
+
+.demo-panel img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.demo-panel figcaption {
+  padding: 15px 18px 17px;
+  display: grid;
+  gap: 5px;
+}
+
+.demo-panel figcaption strong {
+  color: var(--green-dark);
+  font-size: 17px;
+}
+
+.demo-panel figcaption span {
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
 .question-guide {
   margin-bottom: 18px;
   padding: 18px;
@@ -639,6 +675,88 @@ footer {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.65;
+}
+
+.prompt-builder {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 2px solid rgba(211, 171, 65, 0.22);
+  border-radius: 22px;
+  background: #fffaf0;
+}
+
+.form-fields {
+  display: grid;
+  gap: 16px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field label {
+  color: var(--green-dark);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.field-examples {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.form-field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 2px solid rgba(53, 113, 86, 0.18);
+  border-radius: 15px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.92);
+  font: inherit;
+}
+
+.form-field input::placeholder {
+  color: #7a8d86;
+  opacity: 1;
+}
+
+.update-button {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 18px;
+  padding: 13px 20px;
+  border: 0;
+  border-radius: 17px;
+  color: #fff;
+  background: #cf7747;
+  box-shadow: 0 9px 20px rgba(162, 89, 49, 0.2);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.update-button:hover,
+.update-button:focus-visible {
+  box-shadow: 0 12px 25px rgba(162, 89, 49, 0.27);
+  transform: translateY(-2px);
+}
+
+.update-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+#builder-feedback {
+  min-height: 24px;
+  margin: 9px 0 0;
+  color: #226847;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.6;
 }
 
 .prompt-paper {

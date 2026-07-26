@@ -23,28 +23,51 @@
     "description": "發揮想像力，設計一座屬於你的未來科教館，讓 AI 幫你把想像畫出來！",
     "action_label": "開始創作",
     "editable": true,
-    "questions": [
+    "icon": "🚀",
+    "card_class": "museum-card",
+    "demo_image": "/assets/images/little_tree/science_museum_demo.png",
+    "demo_image_alt": "以彩色蠟筆畫出的國立臺灣科學教育館創作示意圖",
+    "demo_title": "創作靈感 Demo",
+    "demo_message": "這只是參考喔！你可以比這更酷、更夢幻、更有想像力！",
+    "form_fields": [
       {
+        "id": "museum-shape",
         "label": "科教館的外型像什麼？",
-        "examples": "例如：太空船、城堡、大樹、機器人、海底基地"
+        "examples": "太空船、城堡、大樹、機器人、海底基地",
+        "placeholder": "例如：一艘停在城市裡的巨大太空船",
+        "token": "【建築外型】"
       },
       {
+        "id": "museum-interior",
         "label": "科教館裡面有什麼？",
-        "examples": "例如：恐龍、火箭、AI 機器人、太空實驗室、海底世界"
+        "examples": "恐龍、火箭、AI 機器人、太空實驗室、海底世界",
+        "placeholder": "例如：恐龍森林、火箭發射台和機器人實驗室",
+        "token": "【館內內容】"
       },
       {
+        "id": "museum-facility",
         "label": "最神奇的設施是什麼？",
-        "examples": "例如：會飛的電梯、時光機、透明溜滑梯、機器人導覽員"
+        "examples": "會飛的電梯、時光機、透明溜滑梯、機器人導覽員",
+        "placeholder": "例如：可以前往不同星球的時光電梯",
+        "token": "【特殊設施】"
       },
       {
+        "id": "museum-characters",
         "label": "有哪些人物或動物？",
-        "examples": "例如：小朋友、家人、科學家、外星人、恐龍、小動物"
+        "examples": "小朋友、家人、科學家、外星人、恐龍、小動物",
+        "placeholder": "例如：小朋友、機器人和一隻友善的小恐龍",
+        "token": "【人物或動物】"
       },
       {
+        "id": "museum-style",
         "label": "希望使用什麼畫風？",
-        "examples": "例如：彩色蠟筆、兒童繪本、水彩、卡通、未來科技風"
+        "examples": "彩色蠟筆、兒童繪本、水彩、卡通、未來科技風",
+        "placeholder": "例如：色彩繽紛的兒童蠟筆畫風格",
+        "token": "【畫風】"
       }
     ],
-    "prompt": "幫我畫一座我心中的未來科教館。\n\n它的外型像【填寫建築外型】，\n裡面有【填寫館內內容】，\n最神奇的設施是【填寫特殊設施】，\n還有【填寫人物或動物】在裡面一起探索。\n\n整座科教館充滿科學、冒險與想像力，\n請使用【填寫畫風】呈現，\n畫面色彩明亮、充滿童趣，適合小朋友欣賞。"
+    "update_button_text": "更新提示詞",
+    "update_success_message": "提示詞已更新！你還可以繼續修改內容。",
+    "prompt": "幫我畫一座我心中的未來科教館。\n\n它的外型像【建築外型】，\n裡面有【館內內容】，\n最神奇的設施是【特殊設施】，\n還有【人物或動物】在裡面一起探索。\n\n整座科教館充滿科學、冒險與想像力，\n請使用【畫風】呈現，\n畫面色彩明亮、充滿童趣，適合小朋友欣賞。"
   }
 ]

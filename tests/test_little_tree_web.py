@@ -38,15 +38,15 @@ SCENARIO_TITLES = [
 SCENARIO_FIELDS = {"id", "title", "description", "prompt"}
 SCIENCE_MUSEUM_PROMPT = """幫我畫一座我心中的未來科教館。
 
-它的外型像【填寫建築外型】，
-裡面有【填寫館內內容】，
-最神奇的設施是【填寫特殊設施】，
-還有【填寫人物或動物】在裡面一起探索。
+它的外型像【建築外型】，
+裡面有【館內內容】，
+最神奇的設施是【特殊設施】，
+還有【人物或動物】在裡面一起探索。
 
 整座科教館充滿科學、冒險與想像力，
-請使用【填寫畫風】呈現，
+請使用【畫風】呈現，
 畫面色彩明亮、充滿童趣，適合小朋友欣賞。"""
-SCIENCE_MUSEUM_QUESTIONS = [
+SCIENCE_MUSEUM_FIELD_LABELS = [
     "科教館的外型像什麼？",
     "科教館裡面有什麼？",
     "最神奇的設施是什麼？",
@@ -106,11 +106,34 @@ class LittleTreeContentTest(unittest.TestCase):
         )
         self.assertEqual(museum["action_label"], "開始創作")
         self.assertTrue(museum["editable"])
+        self.assertEqual(museum["icon"], "🚀")
+        self.assertEqual(museum["card_class"], "museum-card")
         self.assertEqual(
-            [question["label"] for question in museum["questions"]],
-            SCIENCE_MUSEUM_QUESTIONS,
+            [form_field["label"] for form_field in museum["form_fields"]],
+            SCIENCE_MUSEUM_FIELD_LABELS,
+        )
+        self.assertEqual(
+            museum["demo_image"],
+            "/assets/images/little_tree/science_museum_demo.png",
+        )
+        self.assertTrue(museum["demo_image_alt"])
+        self.assertEqual(museum["demo_title"], "創作靈感 Demo")
+        self.assertEqual(
+            museum["demo_message"],
+            "這只是參考喔！你可以比這更酷、更夢幻、更有想像力！",
+        )
+        self.assertEqual(museum["update_button_text"], "更新提示詞")
+        self.assertEqual(
+            museum["update_success_message"],
+            "提示詞已更新！你還可以繼續修改內容。",
         )
         self.assertEqual(museum["prompt"], SCIENCE_MUSEUM_PROMPT)
+        self.assertTrue(
+            (
+                ROOT / "assets" / "images" / "little_tree" / "science_museum_demo.png"
+            ).is_file()
+        )
+        self.assertTrue(all("form_fields" not in scenario for scenario in scenarios[:3]))
 
     def test_invalid_parenting_content_is_rejected(self):
         def item(item_id: str) -> dict[str, str]:
@@ -137,6 +160,12 @@ class LittleTreeContentTest(unittest.TestCase):
                 item("two"),
                 item("three"),
                 {**item("four"), "editable": "yes"},
+            ],
+            [
+                item("one"),
+                item("two"),
+                item("three"),
+                {**item("four"), "form_fields": [{"id": "missing-fields"}]},
             ],
         )
 
@@ -231,10 +260,18 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertEqual(museum["prompt"], SCIENCE_MUSEUM_PROMPT)
         self.assertTrue(museum["editable"])
         self.assertEqual(
-            [question["label"] for question in museum["questions"]],
-            SCIENCE_MUSEUM_QUESTIONS,
+            [form_field["label"] for form_field in museum["form_fields"]],
+            SCIENCE_MUSEUM_FIELD_LABELS,
         )
         ask_gpt.assert_not_called()
+
+    def test_science_museum_demo_image_is_served_from_local_assets(self):
+        response = self.client.get(
+            "/assets/images/little_tree/science_museum_demo.png"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content_type, "image/png")
 
     def test_parenting_scenarios_endpoint_is_read_only(self):
         response = self.client.post(
@@ -267,6 +304,26 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn("scenario.editable", source)
         self.assertIn("promptEditor.value", source)
         self.assertIn("questionGuide.hidden = questions.length === 0", source)
+        self.assertIn("scenario.demo_image", source)
+        self.assertIn("demoImage.alt = scenario.demo_image_alt", source)
+        self.assertIn('demoImage.addEventListener("error"', source)
+        self.assertIn("scenario.form_fields", source)
+        self.assertIn('document.createElement("label")', source)
+        self.assertIn("input.placeholder = field.placeholder", source)
+        self.assertIn("input.dataset.token = field.token", source)
+        self.assertIn('updatePrompt.addEventListener("click", updateSelectedPrompt)', source)
+        self.assertIn("let updatedPrompt = selectedScenario.prompt", source)
+        self.assertIn("input.value.trim() ? input.value : input.dataset.token", source)
+        self.assertIn(
+            "updatedPrompt.split(input.dataset.token).join(replacement)",
+            source,
+        )
+        self.assertIn("promptEditor.value = updatedPrompt", source)
+        self.assertIn(
+            "setBuilderFeedback(selectedScenario.update_success_message",
+            source,
+        )
+        self.assertIn("? promptEditor.value", source)
         self.assertIn("showLoadError()", source)
         self.assertIn("showHome()", source)
         self.assertNotIn("categoriesUrl", source)
@@ -285,6 +342,12 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('id="prompt-editor"', template)
         self.assertIn('id="question-guide"', template)
         self.assertIn('id="question-list"', template)
+        self.assertIn('id="demo-panel"', template)
+        self.assertIn('id="demo-image"', template)
+        self.assertIn('id="prompt-builder"', template)
+        self.assertIn('id="form-fields"', template)
+        self.assertIn('id="update-prompt"', template)
+        self.assertIn('id="builder-feedback"', template)
         self.assertIn('id="copy-prompt"', template)
         self.assertIn("複製提示詞", template)
         self.assertIn("回到探索首頁", template)

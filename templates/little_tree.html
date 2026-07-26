@@ -92,12 +92,30 @@
           <h1 id="prompt-title" tabindex="-1"></h1>
           <p class="prompt-description" id="prompt-description"></p>
 
+          <figure class="demo-panel" id="demo-panel" hidden>
+            <img id="demo-image" alt="">
+            <figcaption>
+              <strong id="demo-title"></strong>
+              <span id="demo-message"></span>
+            </figcaption>
+          </figure>
+
           <section class="question-guide" id="question-guide" aria-labelledby="question-guide-title" hidden>
             <div class="paper-heading">
               <span aria-hidden="true">💭</span>
               <strong id="question-guide-title">先和家人一起想一想</strong>
             </div>
             <ul id="question-list"></ul>
+          </section>
+
+          <section class="prompt-builder" id="prompt-builder" aria-labelledby="prompt-builder-title" hidden>
+            <div class="paper-heading">
+              <span aria-hidden="true">✏️</span>
+              <strong id="prompt-builder-title">把你的想像填進來</strong>
+            </div>
+            <div class="form-fields" id="form-fields"></div>
+            <button class="update-button" type="button" id="update-prompt"></button>
+            <p id="builder-feedback" role="status" aria-live="polite"></p>
           </section>
 
           <div class="prompt-paper">

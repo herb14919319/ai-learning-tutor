@@ -13,8 +13,16 @@
   const promptIcon = document.getElementById("prompt-icon");
   const promptTitle = document.getElementById("prompt-title");
   const promptDescription = document.getElementById("prompt-description");
+  const demoPanel = document.getElementById("demo-panel");
+  const demoImage = document.getElementById("demo-image");
+  const demoTitle = document.getElementById("demo-title");
+  const demoMessage = document.getElementById("demo-message");
   const questionGuide = document.getElementById("question-guide");
   const questionList = document.getElementById("question-list");
+  const promptBuilder = document.getElementById("prompt-builder");
+  const formFields = document.getElementById("form-fields");
+  const updatePrompt = document.getElementById("update-prompt");
+  const builderFeedback = document.getElementById("builder-feedback");
   const promptPaperTitle = document.getElementById("prompt-paper-title");
   const promptContent = document.getElementById("prompt-content");
   const promptEditor = document.getElementById("prompt-editor");
@@ -26,7 +34,6 @@
     "bedtime-story": { icon: "🌙", className: "story-card" },
     "drawing-to-ai-character": { icon: "🎨", className: "drawing-card" },
     "shared-reading-activity": { icon: "📚", className: "reading-card" },
-    "future-science-museum": { icon: "🚀", className: "museum-card" },
   };
 
   let selectedScenario = null;
@@ -36,21 +43,40 @@
     copyFeedback.className = state;
   };
 
+  const setBuilderFeedback = (message, state = "") => {
+    builderFeedback.textContent = message;
+    builderFeedback.className = state;
+  };
+
   const showHome = () => {
     promptView.hidden = true;
     homeView.hidden = false;
     selectedScenario = null;
     setCopyFeedback("");
+    setBuilderFeedback("");
     window.scrollTo(0, 0);
     homeTitle.focus({ preventScroll: true });
   };
 
   const showPrompt = (scenario) => {
-    const visual = scenarioVisuals[scenario.id] || { icon: "🌱" };
+    const visual = scenarioVisuals[scenario.id] || {
+      icon: scenario.icon || "🌱",
+    };
     selectedScenario = scenario;
     promptIcon.textContent = visual.icon;
     promptTitle.textContent = scenario.title;
     promptDescription.textContent = scenario.description;
+    if (scenario.demo_image) {
+      demoImage.src = scenario.demo_image;
+      demoImage.alt = scenario.demo_image_alt;
+      demoTitle.textContent = scenario.demo_title;
+      demoMessage.textContent = scenario.demo_message;
+      demoPanel.hidden = false;
+    } else {
+      demoPanel.hidden = true;
+      demoImage.removeAttribute("src");
+      demoImage.alt = "";
+    }
     promptContent.textContent = scenario.prompt;
     promptEditor.value = scenario.prompt;
     promptEditor.hidden = !scenario.editable;
@@ -71,17 +97,58 @@
       }),
     );
     questionGuide.hidden = questions.length === 0;
+    const fields = Array.isArray(scenario.form_fields)
+      ? scenario.form_fields
+      : [];
+    formFields.replaceChildren(
+      ...fields.map((field) => {
+        const group = document.createElement("div");
+        const label = document.createElement("label");
+        const examples = document.createElement("span");
+        const input = document.createElement("input");
+        group.className = "form-field";
+        label.htmlFor = field.id;
+        label.textContent = field.label;
+        examples.className = "field-examples";
+        examples.textContent = `靈感：${field.examples}`;
+        input.id = field.id;
+        input.type = "text";
+        input.placeholder = field.placeholder;
+        input.dataset.token = field.token;
+        input.autocomplete = "off";
+        group.append(label, examples, input);
+        return group;
+      }),
+    );
+    updatePrompt.textContent = scenario.update_button_text || "";
+    promptBuilder.hidden = fields.length === 0;
     setCopyFeedback("");
+    setBuilderFeedback("");
     homeView.hidden = true;
     promptView.hidden = false;
     window.scrollTo(0, 0);
     promptTitle.focus({ preventScroll: true });
   };
 
+  const updateSelectedPrompt = () => {
+    if (!selectedScenario || !selectedScenario.form_fields) {
+      return;
+    }
+
+    let updatedPrompt = selectedScenario.prompt;
+    formFields.querySelectorAll("input[data-token]").forEach((input) => {
+      const replacement = input.value.trim() ? input.value : input.dataset.token;
+      updatedPrompt = updatedPrompt.split(input.dataset.token).join(replacement);
+    });
+    promptEditor.value = updatedPrompt;
+    setBuilderFeedback(selectedScenario.update_success_message, "is-success");
+    setCopyFeedback("");
+  };
+
   const createScenarioCard = (scenario) => {
     const visual = scenarioVisuals[scenario.id] || {
-      icon: "🌱",
-      className: "default-card",
+      icon: scenario.icon || "🌱",
+      className: scenario.card_class || "default-card",
     };
     const card = document.createElement("button");
     card.type = "button";
@@ -219,7 +286,14 @@
   retryScenarios.addEventListener("click", loadScenarios);
   backHome.addEventListener("click", showHome);
   copyPrompt.addEventListener("click", copySelectedPrompt);
-  promptEditor.addEventListener("input", () => setCopyFeedback(""));
+  updatePrompt.addEventListener("click", updateSelectedPrompt);
+  promptEditor.addEventListener("input", () => {
+    setCopyFeedback("");
+    setBuilderFeedback("");
+  });
+  demoImage.addEventListener("error", () => {
+    demoPanel.hidden = true;
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !promptView.hidden) {
       showHome();

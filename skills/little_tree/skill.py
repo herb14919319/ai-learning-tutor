@@ -12,8 +12,25 @@ CATEGORIES_FILE = "categories.json"
 CATEGORY_FIELDS = ("id", "title", "description", "icon", "route")
 PARENTING_SCENARIOS_FILE = Path("parenting") / "scenarios.json"
 SCENARIO_FIELDS = ("id", "title", "description", "prompt")
-SCENARIO_OPTIONAL_FIELDS = ("action_label", "editable", "questions")
+SCENARIO_OPTIONAL_FIELDS = (
+    "action_label",
+    "editable",
+    "questions",
+    "demo_image",
+    "demo_image_alt",
+    "demo_title",
+    "demo_message",
+    "form_fields",
+    "update_button_text",
+    "update_success_message",
+    "icon",
+    "card_class",
+)
 QUESTION_FIELDS = ("label", "examples")
+FORM_FIELD_FIELDS = ("id", "label", "examples", "placeholder", "token")
+DEMO_FIELDS = ("demo_image", "demo_image_alt", "demo_title", "demo_message")
+UPDATE_FIELDS = ("update_button_text", "update_success_message")
+VISUAL_FIELDS = ("icon", "card_class")
 PARENTING_SCENARIO_COUNT = 4
 
 
@@ -133,6 +150,68 @@ class LittleTreeSkill:
                 raise ContentFormatError(
                     "A Little Tree parenting scenario question guide is invalid."
                 )
+            if any(field in item for field in DEMO_FIELDS) and (
+                not all(field in item for field in DEMO_FIELDS)
+                or any(
+                    not isinstance(item[field], str) or not item[field].strip()
+                    for field in DEMO_FIELDS
+                )
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario demo image is invalid."
+                )
+            if "form_fields" in item and (
+                not isinstance(item["form_fields"], list)
+                or not item["form_fields"]
+                or any(
+                    not isinstance(form_field, dict)
+                    or set(form_field) != set(FORM_FIELD_FIELDS)
+                    or any(
+                        not isinstance(form_field[field], str)
+                        or not form_field[field].strip()
+                        for field in FORM_FIELD_FIELDS
+                    )
+                    for form_field in item["form_fields"]
+                )
+                or len(
+                    {
+                        form_field["id"].strip()
+                        for form_field in item["form_fields"]
+                    }
+                )
+                != len(item["form_fields"])
+                or len(
+                    {
+                        form_field["token"].strip()
+                        for form_field in item["form_fields"]
+                    }
+                )
+                != len(item["form_fields"])
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario form fields are invalid."
+                )
+            if any(field in item for field in UPDATE_FIELDS) and (
+                "form_fields" not in item
+                or not all(field in item for field in UPDATE_FIELDS)
+                or any(
+                    not isinstance(item[field], str) or not item[field].strip()
+                    for field in UPDATE_FIELDS
+                )
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario update action is invalid."
+                )
+            if any(field in item for field in VISUAL_FIELDS) and (
+                not all(field in item for field in VISUAL_FIELDS)
+                or any(
+                    not isinstance(item[field], str) or not item[field].strip()
+                    for field in VISUAL_FIELDS
+                )
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario visual metadata is invalid."
+                )
 
             scenario: dict[str, Any] = {
                 field: item[field].strip() for field in SCENARIO_FIELDS
@@ -146,6 +225,23 @@ class LittleTreeSkill:
                     {field: question[field].strip() for field in QUESTION_FIELDS}
                     for question in item["questions"]
                 ]
+            for field in DEMO_FIELDS:
+                if field in item:
+                    scenario[field] = item[field].strip()
+            if "form_fields" in item:
+                scenario["form_fields"] = [
+                    {
+                        field: form_field[field].strip()
+                        for field in FORM_FIELD_FIELDS
+                    }
+                    for form_field in item["form_fields"]
+                ]
+            for field in UPDATE_FIELDS:
+                if field in item:
+                    scenario[field] = item[field].strip()
+            for field in VISUAL_FIELDS:
+                if field in item:
+                    scenario[field] = item[field].strip()
             if scenario["id"] in seen_ids:
                 raise ContentFormatError(
                     "Little Tree parenting scenario ids must be unique."
