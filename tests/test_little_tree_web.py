@@ -33,8 +33,26 @@ SCENARIO_TITLES = [
     "一起創作睡前故事",
     "把孩子畫的角色變成 AI 角色",
     "設計親子共讀活動",
+    "畫出我心中的科教館",
 ]
 SCENARIO_FIELDS = {"id", "title", "description", "prompt"}
+SCIENCE_MUSEUM_PROMPT = """幫我畫一座我心中的未來科教館。
+
+它的外型像【填寫建築外型】，
+裡面有【填寫館內內容】，
+最神奇的設施是【填寫特殊設施】，
+還有【填寫人物或動物】在裡面一起探索。
+
+整座科教館充滿科學、冒險與想像力，
+請使用【填寫畫風】呈現，
+畫面色彩明亮、充滿童趣，適合小朋友欣賞。"""
+SCIENCE_MUSEUM_QUESTIONS = [
+    "科教館的外型像什麼？",
+    "科教館裡面有什麼？",
+    "最神奇的設施是什麼？",
+    "有哪些人物或動物？",
+    "希望使用什麼畫風？",
+]
 
 
 class LittleTreeContentTest(unittest.TestCase):
@@ -72,13 +90,27 @@ class LittleTreeContentTest(unittest.TestCase):
         self.assertEqual(manifest["content_root"], "content")
         self.assertNotIn("entrypoint", manifest)
 
-    def test_parenting_file_contains_three_exploratory_prompts(self):
+    def test_parenting_file_contains_existing_prompts_and_science_museum_activity(self):
         scenarios = little_tree.get_parenting_scenarios()
 
         self.assertEqual([item["title"] for item in scenarios], SCENARIO_TITLES)
-        self.assertTrue(all(set(item) == SCENARIO_FIELDS for item in scenarios))
-        self.assertTrue(all("請先" in item["prompt"] for item in scenarios))
-        self.assertTrue(all("繁體中文" in item["prompt"] for item in scenarios))
+        self.assertTrue(all(SCENARIO_FIELDS.issubset(item) for item in scenarios))
+        self.assertTrue(all("請先" in item["prompt"] for item in scenarios[:3]))
+        self.assertTrue(all("繁體中文" in item["prompt"] for item in scenarios[:3]))
+
+        museum = scenarios[3]
+        self.assertEqual(museum["id"], "future-science-museum")
+        self.assertEqual(
+            museum["description"],
+            "發揮想像力，設計一座屬於你的未來科教館，讓 AI 幫你把想像畫出來！",
+        )
+        self.assertEqual(museum["action_label"], "開始創作")
+        self.assertTrue(museum["editable"])
+        self.assertEqual(
+            [question["label"] for question in museum["questions"]],
+            SCIENCE_MUSEUM_QUESTIONS,
+        )
+        self.assertEqual(museum["prompt"], SCIENCE_MUSEUM_PROMPT)
 
     def test_invalid_parenting_content_is_rejected(self):
         def item(item_id: str) -> dict[str, str]:
@@ -91,10 +123,21 @@ class LittleTreeContentTest(unittest.TestCase):
 
         cases = (
             {"invalid": "not-an-array"},
-            [item("one"), item("two")],
-            [item("one"), item("two"), {"id": "missing-fields"}],
-            [item("one"), item("two"), {**item("three"), "prompt": " "}],
-            [item("duplicate"), item("duplicate"), item("three")],
+            [item("one"), item("two"), item("three")],
+            [item("one"), item("two"), item("three"), {"id": "missing-fields"}],
+            [
+                item("one"),
+                item("two"),
+                item("three"),
+                {**item("four"), "prompt": " "},
+            ],
+            [item("duplicate"), item("duplicate"), item("three"), item("four")],
+            [
+                item("one"),
+                item("two"),
+                item("three"),
+                {**item("four"), "editable": "yes"},
+            ],
         )
 
         for payload in cases:
@@ -167,7 +210,7 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertEqual([item["title"] for item in payload["categories"]], CATEGORY_TITLES)
         ask_gpt.assert_not_called()
 
-    def test_parenting_scenarios_endpoint_returns_three_complete_items(self):
+    def test_parenting_scenarios_endpoint_returns_four_complete_items_without_model_call(self):
         with patch.object(main, "ask_gpt") as ask_gpt:
             response = self.client.get(
                 "/api/little-tree/categories/parenting/scenarios"
@@ -181,7 +224,15 @@ class LittleTreeWebTest(unittest.TestCase):
             SCENARIO_TITLES,
         )
         self.assertTrue(
-            all(set(item) == SCENARIO_FIELDS for item in payload["scenarios"])
+            all(SCENARIO_FIELDS.issubset(item) for item in payload["scenarios"])
+        )
+        museum = payload["scenarios"][3]
+        self.assertEqual(museum["id"], "future-science-museum")
+        self.assertEqual(museum["prompt"], SCIENCE_MUSEUM_PROMPT)
+        self.assertTrue(museum["editable"])
+        self.assertEqual(
+            [question["label"] for question in museum["questions"]],
+            SCIENCE_MUSEUM_QUESTIONS,
         )
         ask_gpt.assert_not_called()
 
@@ -198,16 +249,24 @@ class LittleTreeWebTest(unittest.TestCase):
 
         self.assertIn("fetch(scenariosUrl", source)
         self.assertIn("payload.scenarios.map(createScenarioCard)", source)
+        self.assertIn(
+            'card.addEventListener("click", () => showPrompt(scenario))',
+            source,
+        )
+        self.assertIn("promptView.hidden = false", source)
         self.assertIn("promptContent.textContent = scenario.prompt", source)
         self.assertIn(
-            "navigator.clipboard.writeText(selectedScenario.prompt)",
+            "navigator.clipboard.writeText(promptText)",
             source,
         )
         self.assertIn('document.execCommand("copy")', source)
         self.assertIn(
-            "複製成功！現在把它貼到你常用的 AI 吧。",
+            "提示詞已複製，可以貼到你喜歡的 AI 繪圖工具囉！",
             source,
         )
+        self.assertIn("scenario.editable", source)
+        self.assertIn("promptEditor.value", source)
+        self.assertIn("questionGuide.hidden = questions.length === 0", source)
         self.assertIn("showLoadError()", source)
         self.assertIn("showHome()", source)
         self.assertNotIn("categoriesUrl", source)
@@ -223,6 +282,9 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('id="prompt-title"', template)
         self.assertIn('id="prompt-description"', template)
         self.assertIn('id="prompt-content"', template)
+        self.assertIn('id="prompt-editor"', template)
+        self.assertIn('id="question-guide"', template)
+        self.assertIn('id="question-list"', template)
         self.assertIn('id="copy-prompt"', template)
         self.assertIn("複製提示詞", template)
         self.assertIn("回到探索首頁", template)

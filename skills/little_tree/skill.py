@@ -12,7 +12,9 @@ CATEGORIES_FILE = "categories.json"
 CATEGORY_FIELDS = ("id", "title", "description", "icon", "route")
 PARENTING_SCENARIOS_FILE = Path("parenting") / "scenarios.json"
 SCENARIO_FIELDS = ("id", "title", "description", "prompt")
-PARENTING_SCENARIO_COUNT = 3
+SCENARIO_OPTIONAL_FIELDS = ("action_label", "editable", "questions")
+QUESTION_FIELDS = ("label", "examples")
+PARENTING_SCENARIO_COUNT = 4
 
 
 class DataUnavailableError(RuntimeError):
@@ -63,7 +65,7 @@ class LittleTreeSkill:
 
         return categories
 
-    def get_parenting_scenarios(self) -> list[dict[str, str]]:
+    def get_parenting_scenarios(self) -> list[dict[str, Any]]:
         path = self.content_dir / PARENTING_SCENARIOS_FILE
         if not path.is_file():
             raise DataUnavailableError("Little Tree parenting scenarios are unavailable.")
@@ -84,10 +86,14 @@ class LittleTreeSkill:
                 f"Little Tree parenting scenarios must contain {PARENTING_SCENARIO_COUNT} items."
             )
 
-        scenarios: list[dict[str, str]] = []
+        scenarios: list[dict[str, Any]] = []
         seen_ids: set[str] = set()
         for item in payload:
-            if not isinstance(item, dict) or set(item) != set(SCENARIO_FIELDS):
+            if (
+                not isinstance(item, dict)
+                or not set(SCENARIO_FIELDS).issubset(item)
+                or not set(item).issubset((*SCENARIO_FIELDS, *SCENARIO_OPTIONAL_FIELDS))
+            ):
                 raise ContentFormatError(
                     "A Little Tree parenting scenario has an invalid schema."
                 )
@@ -99,7 +105,47 @@ class LittleTreeSkill:
                     "A Little Tree parenting scenario contains an empty field."
                 )
 
-            scenario = {field: item[field].strip() for field in SCENARIO_FIELDS}
+            if "action_label" in item and (
+                not isinstance(item["action_label"], str)
+                or not item["action_label"].strip()
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario action label is invalid."
+                )
+            if "editable" in item and not isinstance(item["editable"], bool):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario editable flag is invalid."
+                )
+            if "questions" in item and (
+                not isinstance(item["questions"], list)
+                or not item["questions"]
+                or any(
+                    not isinstance(question, dict)
+                    or set(question) != set(QUESTION_FIELDS)
+                    or any(
+                        not isinstance(question[field], str)
+                        or not question[field].strip()
+                        for field in QUESTION_FIELDS
+                    )
+                    for question in item["questions"]
+                )
+            ):
+                raise ContentFormatError(
+                    "A Little Tree parenting scenario question guide is invalid."
+                )
+
+            scenario: dict[str, Any] = {
+                field: item[field].strip() for field in SCENARIO_FIELDS
+            }
+            if "action_label" in item:
+                scenario["action_label"] = item["action_label"].strip()
+            if "editable" in item:
+                scenario["editable"] = item["editable"]
+            if "questions" in item:
+                scenario["questions"] = [
+                    {field: question[field].strip() for field in QUESTION_FIELDS}
+                    for question in item["questions"]
+                ]
             if scenario["id"] in seen_ids:
                 raise ContentFormatError(
                     "Little Tree parenting scenario ids must be unique."
@@ -117,5 +163,5 @@ def get_categories() -> list[dict[str, str]]:
     return _default_skill.get_categories()
 
 
-def get_parenting_scenarios() -> list[dict[str, str]]:
+def get_parenting_scenarios() -> list[dict[str, Any]]:
     return _default_skill.get_parenting_scenarios()

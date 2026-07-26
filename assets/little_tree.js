@@ -13,7 +13,11 @@
   const promptIcon = document.getElementById("prompt-icon");
   const promptTitle = document.getElementById("prompt-title");
   const promptDescription = document.getElementById("prompt-description");
+  const questionGuide = document.getElementById("question-guide");
+  const questionList = document.getElementById("question-list");
+  const promptPaperTitle = document.getElementById("prompt-paper-title");
   const promptContent = document.getElementById("prompt-content");
+  const promptEditor = document.getElementById("prompt-editor");
   const copyPrompt = document.getElementById("copy-prompt");
   const copyFeedback = document.getElementById("copy-feedback");
   const backHome = document.getElementById("back-home");
@@ -22,6 +26,7 @@
     "bedtime-story": { icon: "🌙", className: "story-card" },
     "drawing-to-ai-character": { icon: "🎨", className: "drawing-card" },
     "shared-reading-activity": { icon: "📚", className: "reading-card" },
+    "future-science-museum": { icon: "🚀", className: "museum-card" },
   };
 
   let selectedScenario = null;
@@ -47,6 +52,25 @@
     promptTitle.textContent = scenario.title;
     promptDescription.textContent = scenario.description;
     promptContent.textContent = scenario.prompt;
+    promptEditor.value = scenario.prompt;
+    promptEditor.hidden = !scenario.editable;
+    promptContent.hidden = Boolean(scenario.editable);
+    promptPaperTitle.textContent = scenario.editable
+      ? "把想法填進提示詞，也可以自由修改"
+      : "把這段提示詞帶去 AI";
+    const questions = Array.isArray(scenario.questions) ? scenario.questions : [];
+    questionList.replaceChildren(
+      ...questions.map((question) => {
+        const item = document.createElement("li");
+        const label = document.createElement("strong");
+        const examples = document.createElement("span");
+        label.textContent = question.label;
+        examples.textContent = question.examples;
+        item.append(label, examples);
+        return item;
+      }),
+    );
+    questionGuide.hidden = questions.length === 0;
     setCopyFeedback("");
     homeView.hidden = true;
     promptView.hidden = false;
@@ -84,7 +108,7 @@
 
     const action = document.createElement("span");
     action.className = "scenario-action";
-    action.textContent = "一起開始";
+    action.textContent = scenario.action_label || "一起開始";
     action.setAttribute("aria-hidden", "true");
 
     copy.append(title, description);
@@ -97,7 +121,7 @@
     scenarioGrid.hidden = false;
     scenarioGrid.setAttribute("aria-busy", "true");
     scenarioGrid.replaceChildren(
-      ...Array.from({ length: 3 }, () => {
+      ...Array.from({ length: 4 }, () => {
         const placeholder = document.createElement("div");
         placeholder.className = "loading-card";
         placeholder.setAttribute("aria-hidden", "true");
@@ -131,7 +155,7 @@
 
       scenarioGrid.replaceChildren(...payload.scenarios.map(createScenarioCard));
       scenarioGrid.setAttribute("aria-busy", "false");
-      scenarioStatus.textContent = "三個親子活動，等你們一起發現！";
+      scenarioStatus.textContent = "四個親子活動，等你們一起發現！";
     } catch (_error) {
       showLoadError();
     }
@@ -163,22 +187,25 @@
       return;
     }
 
+    const promptText = selectedScenario.editable
+      ? promptEditor.value
+      : selectedScenario.prompt;
     let copied = false;
     if (navigator.clipboard && window.isSecureContext) {
       try {
-        await navigator.clipboard.writeText(selectedScenario.prompt);
+        await navigator.clipboard.writeText(promptText);
         copied = true;
       } catch (_error) {
         copied = false;
       }
     }
     if (!copied) {
-      copied = fallbackCopy(selectedScenario.prompt);
+      copied = fallbackCopy(promptText);
     }
 
     if (copied) {
       setCopyFeedback(
-        "複製成功！現在把它貼到你常用的 AI 吧。",
+        "提示詞已複製，可以貼到你喜歡的 AI 繪圖工具囉！",
         "is-success",
       );
       return;
@@ -192,6 +219,7 @@
   retryScenarios.addEventListener("click", loadScenarios);
   backHome.addEventListener("click", showHome);
   copyPrompt.addEventListener("click", copySelectedPrompt);
+  promptEditor.addEventListener("input", () => setCopyFeedback(""));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !promptView.hidden) {
       showHome();

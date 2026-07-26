@@ -381,6 +381,11 @@ footer {
   background: linear-gradient(145deg, #fbfeff, var(--blue));
 }
 
+.museum-card {
+  border-color: rgba(92, 116, 190, 0.2);
+  background: linear-gradient(145deg, #f9fcff, #e6e4ff);
+}
+
 .scenario-card:hover,
 .scenario-card:focus-visible {
   transform: translateY(-4px) rotate(-0.25deg);
@@ -600,6 +605,42 @@ footer {
   line-height: 1.75;
 }
 
+.question-guide {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 2px solid rgba(88, 157, 190, 0.16);
+  border-radius: 22px;
+  background: #f4fbff;
+}
+
+.question-guide ul {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.question-guide li {
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.question-guide li strong {
+  color: var(--green-dark);
+  font-size: 15px;
+}
+
+.question-guide li span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
 .prompt-paper {
   padding: 18px;
   border: 2px dashed rgba(53, 113, 86, 0.23);
@@ -625,7 +666,8 @@ footer {
   font-size: 15px;
 }
 
-.prompt-paper pre {
+.prompt-paper pre,
+.prompt-paper textarea {
   margin: 0;
   color: #344c44;
   font-family: inherit;
@@ -634,6 +676,16 @@ footer {
   line-height: 1.9;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.prompt-paper textarea {
+  width: 100%;
+  min-height: 360px;
+  padding: 14px;
+  resize: vertical;
+  border: 2px solid rgba(53, 113, 86, 0.2);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .copy-area {

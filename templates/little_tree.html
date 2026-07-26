@@ -92,12 +92,21 @@
           <h1 id="prompt-title" tabindex="-1"></h1>
           <p class="prompt-description" id="prompt-description"></p>
 
+          <section class="question-guide" id="question-guide" aria-labelledby="question-guide-title" hidden>
+            <div class="paper-heading">
+              <span aria-hidden="true">💭</span>
+              <strong id="question-guide-title">先和家人一起想一想</strong>
+            </div>
+            <ul id="question-list"></ul>
+          </section>
+
           <div class="prompt-paper">
             <div class="paper-heading">
               <span aria-hidden="true">💬</span>
-              <strong>把這段提示詞帶去 AI</strong>
+              <strong id="prompt-paper-title">把這段提示詞帶去 AI</strong>
             </div>
             <pre id="prompt-content" tabindex="0"></pre>
+            <textarea id="prompt-editor" aria-label="可編輯的提示詞內容" hidden></textarea>
           </div>
 
           <div class="copy-area">
