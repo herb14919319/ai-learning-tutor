@@ -106,17 +106,50 @@
         const label = document.createElement("label");
         const examples = document.createElement("span");
         const input = document.createElement("input");
+        const inspirationLabel = document.createElement("span");
+        const inspirationCards = document.createElement("div");
         group.className = "form-field";
         label.htmlFor = field.id;
         label.textContent = field.label;
         examples.className = "field-examples";
-        examples.textContent = `靈感：${field.examples}`;
+        examples.textContent = `一起想想：${field.examples}`;
         input.id = field.id;
         input.type = "text";
         input.placeholder = field.placeholder;
         input.dataset.token = field.token;
         input.autocomplete = "off";
-        group.append(label, examples, input);
+        input.addEventListener("input", () => setBuilderFeedback(""));
+        inspirationLabel.className = "inspiration-label";
+        inspirationLabel.textContent = "靈感小卡";
+        inspirationCards.className = "inspiration-cards";
+        inspirationCards.append(
+          ...field.inspirations.map((inspiration) => {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = "inspiration-card";
+            card.textContent = inspiration;
+            card.setAttribute(
+              "aria-label",
+              `把「${inspiration}」填入「${field.label}」`,
+            );
+            card.addEventListener("click", () => {
+              input.value = inspiration;
+              input.focus();
+              setBuilderFeedback(
+                "靈感已放進欄位，你可以繼續改成自己的版本！",
+                "is-success",
+              );
+            });
+            return card;
+          }),
+        );
+        group.append(
+          label,
+          examples,
+          input,
+          inspirationLabel,
+          inspirationCards,
+        );
         return group;
       }),
     );

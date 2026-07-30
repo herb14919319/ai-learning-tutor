@@ -685,6 +685,17 @@ footer {
   background: #fffaf0;
 }
 
+.builder-intro {
+  margin: -2px 0 16px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  color: #6d542e;
+  background: var(--yellow);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
 .form-fields {
   display: grid;
   gap: 16px;
@@ -706,6 +717,45 @@ footer {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.55;
+}
+
+.inspiration-label {
+  margin-top: 3px;
+  color: #8a5a3b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.inspiration-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inspiration-card {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(184, 111, 66, 0.24);
+  border-radius: 999px;
+  color: #715036;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.inspiration-card:hover,
+.inspiration-card:focus-visible {
+  border-color: rgba(184, 111, 66, 0.58);
+  background: #fff3df;
+  transform: translateY(-1px);
+}
+
+.inspiration-card:active {
+  transform: translateY(1px);
 }
 
 .form-field input {

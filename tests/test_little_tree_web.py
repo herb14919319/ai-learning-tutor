@@ -36,22 +36,25 @@ SCENARIO_TITLES = [
     "畫出我心中的科教館",
 ]
 SCENARIO_FIELDS = {"id", "title", "description", "prompt"}
-SCIENCE_MUSEUM_PROMPT = """幫我畫一座我心中的未來科教館。
+SCIENCE_MUSEUM_PROMPT = """請根據孩子自己的想法，畫出一座心中的未來科教館。
 
-它的外型像【建築外型】，
-裡面有【館內內容】，
-最神奇的設施是【特殊設施】，
-還有【人物或動物】在裡面一起探索。
+科教館的外觀是【科教館外觀】。
+館內最神奇的設施是【神奇設施】。
+希望大家在這裡學到【學習主題】。
+館中加入【永續元素】，讓環境變得更好。
+為科教館70歲生日安排【生日慶祝方式】。
+整體畫面呈現【畫面感覺】。
 
-整座科教館充滿科學、冒險與想像力，
-請使用【畫風】呈現，
-畫面色彩明亮、充滿童趣，適合小朋友欣賞。"""
+作品以國立臺灣科學教育館70週年館慶為背景，將「科教70・永續∞」轉化為視覺氛圍，自然融合STEAM精神、科學探索、永續環境與歡樂生日慶典；不要把主題字樣畫在畫面中。
+
+請以孩子填寫的內容為主要創意，不新增孩子未提及的核心設定，只將這些想法整理成完整、細緻、高品質的繪圖畫面。畫面中不要出現任何文字、字母、數字、Logo、標語、海報或其他文字內容。"""
 SCIENCE_MUSEUM_FIELD_LABELS = [
-    "科教館的外型像什麼？",
-    "科教館裡面有什麼？",
-    "最神奇的設施是什麼？",
-    "有哪些人物或動物？",
-    "希望使用什麼畫風？",
+    "我的科教館長什麼樣子？",
+    "裡面有哪些最神奇的設施？",
+    "我希望大家在這裡學到什麼？",
+    "我想加入哪些永續元素？",
+    "我想怎麼替科教館70歲生日慶祝？",
+    "我希望畫面呈現什麼感覺？",
 ]
 
 
@@ -112,6 +115,15 @@ class LittleTreeContentTest(unittest.TestCase):
             [form_field["label"] for form_field in museum["form_fields"]],
             SCIENCE_MUSEUM_FIELD_LABELS,
         )
+        self.assertTrue(
+            all(len(form_field["inspirations"]) == 4 for form_field in museum["form_fields"])
+        )
+        self.assertTrue(
+            all(
+                form_field["token"] in museum["prompt"]
+                for form_field in museum["form_fields"]
+            )
+        )
         self.assertEqual(
             museum["demo_image"],
             "/assets/images/little_tree/science_museum_demo.png",
@@ -128,6 +140,19 @@ class LittleTreeContentTest(unittest.TestCase):
             "提示詞已更新！你還可以繼續修改內容。",
         )
         self.assertEqual(museum["prompt"], SCIENCE_MUSEUM_PROMPT)
+        for required_theme in (
+            "國立臺灣科學教育館70週年館慶",
+            "科教70・永續∞",
+            "STEAM精神",
+            "科學探索",
+            "永續環境",
+            "歡樂生日慶典",
+        ):
+            with self.subTest(required_theme=required_theme):
+                self.assertIn(required_theme, museum["prompt"])
+        for forbidden_output in ("文字", "Logo", "標語", "海報"):
+            with self.subTest(forbidden_output=forbidden_output):
+                self.assertIn(forbidden_output, museum["prompt"])
         self.assertTrue(
             (
                 ROOT / "assets" / "images" / "little_tree" / "science_museum_demo.png"
@@ -166,6 +191,24 @@ class LittleTreeContentTest(unittest.TestCase):
                 item("two"),
                 item("three"),
                 {**item("four"), "form_fields": [{"id": "missing-fields"}]},
+            ],
+            [
+                item("one"),
+                item("two"),
+                item("three"),
+                {
+                    **item("four"),
+                    "form_fields": [
+                        {
+                            "id": "field",
+                            "label": "問題",
+                            "examples": "例子",
+                            "placeholder": "請輸入",
+                            "token": "【欄位】",
+                            "inspirations": [],
+                        }
+                    ],
+                },
             ],
         )
 
@@ -311,6 +354,10 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('document.createElement("label")', source)
         self.assertIn("input.placeholder = field.placeholder", source)
         self.assertIn("input.dataset.token = field.token", source)
+        self.assertIn("field.inspirations.map((inspiration)", source)
+        self.assertIn('card.className = "inspiration-card"', source)
+        self.assertIn("input.value = inspiration", source)
+        self.assertIn("input.focus()", source)
         self.assertIn('updatePrompt.addEventListener("click", updateSelectedPrompt)', source)
         self.assertIn("let updatedPrompt = selectedScenario.prompt", source)
         self.assertIn("input.value.trim() ? input.value : input.dataset.token", source)
@@ -348,6 +395,8 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('id="form-fields"', template)
         self.assertIn('id="update-prompt"', template)
         self.assertIn('id="builder-feedback"', template)
+        self.assertIn("沒有標準答案", template)
+        self.assertIn("靈感小卡", template)
         self.assertIn('id="copy-prompt"', template)
         self.assertIn("複製提示詞", template)
         self.assertIn("回到探索首頁", template)

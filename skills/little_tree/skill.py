@@ -27,7 +27,8 @@ SCENARIO_OPTIONAL_FIELDS = (
     "card_class",
 )
 QUESTION_FIELDS = ("label", "examples")
-FORM_FIELD_FIELDS = ("id", "label", "examples", "placeholder", "token")
+FORM_FIELD_STRING_FIELDS = ("id", "label", "examples", "placeholder", "token")
+FORM_FIELD_FIELDS = (*FORM_FIELD_STRING_FIELDS, "inspirations")
 DEMO_FIELDS = ("demo_image", "demo_image_alt", "demo_title", "demo_message")
 UPDATE_FIELDS = ("update_button_text", "update_success_message")
 VISUAL_FIELDS = ("icon", "card_class")
@@ -169,7 +170,14 @@ class LittleTreeSkill:
                     or any(
                         not isinstance(form_field[field], str)
                         or not form_field[field].strip()
-                        for field in FORM_FIELD_FIELDS
+                        for field in FORM_FIELD_STRING_FIELDS
+                    )
+                    or not isinstance(form_field["inspirations"], list)
+                    or not form_field["inspirations"]
+                    or any(
+                        not isinstance(inspiration, str)
+                        or not inspiration.strip()
+                        for inspiration in form_field["inspirations"]
                     )
                     for form_field in item["form_fields"]
                 )
@@ -231,8 +239,14 @@ class LittleTreeSkill:
             if "form_fields" in item:
                 scenario["form_fields"] = [
                     {
-                        field: form_field[field].strip()
-                        for field in FORM_FIELD_FIELDS
+                        **{
+                            field: form_field[field].strip()
+                            for field in FORM_FIELD_STRING_FIELDS
+                        },
+                        "inspirations": [
+                            inspiration.strip()
+                            for inspiration in form_field["inspirations"]
+                        ],
                     }
                     for form_field in item["form_fields"]
                 ]
