@@ -173,7 +173,6 @@ class LittleTreeSkill:
                         for field in FORM_FIELD_STRING_FIELDS
                     )
                     or not isinstance(form_field["inspirations"], list)
-                    or not form_field["inspirations"]
                     or any(
                         not isinstance(inspiration, str)
                         or not inspiration.strip()

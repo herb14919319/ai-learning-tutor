@@ -38,31 +38,25 @@ SCENARIO_TITLES = [
 SCENARIO_FIELDS = {"id", "title", "description", "prompt"}
 SCIENCE_MUSEUM_PROMPT = """請根據孩子自己的想法，畫出一座心中的未來科教館。
 
-科教館的外觀是【科教館外觀】。
-館內最神奇的設施是【神奇設施】。
-希望大家在這裡學到【學習主題】。
-館中加入【永續元素】，讓環境變得更好。
-為科教館70歲生日安排【生日慶祝方式】。
-孩子希望畫面呈現【畫面感覺】。
+孩子對整座科教館的主要創意是：【科教館主要創意】。
+希望自然融入建築與場景的STEAM或永續元素是：【STEAM與永續元素】。
+科教館70歲生日的慶祝方式是：【70歲生日慶祝】。
+
+第一題是畫面的主要創意來源，請完整保留孩子描述的外觀、館內內容、神奇設施與學習想法，不要替孩子增加新的核心設定。第二題的STEAM與永續元素要自然融入建築與場景設計，不要另外形成獨立主題或獨立世界。第三題的生日慶祝方式只作為館慶氛圍的小幅點綴，不可搶走建築主體。
 
 請以科教館建築為唯一且最清楚的畫面主角，建築約占畫面60～70%，完整呈現外觀，不被人物、背景或裝飾遮擋。採單一主體、正面或容易理解的簡單視角，保留大量留白與乾淨背景，讓人一眼看出畫面重點；不要使用複雜透視、多重場景或滿版細節。
 
-將孩子描述的神奇設施自然融入建築本體，像是從建築延伸或成為建築的一部分，不要另外畫成獨立世界。將孩子填寫的永續元素直接表現在建築設計上，不需另外加上圖解或說明。
+將孩子描述的神奇設施自然融入建築本體，像是從建築延伸或成為建築的一部分，不要另外畫成獨立世界。將孩子選擇或填寫的永續元素直接表現在建築設計上，不需另外加上圖解或說明。
 
-70歲生日慶祝元素只需少量點綴在背景或角落，優先呈現孩子填寫的慶祝方式，不可搶走建築主體。畫面可以不出現人物；只有孩子的描述確實需要人物時，最多畫2～3位小朋友，不要出現大量群眾。
-
-保留孩子指定的畫面感覺，同時以適合國小學生觀察與自行創作的兒童繪本方式呈現：線條清楚、色彩柔和、大面積色塊、造型簡單。避免大量人物、複雜背景、過多裝飾、電影海報感、超寫實電影場景與滿版細節。目標是構圖清楚、容易理解的創作參考圖，不是最華麗或最複雜的AI圖片。
+畫面可以不出現人物；只有孩子的描述確實需要人物時，最多畫2～3位小朋友，不要出現大量群眾。整體以適合國小學生觀察與自行創作的兒童繪本方式呈現：線條清楚、色彩柔和、大面積色塊、造型簡單。避免大量人物、複雜背景、過多裝飾、電影海報感、超寫實電影場景與滿版細節。
 
 作品以國立臺灣科學教育館70週年館慶為背景，將「科教70・永續∞」轉化為視覺氛圍，自然融合STEAM精神、科學探索、永續環境與歡樂生日慶典；不要把主題字樣畫在畫面中。
 
 完全保留孩子填寫的創意，不改寫孩子的核心想法，也不新增孩子未提及的核心設定。畫面中不要出現任何文字、字母、數字、Logo、標語、海報或其他文字內容。"""
 SCIENCE_MUSEUM_FIELD_LABELS = [
-    "我的科教館長什麼樣子？",
-    "裡面有哪些最神奇的設施？",
-    "我希望大家在這裡學到什麼？",
-    "我想加入哪些永續元素？",
-    "我想怎麼替科教館70歲生日慶祝？",
-    "我希望畫面呈現什麼感覺？",
+    "① 一起把腦中的點子種出來 🌱",
+    "② 加入 STEAM 元素 🔬",
+    "③ 我想怎麼替科教館 70 歲生日慶祝？ 🎉",
 ]
 
 
@@ -123,9 +117,15 @@ class LittleTreeContentTest(unittest.TestCase):
             [form_field["label"] for form_field in museum["form_fields"]],
             SCIENCE_MUSEUM_FIELD_LABELS,
         )
-        self.assertTrue(
-            all(len(form_field["inspirations"]) == 4 for form_field in museum["form_fields"])
+        self.assertEqual(
+            [len(form_field["inspirations"]) for form_field in museum["form_fields"]],
+            [0, 11, 8],
         )
+        self.assertEqual(museum["form_fields"][0]["inspirations"], [])
+        self.assertIn("AI", museum["form_fields"][1]["inspirations"])
+        self.assertIn("動手做實驗", museum["form_fields"][1]["inspirations"])
+        self.assertIn("生日派對", museum["form_fields"][2]["inspirations"])
+        self.assertIn("大家一起探險", museum["form_fields"][2]["inspirations"])
         self.assertTrue(
             all(
                 form_field["token"] in museum["prompt"]
@@ -180,6 +180,13 @@ class LittleTreeContentTest(unittest.TestCase):
         ):
             with self.subTest(composition_rule=composition_rule):
                 self.assertIn(composition_rule, museum["prompt"])
+        for mapping_rule in (
+            "第一題是畫面的主要創意來源",
+            "第二題的STEAM與永續元素要自然融入建築與場景設計",
+            "第三題的生日慶祝方式只作為館慶氛圍的小幅點綴",
+        ):
+            with self.subTest(mapping_rule=mapping_rule):
+                self.assertIn(mapping_rule, museum["prompt"])
         self.assertTrue(
             (
                 ROOT / "assets" / "images" / "little_tree" / "science_museum_demo.png"
@@ -232,7 +239,7 @@ class LittleTreeContentTest(unittest.TestCase):
                             "examples": "例子",
                             "placeholder": "請輸入",
                             "token": "【欄位】",
-                            "inspirations": [],
+                            "inspirations": [""],
                         }
                     ],
                 },
@@ -381,7 +388,9 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('document.createElement("label")', source)
         self.assertIn("input.placeholder = field.placeholder", source)
         self.assertIn("input.dataset.token = field.token", source)
-        self.assertIn("field.inspirations.map((inspiration)", source)
+        self.assertIn("inspirations.map((inspiration)", source)
+        self.assertIn("if (inspirations.length > 0)", source)
+        self.assertIn("group.append(label, examples, input)", source)
         self.assertIn('card.className = "inspiration-card"', source)
         self.assertIn("input.value = inspiration", source)
         self.assertIn("input.focus()", source)
@@ -424,6 +433,7 @@ class LittleTreeWebTest(unittest.TestCase):
         self.assertIn('id="builder-feedback"', template)
         self.assertIn("沒有標準答案", template)
         self.assertIn("靈感小卡", template)
+        self.assertIn("三個問題，完成我的科教館", template)
         self.assertIn('id="copy-prompt"', template)
         self.assertIn("複製提示詞", template)
         self.assertIn("回到探索首頁", template)

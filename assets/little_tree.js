@@ -119,37 +119,37 @@
         input.dataset.token = field.token;
         input.autocomplete = "off";
         input.addEventListener("input", () => setBuilderFeedback(""));
-        inspirationLabel.className = "inspiration-label";
-        inspirationLabel.textContent = "靈感小卡";
-        inspirationCards.className = "inspiration-cards";
-        inspirationCards.append(
-          ...field.inspirations.map((inspiration) => {
-            const card = document.createElement("button");
-            card.type = "button";
-            card.className = "inspiration-card";
-            card.textContent = inspiration;
-            card.setAttribute(
-              "aria-label",
-              `把「${inspiration}」填入「${field.label}」`,
-            );
-            card.addEventListener("click", () => {
-              input.value = inspiration;
-              input.focus();
-              setBuilderFeedback(
-                "靈感已放進欄位，你可以繼續改成自己的版本！",
-                "is-success",
+        const inspirations = Array.isArray(field.inspirations)
+          ? field.inspirations
+          : [];
+        group.append(label, examples, input);
+        if (inspirations.length > 0) {
+          inspirationLabel.className = "inspiration-label";
+          inspirationLabel.textContent = "靈感小卡";
+          inspirationCards.className = "inspiration-cards";
+          inspirationCards.append(
+            ...inspirations.map((inspiration) => {
+              const card = document.createElement("button");
+              card.type = "button";
+              card.className = "inspiration-card";
+              card.textContent = inspiration;
+              card.setAttribute(
+                "aria-label",
+                `把「${inspiration}」填入「${field.label}」`,
               );
-            });
-            return card;
-          }),
-        );
-        group.append(
-          label,
-          examples,
-          input,
-          inspirationLabel,
-          inspirationCards,
-        );
+              card.addEventListener("click", () => {
+                input.value = inspiration;
+                input.focus();
+                setBuilderFeedback(
+                  "靈感已放進欄位，你可以繼續改成自己的版本！",
+                  "is-success",
+                );
+              });
+              return card;
+            }),
+          );
+          group.append(inspirationLabel, inspirationCards);
+        }
         return group;
       }),
     );
