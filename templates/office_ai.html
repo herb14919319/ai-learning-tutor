@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Office AI 工具箱｜辦公室 AI 提示詞生成器</title>
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='office_ai.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="{{ url_for('office_ai_page') }}" aria-label="回到 Office AI 工具箱首頁">
+        <span class="brand-mark" aria-hidden="true">OA</span>
+        <span><strong>Office AI 工具箱</strong><small>辦公室 AI 提示詞生成器</small></span>
+      </a>
+      <a class="home-link" href="{{ url_for('home') }}">回 AI 學習助教</a>
+    </header>
+
+    <main>
+      <section id="task-view" aria-labelledby="page-title">
+        <div class="hero">
+          <p class="eyebrow">把工作說清楚，AI 才能幫得準</p>
+          <h1 id="page-title" tabindex="-1">Office AI 工具箱</h1>
+          <p>不知道 Prompt 怎麼寫？選擇你要完成的工作，我們幫你組好。</p>
+        </div>
+
+        <section aria-labelledby="task-list-title">
+          <div class="section-heading">
+            <h2 id="task-list-title">你今天想完成哪一項工作？</h2>
+            <span>Phase 1 · 六種常用情境</span>
+          </div>
+          <div class="task-grid" id="task-grid">
+            <button class="task-card featured" type="button" data-task="image-excel">
+              <span class="task-icon" aria-hidden="true">▦</span><strong>圖片轉 Excel</strong><small>辨識多張設備或表格照片，整理成 Excel</small><b>優先推薦</b>
+            </button>
+            <button class="task-card" type="button" data-task="pdf">
+              <span class="task-icon" aria-hidden="true">PDF</span><strong>PDF 文件整理</strong><small>摘要、擷取表格或比較文件</small>
+            </button>
+            <button class="task-card" type="button" data-task="meeting">
+              <span class="task-icon" aria-hidden="true">記</span><strong>會議紀錄整理</strong><small>整理決議、待辦、負責人與期限</small>
+            </button>
+            <button class="task-card" type="button" data-task="email">
+              <span class="task-icon" aria-hidden="true">＠</span><strong>Email / 商務文字</strong><small>依對象、目的與語氣撰寫</small>
+            </button>
+            <button class="task-card" type="button" data-task="excel-analysis">
+              <span class="task-icon" aria-hidden="true">Σ</span><strong>Excel / 表格分析</strong><small>摘要、統計、找異常或整理報告</small>
+            </button>
+            <button class="task-card" type="button" data-task="engineering">
+              <span class="task-icon" aria-hidden="true">修</span><strong>工程問題分析</strong><small>釐清現象、可能原因與檢查順序</small>
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <section id="builder-view" class="panel" aria-labelledby="builder-title" hidden>
+        <button class="text-button" type="button" id="back-tasks">← 重新選擇工作</button>
+        <div class="builder-heading"><span id="builder-icon" aria-hidden="true"></span><div><p>依照工作填寫</p><h1 id="builder-title" tabindex="-1"></h1></div></div>
+
+        <form id="prompt-form">
+          <section class="task-form" data-form="image-excel">
+            <fieldset>
+              <legend>資料類型</legend>
+              <div class="choice-grid radio-grid">
+                <label><input type="radio" name="image-data-type" value="CCTV" checked><span>CCTV</span></label>
+                <label><input type="radio" name="image-data-type" value="門禁"><span>門禁</span></label>
+                <label><input type="radio" name="image-data-type" value="消防"><span>消防</span></label>
+                <label><input type="radio" name="image-data-type" value="BA / IBMS"><span>BA / IBMS</span></label>
+                <label><input type="radio" name="image-data-type" value="一般表格"><span>一般表格</span></label>
+                <label><input type="radio" name="image-data-type" value="其他"><span>其他</span></label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>處理需求 <small>可複選</small></legend>
+              <div class="choice-grid">
+                <label><input type="checkbox" name="image-requirement" value="merge" checked><span>合併多張圖片資料</span></label>
+                <label><input type="checkbox" name="image-requirement" value="device" checked><span>保留設備名稱</span></label>
+                <label><input type="checkbox" name="image-requirement" value="ip" checked><span>保留 IP Address</span></label>
+                <label><input type="checkbox" name="image-requirement" value="location" checked><span>保留位置 / Location</span></label>
+                <label><input type="checkbox" name="image-requirement" value="remark" checked><span>保留備註 / Remark</span></label>
+                <label><input type="checkbox" name="image-requirement" value="columns"><span>自動整理欄位</span></label>
+                <label><input type="checkbox" name="image-requirement" value="text-only"><span>移除圖片，只保留文字資料</span></label>
+                <label><input type="checkbox" name="image-requirement" value="xlsx" checked><span>產生 Excel 檔案</span></label>
+              </div>
+            </fieldset>
+            <div class="principles"><strong>辨識原則（已自動加入）</strong><ul><li>不要自行猜測辨識不清楚的內容</li><li>無法確認的欄位標示「待確認」</li><li>保留原始資料順序</li><li>不要自行補造不存在的資料</li></ul></div>
+          </section>
+
+          <section class="task-form" data-form="pdf" hidden>
+            <fieldset><legend>想怎麼整理文件？ <small>可複選</small></legend><div class="choice-grid">
+              <label><input type="checkbox" name="pdf-action" value="摘要全文" checked><span>摘要全文</span></label>
+              <label><input type="checkbox" name="pdf-action" value="整理我指定的頁面"><span>整理指定頁面</span></label>
+              <label><input type="checkbox" name="pdf-action" value="擷取文件中的表格"><span>擷取表格</span></label>
+              <label><input type="checkbox" name="pdf-action" value="找出文件重點"><span>找出重點</span></label>
+              <label><input type="checkbox" name="pdf-action" value="產生教育訓練內容"><span>產生教育訓練內容</span></label>
+              <label><input type="checkbox" name="pdf-action" value="比較兩份文件的差異"><span>比較兩份文件</span></label>
+            </div></fieldset>
+            <label class="field">補充說明（選填）<textarea name="pdf-notes" placeholder="例如：請特別留意第 5～12 頁的安全規範"></textarea></label>
+          </section>
+
+          <section class="task-form" data-form="meeting" hidden>
+            <fieldset><legend>需要整理哪些內容？ <small>可複選</small></legend><div class="choice-grid">
+              <label><input type="checkbox" name="meeting-action" value="摘要討論內容" checked><span>摘要討論內容</span></label>
+              <label><input type="checkbox" name="meeting-action" value="整理會議決議" checked><span>整理決議</span></label>
+              <label><input type="checkbox" name="meeting-action" value="整理待辦事項" checked><span>整理待辦事項</span></label>
+              <label><input type="checkbox" name="meeting-action" value="找出每項工作的負責人"><span>找出負責人</span></label>
+              <label><input type="checkbox" name="meeting-action" value="找出每項工作的期限"><span>找出期限</span></label>
+              <label><input type="checkbox" name="meeting-action" value="產生正式會議紀錄"><span>產生正式會議紀錄</span></label>
+            </div></fieldset>
+          </section>
+
+          <section class="task-form" data-form="email" hidden>
+            <div class="field-grid">
+              <label class="field">對象<input name="email-recipient" type="text" placeholder="例如：客戶、主管、供應商"></label>
+              <label class="field">目的<input name="email-purpose" type="text" placeholder="例如：確認報價與交期"></label>
+            </div>
+            <label class="field">重點<textarea name="email-points" placeholder="列出一定要傳達的資訊"></textarea></label>
+            <label class="field">語氣<select name="email-tone"><option>專業有禮</option><option>簡潔直接</option><option>親切友善</option><option>正式嚴謹</option><option>委婉提醒</option></select></label>
+          </section>
+
+          <section class="task-form" data-form="excel-analysis" hidden>
+            <fieldset><legend>想進行哪些分析？ <small>可複選</small></legend><div class="choice-grid">
+              <label><input type="checkbox" name="excel-action" value="整理資料摘要" checked><span>資料摘要</span></label>
+              <label><input type="checkbox" name="excel-action" value="進行統計分析"><span>統計分析</span></label>
+              <label><input type="checkbox" name="excel-action" value="找出異常值"><span>找異常值</span></label>
+              <label><input type="checkbox" name="excel-action" value="比較不同欄位或群組的差異"><span>比較差異</span></label>
+              <label><input type="checkbox" name="excel-action" value="建議合適的圖表"><span>建議圖表</span></label>
+              <label><input type="checkbox" name="excel-action" value="整理成可閱讀的報告"><span>整理成報告</span></label>
+            </div></fieldset>
+            <label class="field">資料背景（選填）<textarea name="excel-notes" placeholder="例如：這是各案場每月維修工時資料"></textarea></label>
+          </section>
+
+          <section class="task-form" data-form="engineering" hidden>
+            <div class="field-grid">
+              <label class="field">系統類型<input name="engineering-system" type="text" placeholder="例如：CCTV、消防、空調"></label>
+              <label class="field">設備<input name="engineering-device" type="text" placeholder="例如：NVR、控制器、冰水主機"></label>
+            </div>
+            <label class="field">問題現象<textarea name="engineering-symptom" placeholder="描述何時發生、畫面或設備出現什麼狀況"></textarea></label>
+            <label class="field">已做過的檢查<textarea name="engineering-checks" placeholder="例如：已確認電源正常、重插網路線仍無法連線"></textarea></label>
+          </section>
+
+          <p class="form-feedback" id="form-feedback" role="alert" aria-live="polite"></p>
+          <button class="primary-button" type="submit">產生提示詞</button>
+        </form>
+      </section>
+
+      <section id="result-view" class="panel result-panel" aria-labelledby="result-title" hidden>
+        <p class="result-kicker">已依照你的選項完成</p>
+        <h1 id="result-title" tabindex="-1">產生的提示詞</h1>
+        <textarea id="prompt-output" readonly aria-label="產生的提示詞"></textarea>
+        <div class="result-actions">
+          <button class="primary-button" type="button" id="copy-prompt">一鍵複製</button>
+          <button class="secondary-button" type="button" id="regenerate-prompt">重新產生</button>
+          <button class="text-button" type="button" id="back-builder">← 返回修改</button>
+        </div>
+        <p id="copy-feedback" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <footer>Office AI Phase 1 · 提示詞只在你的瀏覽器中產生，不會送出資料。</footer>
+    <script src="{{ url_for('asset_file', filename='office_ai.js') }}" defer></script>
+  </body>
+</html>

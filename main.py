@@ -906,6 +906,11 @@ def little_tree_page():
     return render_template("little_tree.html")
 
 
+@app.get("/office-ai")
+def office_ai_page():
+    return render_template("office_ai.html")
+
+
 def little_tree_api_error(error: str, message: str, status_code: int):
     return jsonify({"ok": False, "error": error, "message": message}), status_code
 

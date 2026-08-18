@@ -66,6 +66,42 @@
         color: var(--text);
       }
 
+      .tool-entry {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: 20px;
+        border: 1px solid #c9d9ee;
+        border-radius: 8px;
+        padding: 16px 18px;
+        background: #eef5ff;
+      }
+
+      .tool-entry strong,
+      .tool-entry span {
+        display: block;
+      }
+
+      .tool-entry span {
+        margin-top: 2px;
+        color: var(--muted);
+      }
+
+      .tool-entry a {
+        flex: 0 0 auto;
+        border-radius: 8px;
+        padding: 11px 16px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .tool-entry a:hover {
+        background: var(--accent-dark);
+      }
+
       .chat-shell {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -205,6 +241,15 @@
         .send-button {
           width: 100%;
         }
+
+        .tool-entry {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .tool-entry a {
+          text-align: center;
+        }
       }
     </style>
   </head>
@@ -215,6 +260,13 @@
         <p class="lead">這裡不是一般聊天機器人，而是陪你理解 AI、Machine Learning、Deep Learning、RAG、AI Agent 等概念的學習入口。</p>
         <p class="lead">你可以用它拆解名詞、比較觀念、規劃 Top-down 學習路線，或把卡住的問題整理成下一步。</p>
         <p class="note">提醒：助教會引導理解，不是直接代寫作業。帶著你的想法來問，效果會更好。</p>
+        <aside class="tool-entry" aria-label="Office AI 工具箱入口">
+          <div>
+            <strong>Office AI 工具箱</strong>
+            <span>選擇辦公工作，我們幫你組好提示詞。</span>
+          </div>
+          <a href="{{ url_for('office_ai_page') }}">開始使用</a>
+        </aside>
       </section>
 
       <section class="chat-shell" aria-label="AI Learning Tutor chat">
