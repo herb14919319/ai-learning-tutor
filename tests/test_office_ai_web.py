@@ -10,6 +10,14 @@ import main
 
 ROOT = Path(__file__).resolve().parents[1]
 OFFICE_AI_JS = ROOT / "assets" / "office_ai.js"
+PROMPT_SECTIONS = (
+    "【角色】",
+    "【任務背景】",
+    "【主要任務】",
+    "【執行規則】",
+    "【輸出格式】",
+    "【品質檢查】",
+)
 
 
 def run_prompt_builder(builder_name, values):
@@ -46,6 +54,11 @@ class OfficeAIWebTest(unittest.TestCase):
     def setUp(self):
         self.client = main.app.test_client()
 
+    def assert_structured_prompt(self, prompt):
+        positions = [prompt.index(section) for section in PROMPT_SECTIONS]
+        self.assertEqual(positions, sorted(positions))
+        self.assertTrue(all(section in prompt for section in PROMPT_SECTIONS))
+
     def test_office_ai_page_returns_six_task_types_without_model_call(self):
         with patch.object(main, "ask_gpt") as ask_gpt:
             response = self.client.get("/office-ai")
@@ -67,6 +80,7 @@ class OfficeAIWebTest(unittest.TestCase):
                 self.assertIn(task, html)
         self.assertIn("/assets/office_ai.css", html)
         self.assertIn("/assets/office_ai.js", html)
+        self.assertIn("Office AI Phase 1.1", html)
         ask_gpt.assert_not_called()
 
     def test_home_page_has_office_ai_entry(self):
@@ -78,7 +92,34 @@ class OfficeAIWebTest(unittest.TestCase):
         self.assertEqual(self.client.get("/assets/office_ai.css").status_code, 200)
         self.assertEqual(self.client.get("/assets/office_ai.js").status_code, 200)
 
-    def test_image_to_excel_prompt_changes_with_options(self):
+    def test_all_six_builders_use_professional_prompt_architecture(self):
+        samples = {
+            "image-excel": {
+                "image-data-type": "CCTV",
+                "image-requirement": ["device", "xlsx"],
+            },
+            "pdf": {"pdf-action": ["摘要全文"]},
+            "meeting": {"meeting-action": ["整理會議決議"]},
+            "email": {
+                "email-recipient": "客戶",
+                "email-purpose": "確認交期",
+                "email-points": "請於週五前回覆",
+                "email-tone": "專業有禮",
+            },
+            "excel-analysis": {"excel-action": ["整理資料摘要"]},
+            "engineering": {
+                "engineering-system": "CCTV",
+                "engineering-device": "NVR",
+                "engineering-symptom": "部分攝影機離線",
+                "engineering-checks": "已確認 NVR 電源正常",
+            },
+        }
+
+        for builder, values in samples.items():
+            with self.subTest(builder=builder):
+                self.assert_structured_prompt(run_prompt_builder(builder, values))
+
+    def test_image_to_excel_prompt_changes_with_options_and_output_schema(self):
         cctv_prompt = run_prompt_builder(
             "image-excel",
             {
@@ -95,21 +136,38 @@ class OfficeAIWebTest(unittest.TestCase):
         )
 
         self.assertNotEqual(cctv_prompt, access_prompt)
-        self.assertIn("多張CCTV資料照片", cctv_prompt)
-        self.assertIn("合併整理成單一資料表", cctv_prompt)
+        self.assert_structured_prompt(cctv_prompt)
+        self.assertIn("多張CCTV資料圖片", cctv_prompt)
+        self.assertIn("合併整理成單一", cctv_prompt)
         self.assertIn("設備名稱", cctv_prompt)
         self.assertIn("Excel (.xlsx)", cctv_prompt)
         self.assertNotIn("IP Address", cctv_prompt)
         self.assertNotIn("Location", cctv_prompt)
         self.assertNotIn("Remark", cctv_prompt)
 
-        self.assertIn("門禁資料照片", access_prompt)
-        self.assertIn("IP Address與Location", access_prompt)
+        self.assertIn("門禁資料圖片", access_prompt)
+        self.assertIn("IP Address｜Location", access_prompt)
         self.assertNotIn("設備名稱", access_prompt)
         self.assertNotIn("Excel (.xlsx)", access_prompt)
         self.assertNotIn("合併整理成單一資料表", access_prompt)
-        for principle in ("不要自行猜測", "待確認", "原始資料順序", "不要自行補造"):
+        for principle in ("不得自行猜測", "待確認", "原始資料順序", "不得自行補造"):
             self.assertIn(principle, access_prompt)
+        self.assertIn("保持原始格式", access_prompt)
+        self.assertIn("可能重複", access_prompt)
+        self.assertIn("每一張使用者提供的圖片都已處理", access_prompt)
+
+    def test_image_text_only_excludes_embedded_images(self):
+        prompt = run_prompt_builder(
+            "image-excel",
+            {
+                "image-data-type": "一般表格",
+                "image-requirement": ["text-only", "columns"],
+            },
+        )
+
+        self.assertIn("不保留圖片", prompt)
+        self.assertIn("不得將圖片嵌入 Excel", prompt)
+        self.assertNotIn("Excel (.xlsx)", prompt)
 
     def test_engineering_prompt_separates_facts_and_inferences(self):
         prompt = run_prompt_builder(
@@ -123,10 +181,47 @@ class OfficeAIWebTest(unittest.TestCase):
         )
 
         self.assertIn("已確認事實", prompt)
-        self.assertIn("推測", prompt)
-        self.assertIn("依優先順序", prompt)
-        self.assertIn("不足資訊", prompt)
+        self.assertIn("可能原因", prompt)
+        self.assertIn("Verification Steps", prompt)
+        self.assertIn("已知事實與推測完全分離", prompt)
+        self.assertIn("低風險、高機率、容易驗證", prompt)
+        self.assertIn("尚缺資訊", prompt)
         self.assertIn("不可自行假設", prompt)
+        self.assertIn("服務中斷", prompt)
+        self.assertIn("每個可能原因都有對應的驗證方式", prompt)
+
+    def test_meeting_prompt_does_not_invent_owner_or_deadline(self):
+        prompt = run_prompt_builder(
+            "meeting",
+            {
+                "meeting-action": [
+                    "整理待辦事項",
+                    "找出每項工作的負責人",
+                    "找出每項工作的期限",
+                ],
+            },
+        )
+
+        self.assertIn("負責人時標示「未指定」", prompt)
+        self.assertIn("期限時標示「未指定」", prompt)
+        self.assertIn("不得自行創造未被提及的決議", prompt)
+        self.assertIn("不得將提案、建議、假設或個人意見誤寫成正式決議", prompt)
+
+    def test_excel_analysis_prompt_preserves_source_data_and_marks_quality_issues(self):
+        prompt = run_prompt_builder(
+            "excel-analysis",
+            {
+                "excel-action": ["進行統計分析", "找出異常值"],
+                "excel-notes": "每月維修工時",
+            },
+        )
+
+        self.assertIn("不得修改、覆寫或刪除原始數據", prompt)
+        self.assertIn("缺失值", prompt)
+        self.assertIn("異常值只能標記", prompt)
+        self.assertIn("原始數據、計算結果與分析推論", prompt)
+        self.assertIn("不得因相關性直接宣稱因果", prompt)
+        self.assertIn("計算結果可回溯", prompt)
 
     def test_copy_flow_and_mobile_layout_hooks_are_present(self):
         source = OFFICE_AI_JS.read_text(encoding="utf-8")

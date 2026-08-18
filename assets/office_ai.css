@@ -212,7 +212,7 @@ legend small { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
 .form-feedback { min-height: 1.6em; margin: 0 0 8px; color: var(--danger); font-weight: 700; }
 
 .result-panel { text-align: center; }
-.result-panel textarea { width: 100%; min-height: 390px; margin: 24px 0 18px; border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: #f8fafc; color: var(--ink); font: 1rem/1.75 system-ui, sans-serif; text-align: left; resize: vertical; }
+.result-panel textarea { width: 100%; min-height: 520px; margin: 24px 0 18px; border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: #f8fafc; color: var(--ink); font: 1rem/1.75 system-ui, sans-serif; text-align: left; resize: vertical; }
 .result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 14px; }
 #copy-feedback { min-height: 1.6em; margin: 15px 0 0; color: var(--success); font-weight: 750; }
 .clipboard-helper { position: fixed; left: -9999px; opacity: 0; pointer-events: none; }
@@ -220,6 +220,7 @@ legend small { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
 footer { padding: 24px 0 34px; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: 0.85rem; }
 
 button:focus-visible, a:focus-visible { outline: 3px solid rgba(36, 95, 168, 0.3); outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
 
 @media (max-width: 760px) {
   .site-header, main, footer { width: min(100% - 22px, 1080px); }
@@ -234,7 +235,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(36, 95, 168, 0.3
   .task-card { min-height: 150px; }
   .panel { border-radius: 16px; }
   .choice-grid, .radio-grid, .field-grid { grid-template-columns: 1fr; }
-  .result-panel textarea { min-height: 330px; }
+  .result-panel textarea { min-height: 440px; }
   .result-actions { align-items: stretch; flex-direction: column; }
   .result-actions button { width: 100%; }
 }
