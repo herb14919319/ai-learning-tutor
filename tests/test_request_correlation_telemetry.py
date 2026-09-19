@@ -84,6 +84,7 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
             records = read_records(path)
 
         self.assertEqual(reply, "rejected")
+        self.assertTrue(all(record["entrypoint"] == "tutor" for record in records))
         answer.assert_not_called()
         guard = next(record for record in records if record["event"] == "guard_evaluated")
         terminal = records[-1]
@@ -129,7 +130,6 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
             ):
                 reply = main.generate_tutor_answer(
                     "What is RAG?",
-                    entrypoint=main.ENTRYPOINT_API,
                     model_provider="deepseek",
                 )
                 records = read_records(path)
@@ -139,6 +139,7 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
                 )
 
         self.assertEqual(reply, "fallback answer")
+        self.assertTrue(all(record["entrypoint"] == "tutor" for record in records))
         self.assertEqual(len({record["request_id"] for record in records}), 1)
         attempts = [record for record in records if record["event"] == "provider_attempted"]
         self.assertEqual([record["provider_attempt"] for record in attempts], [1, 2])

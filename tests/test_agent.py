@@ -79,6 +79,7 @@ class ModelRoutingPolicyTest(unittest.TestCase):
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "openai")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "openai")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "openai")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "openai")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "openai")
 
     def test_entrypoint_model_provider_env_overrides(self):
@@ -95,19 +96,40 @@ class ModelRoutingPolicyTest(unittest.TestCase):
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "deepseek")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "deepseek")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "deepseek")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "deepseek")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "deepseek")
 
-    def test_generate_tutor_answer_sets_provider_for_runtime_call(self):
-        with patch.dict(os.environ, {}, clear=True), patch.object(
+    def test_generate_tutor_answer_defaults_to_tutor_identity_with_api_provider_policy(self):
+        active_runtime = []
+        with patch.dict(os.environ, {"API_MODEL_PROVIDER": "deepseek"}, clear=True), patch.object(
             main.tutor_agent,
             "answer",
-            side_effect=lambda _message, user_id=None: main._active_model_provider.get(),
+            side_effect=lambda _message, user_id=None: active_runtime.append(
+                (main._active_entrypoint.get(), main._active_model_provider.get())
+            )
+            or "answer",
         ):
-            web_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_WEB_CHAT)
-            api_reply = main.generate_tutor_answer("What is RAG?", entrypoint=main.ENTRYPOINT_API)
+            reply = main.generate_tutor_answer("What is RAG?")
 
-        self.assertEqual(web_reply, "openai")
-        self.assertEqual(api_reply, "openai")
+        self.assertEqual(reply, "answer")
+        self.assertEqual(active_runtime, [(main.ENTRYPOINT_TUTOR, "deepseek")])
+
+    def test_generate_ai_reply_defaults_to_tutor_identity(self):
+        with patch.object(main, "generate_tutor_answer", return_value="answer") as generate:
+            reply = main.generate_ai_reply("What is RAG?", truncate=False)
+
+        self.assertEqual(reply, "answer")
+        generate.assert_called_once_with(
+            "What is RAG?",
+            user_id=None,
+            entrypoint=main.ENTRYPOINT_TUTOR,
+            model_provider=None,
+        )
+
+    def test_legacy_api_identity_keeps_api_provider_policy(self):
+        with patch.dict(os.environ, {"API_MODEL_PROVIDER": "gemini"}, clear=True):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "gemini")
 
     def test_model_provider_accepts_deepseek(self):
         with patch.dict(os.environ, {"MODEL_PROVIDER": "deepseek"}, clear=True):

@@ -43,6 +43,7 @@ from models import (
     ENTRYPOINT_API,
     ENTRYPOINT_LINE,
     ENTRYPOINT_MESSENGER,
+    ENTRYPOINT_TUTOR,
     ENTRYPOINT_WEB_CHAT,
     create_model_client,
     normalize_model_provider,
@@ -415,7 +416,7 @@ def generate_tutor_answer(
     user_text: str,
     *,
     user_id: str | None = None,
-    entrypoint: str = ENTRYPOINT_API,
+    entrypoint: str = ENTRYPOINT_TUTOR,
     model_provider: str | None = None,
     request_context: RequestTelemetryContext | None = None,
 ) -> str:
@@ -529,7 +530,7 @@ def generate_ai_reply(
     *,
     user_id: str | None = None,
     truncate: bool = True,
-    entrypoint: str = ENTRYPOINT_API,
+    entrypoint: str = ENTRYPOINT_TUTOR,
     model_provider: str | None = None,
     request_context: RequestTelemetryContext | None = None,
 ) -> str:

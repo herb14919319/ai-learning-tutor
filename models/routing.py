@@ -5,6 +5,9 @@ import os
 from models.clients import DEFAULT_MODEL_PROVIDER
 
 
+ENTRYPOINT_TUTOR = "tutor"
+# Compatibility identity for callers that still explicitly identify as the
+# retired External Tutor API. Active runtime defaults use ENTRYPOINT_TUTOR.
 ENTRYPOINT_API = "api"
 ENTRYPOINT_LINE = "line"
 ENTRYPOINT_MESSENGER = "messenger"
@@ -14,6 +17,7 @@ DEFAULT_ENTRYPOINT_MODEL_PROVIDERS = {
     ENTRYPOINT_WEB_CHAT: "openai",
     ENTRYPOINT_LINE: "openai",
     ENTRYPOINT_MESSENGER: "openai",
+    ENTRYPOINT_TUTOR: "openai",
     ENTRYPOINT_API: "openai",
 }
 
@@ -21,6 +25,7 @@ ENTRYPOINT_PROVIDER_ENV_VARS = {
     ENTRYPOINT_WEB_CHAT: "WEB_CHAT_MODEL_PROVIDER",
     ENTRYPOINT_LINE: "LINE_MODEL_PROVIDER",
     ENTRYPOINT_MESSENGER: "MESSENGER_MODEL_PROVIDER",
+    ENTRYPOINT_TUTOR: "API_MODEL_PROVIDER",
     ENTRYPOINT_API: "API_MODEL_PROVIDER",
 }
 
