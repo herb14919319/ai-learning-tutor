@@ -81,7 +81,6 @@ Render Web Service 建議設定：
 | `AI_REPLY_TIMEOUT_SECONDS` | `45` | LINE 非同步 AI 回答 timeout |
 | `BACKGROUND_WORKERS` | `4` | 背景 executor worker 數 |
 | `PROCESSED_EVENT_TTL_SECONDS` | `600` | LINE webhook 重複事件防護 TTL |
-| `AI_TUTOR_API_KEY` | 空字串 | `/api/tutor/ask` 若有外部呼叫可使用 |
 | `MESSENGER_ENABLED` | `false` | Facebook Messenger webhook 開關 |
 | `MESSENGER_VERIFY_TOKEN` | 空字串 | Messenger webhook verify token |
 
@@ -254,7 +253,6 @@ LINE webhook 基本連線測試應使用 LINE Developers Console 的 Verify；�
 - [ ] LINE Rich Menu 固定指令可回覆，圖片 assets 可公開讀取。
 - [ ] Render `PUBLIC_BASE_URL` 指向目前正式服務網址。
 - [ ] 以一題簡單 AI 概念題測試 OpenAI path，例如 `RAG 是什麼？`。
-- [ ] 若有外部 agent 使用 `/api/tutor/ask` 或 `/api/agent/ask`，完成一筆測試呼叫。
 - [ ] 已記錄目前部署版本、commit SHA 或 Render deploy id。
 
 ## 7. 回滾方式

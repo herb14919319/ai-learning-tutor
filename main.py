@@ -4,10 +4,9 @@ import logging
 import os
 import threading
 import time
-import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from contextvars import ContextVar
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
@@ -64,7 +63,6 @@ from runtime_telemetry import (
     record_request_terminal,
     record_request_validation,
     utc_timestamp,
-    with_question_length,
     write_runtime_telemetry,
 )
 from skills import ipas_ai_application_planner as ipas_ai_skill
@@ -352,21 +350,11 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
 tutor_agent = TutorAgent(ask_gpt)
 little_tree_agent = LittleTreeAgent(ask_gpt)
 fa_skill = FaSkill(ask_gpt)
-SOURCE_AGENT = "ai_learning_tutor"
-TUTOR_API_SOURCE = "ai-learning-tutor"
-TUTOR_API_MAX_CONTENT_LENGTH = 64 * 1024
 TUTOR_API_MAX_QUESTION_LENGTH = 3000
 TUTOR_API_RATE_LIMIT_WINDOW_SECONDS = 60
 TUTOR_API_RATE_LIMIT_REQUESTS = 20
-TUTOR_API_DAILY_QUOTA = 1000
-ANSWER_QUESTION_CAPABILITY = "answer_question"
-SUPPORTED_AGENT_CAPABILITIES = {ANSWER_QUESTION_CAPABILITY}
-tutor_api_rate_limits: dict[str, list[float]] = {}
-tutor_api_rate_limits_lock = threading.Lock()
 fa_web_rate_limits: dict[str, list[float]] = {}
 fa_web_rate_limits_lock = threading.Lock()
-tutor_api_daily_quotas: dict[str, dict[str, int | str]] = {}
-tutor_api_daily_quotas_lock = threading.Lock()
 
 
 def truncate_for_line(text: str) -> str:
@@ -508,96 +496,11 @@ def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str
     return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
 
 
-def normalize_agent_request(payload: dict) -> dict:
-    raw_task = payload.get("task") or ANSWER_QUESTION_CAPABILITY
-    task = raw_task.strip() if isinstance(raw_task, str) else str(raw_task)
-    task = task or ANSWER_QUESTION_CAPABILITY
-
-    raw_caller = payload.get("caller") or "unknown"
-    caller = raw_caller.strip() if isinstance(raw_caller, str) else str(raw_caller)
-    caller = caller or "unknown"
-
-    raw_user_id = payload.get("user_id")
-    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
-
-    input_payload = payload.get("input") if isinstance(payload.get("input"), dict) else {}
-    raw_question = input_payload.get("question") if "task" in payload else payload.get("question")
-    question = raw_question.strip() if isinstance(raw_question, str) else ""
-
-    return {
-        "task": task,
-        "caller": caller,
-        "user_id": user_id,
-        "question": question,
-    }
-
-
-def dispatch_agent_capability(
-    task: str,
-    *,
-    question: str,
-    user_id: str | None = None,
-    entrypoint: str = ENTRYPOINT_API,
-    request_context: RequestTelemetryContext | None = None,
-) -> tuple[str, str]:
-    if task not in SUPPORTED_AGENT_CAPABILITIES:
-        raise ValueError("unsupported_task")
-    if task == ANSWER_QUESTION_CAPABILITY:
-        kwargs = {"user_id": user_id, "entrypoint": entrypoint}
-        if request_context is not None:
-            kwargs["request_context"] = request_context
-        return ANSWER_QUESTION_CAPABILITY, generate_tutor_answer(question, **kwargs)
-    raise ValueError("unsupported_task")
-
-
-def normalize_tutor_api_request(payload: dict) -> dict:
-    raw_question = payload.get("question")
-    question = raw_question.strip() if isinstance(raw_question, str) else ""
-
-    raw_user_id = payload.get("user_id")
-    user_id = raw_user_id.strip() if isinstance(raw_user_id, str) and raw_user_id.strip() else None
-
-    raw_source = payload.get("source")
-    source = raw_source.strip() if isinstance(raw_source, str) and raw_source.strip() else None
-
-    metadata = payload.get("metadata")
-    if not isinstance(metadata, dict):
-        metadata = {}
-
-    return {
-        "question": question,
-        "user_id": user_id,
-        "source": source,
-        "metadata": metadata.copy(),
-    }
-
-
-def authenticate_tutor_api_request() -> tuple[bool, tuple | None]:
-    expected_key = os.getenv("AI_TUTOR_API_KEY", "")
-    if not expected_key:
-        logger.error("AI_TUTOR_API_KEY is not configured; rejecting external tutor API request")
-        return False, (jsonify({"ok": False, "error": "server_not_configured"}), 500)
-
-    provided_key = request.headers.get("X-API-Key", "")
-    if not hmac.compare_digest(provided_key, expected_key):
-        return False, (jsonify({"ok": False, "error": "unauthorized"}), 401)
-
-    return True, None
-
-
 def tutor_api_client_ip() -> str:
     forwarded_for = request.headers.get("X-Forwarded-For", "")
     if forwarded_for:
         return forwarded_for.split(",", 1)[0].strip() or "unknown"
     return request.remote_addr or "unknown"
-
-
-def tutor_api_payload_too_large() -> bool:
-    return request.content_length is not None and request.content_length > TUTOR_API_MAX_CONTENT_LENGTH
-
-
-def tutor_api_rate_limit_exceeded(client_ip: str) -> bool:
-    return rate_limit_exceeded(tutor_api_rate_limits, tutor_api_rate_limits_lock, client_ip)
 
 
 def fa_web_rate_limit_exceeded(client_ip: str) -> bool:
@@ -619,74 +522,6 @@ def rate_limit_exceeded(
         timestamps.append(now)
         rate_limits[client_id] = timestamps
         return False
-
-
-def tutor_api_quota_exceeded(api_key: str) -> bool:
-    today = date.today().isoformat()
-    with tutor_api_daily_quotas_lock:
-        quota = tutor_api_daily_quotas.get(api_key)
-        if not quota or quota.get("date") != today:
-            tutor_api_daily_quotas[api_key] = {"date": today, "count": 0}
-            return False
-        return int(quota.get("count", 0)) >= TUTOR_API_DAILY_QUOTA
-
-
-def record_tutor_api_quota_success(api_key: str) -> None:
-    today = date.today().isoformat()
-    with tutor_api_daily_quotas_lock:
-        quota = tutor_api_daily_quotas.get(api_key)
-        if not quota or quota.get("date") != today:
-            tutor_api_daily_quotas[api_key] = {"date": today, "count": 1}
-            return
-        quota["count"] = int(quota.get("count", 0)) + 1
-
-
-def validate_tutor_api_question(payload: dict) -> str | None:
-    raw_question = payload.get("question")
-    if not isinstance(raw_question, str):
-        return None
-
-    question = raw_question.strip()
-    if not question or len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
-        return None
-
-    return question
-
-
-def log_tutor_api_audit(
-    *,
-    started_at: float,
-    client_ip: str,
-    tutor_request: dict | None,
-    question_length: int,
-    status_code: int,
-) -> None:
-    duration_ms = round((time.perf_counter() - started_at) * 1000)
-    source = tutor_request.get("source") if tutor_request else None
-    user_id = tutor_request.get("user_id") if tutor_request else None
-    logger.info(
-        "[TUTOR_API_AUDIT] timestamp=%s client_ip=%s source=%s user_id=%s question_length=%s status=%s duration_ms=%s",
-        datetime.now(timezone.utc).isoformat(),
-        client_ip,
-        source,
-        user_id,
-        question_length,
-        status_code,
-        duration_ms,
-    )
-
-
-def dispatch_tutor_api_request(
-    tutor_request: dict,
-    *,
-    request_context: RequestTelemetryContext | None = None,
-) -> str:
-    return generate_tutor_answer(
-        tutor_request["question"],
-        user_id=tutor_request["user_id"],
-        entrypoint=ENTRYPOINT_API,
-        request_context=request_context,
-    )
 
 
 def generate_ai_reply(
@@ -1192,46 +1027,6 @@ def web_chat():
     return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
 
 
-@app.get("/test")
-def test_mode():
-    question = request.args.get("question", "").strip()
-    telemetry_context = begin_external_request(
-        "test",
-        question_length=len(question),
-        route="/test",
-    )
-    authenticated, error_response = authenticate_tutor_api_request()
-    if not authenticated:
-        reject_external_request(telemetry_context, "authentication_error")
-        return error_response
-
-    if not question:
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"error": "Missing required query parameter: question"}), 400
-    if len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"error": "Invalid question"}), 400
-    if tutor_api_rate_limit_exceeded(tutor_api_client_ip()):
-        reject_external_request(telemetry_context, "rate_limit_error")
-        return jsonify({"error": "Rate limit exceeded"}), 429
-
-    telemetry_context = record_request_validation(telemetry_context, status="success")
-    answer = generate_ai_reply(
-        question,
-        truncate=False,
-        entrypoint=ENTRYPOINT_API,
-        request_context=telemetry_context,
-    )
-    return jsonify(
-        {
-            "question": question,
-            "answer": answer,
-            "model": MODEL_NAME,
-            "model_provider": MODEL_PROVIDER,
-        }
-    )
-
-
 def require_dashboard_access():
     expected_key = os.getenv("DASHBOARD_API_KEY") or os.getenv("OBSERVABILITY_API_KEY")
     supplied_key = request.headers.get("X-Dashboard-Key", "")
@@ -1257,240 +1052,6 @@ def runtime_telemetry_api():
     require_dashboard_access()
     month = request.args.get("month") or datetime.now(timezone.utc).strftime("%Y-%m")
     return jsonify(aggregate_runtime_telemetry(month))
-
-
-@app.post("/api/agent/ask")
-def agent_ask():
-    started_at = time.perf_counter()
-    call_id = uuid.uuid4().hex
-    telemetry_context = begin_external_request(
-        "api_agent",
-        request_id=call_id,
-        route="/api/agent/ask",
-    )
-
-    if tutor_api_payload_too_large():
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"ok": False, "error": "Payload too large"}), 413
-
-    authenticated, error_response = authenticate_tutor_api_request()
-    if not authenticated:
-        reject_external_request(telemetry_context, "authentication_error")
-        return error_response
-
-    client_ip = tutor_api_client_ip()
-    if tutor_api_rate_limit_exceeded(client_ip):
-        reject_external_request(telemetry_context, "rate_limit_error")
-        return jsonify({"ok": False, "error": "Rate limit exceeded"}), 429
-
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
-        payload = {}
-    agent_request = normalize_agent_request(payload)
-    caller = agent_request["caller"]
-    task = agent_request["task"]
-    question = agent_request["question"]
-    telemetry_context = with_question_length(telemetry_context, len(question))
-    user_id = agent_request["user_id"]
-    handled_by = task if task in SUPPORTED_AGENT_CAPABILITIES else None
-
-    logger.info("[AGENT_API] received call_id=%s caller=%s task=%s", call_id, caller, task)
-
-    if task not in SUPPORTED_AGENT_CAPABILITIES:
-        reject_external_request(telemetry_context, "validation_error")
-        duration_ms = round((time.perf_counter() - started_at) * 1000)
-        logger.warning(
-            "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=unsupported_task",
-            call_id,
-            caller,
-            task,
-            handled_by,
-            duration_ms,
-        )
-        return jsonify({"ok": False, "error": "unsupported_task"}), 400
-
-    if not question or len(question) > TUTOR_API_MAX_QUESTION_LENGTH:
-        reject_external_request(telemetry_context, "validation_error")
-        duration_ms = round((time.perf_counter() - started_at) * 1000)
-        logger.warning(
-            "[AGENT_API] rejected call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s reason=missing_question",
-            call_id,
-            caller,
-            task,
-            handled_by,
-            duration_ms,
-        )
-        return jsonify(
-            {
-                "ok": False,
-                "error": "missing_question",
-                "source_agent": SOURCE_AGENT,
-                "call_id": call_id,
-            }
-        ), 400
-
-    logger.info(
-        "[AGENT_API] dispatch capability=%s call_id=%s caller=%s task=%s handled_by=%s",
-        task,
-        call_id,
-        caller,
-        task,
-        handled_by,
-    )
-
-    telemetry_context = record_request_validation(telemetry_context, status="success")
-    try:
-        handled_by, answer = dispatch_agent_capability(
-            task,
-            question=question,
-            user_id=user_id,
-            entrypoint=ENTRYPOINT_API,
-            request_context=telemetry_context,
-        )
-    except Exception as exc:
-        duration_ms = round((time.perf_counter() - started_at) * 1000)
-        logger.exception(
-            "[AGENT_API] error call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s error=%s",
-            call_id,
-            caller,
-            task,
-            handled_by,
-            duration_ms,
-            exc,
-        )
-        return jsonify(
-            {
-                "ok": False,
-                "error": "internal_error",
-                "source_agent": SOURCE_AGENT,
-                "call_id": call_id,
-            }
-        ), 500
-
-    duration_ms = round((time.perf_counter() - started_at) * 1000)
-    logger.info(
-        "[AGENT_API] answered call_id=%s caller=%s task=%s handled_by=%s duration_ms=%s",
-        call_id,
-        caller,
-        task,
-        handled_by,
-        duration_ms,
-    )
-    return jsonify(
-        {
-            "ok": True,
-            "answer": answer,
-            "source_agent": SOURCE_AGENT,
-            "handled_by": handled_by,
-            "capability": handled_by,
-            "caller": caller,
-            "call_id": call_id,
-            "confidence": "medium",
-        }
-    )
-
-
-@app.post("/api/tutor/ask")
-def tutor_ask():
-    started_at = time.perf_counter()
-    client_ip = tutor_api_client_ip()
-    telemetry_context = begin_external_request(
-        "api_tutor",
-        route="/api/tutor/ask",
-    )
-
-    if tutor_api_payload_too_large():
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"ok": False, "error": "Payload too large"}), 413
-
-    authenticated, error_response = authenticate_tutor_api_request()
-    if not authenticated:
-        reject_external_request(telemetry_context, "authentication_error")
-        return error_response
-
-    if tutor_api_rate_limit_exceeded(client_ip):
-        reject_external_request(telemetry_context, "rate_limit_error")
-        status_code = 429
-        log_tutor_api_audit(
-            started_at=started_at,
-            client_ip=client_ip,
-            tutor_request=None,
-            question_length=0,
-            status_code=status_code,
-        )
-        return jsonify({"ok": False, "error": "Rate limit exceeded"}), status_code
-
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
-        payload = {}
-
-    question = validate_tutor_api_question(payload)
-    if question is None:
-        reject_external_request(telemetry_context, "validation_error")
-        tutor_request = normalize_tutor_api_request(payload)
-        status_code = 400
-        log_tutor_api_audit(
-            started_at=started_at,
-            client_ip=client_ip,
-            tutor_request=tutor_request,
-            question_length=0,
-            status_code=status_code,
-        )
-        return jsonify({"ok": False, "error": "Invalid question"}), status_code
-
-    tutor_request = normalize_tutor_api_request(payload)
-    telemetry_context = with_question_length(telemetry_context, len(question))
-    api_key = request.headers.get("X-API-Key", "")
-    if tutor_api_quota_exceeded(api_key):
-        reject_external_request(telemetry_context, "rate_limit_error")
-        status_code = 403
-        log_tutor_api_audit(
-            started_at=started_at,
-            client_ip=client_ip,
-            tutor_request=tutor_request,
-            question_length=len(question),
-            status_code=status_code,
-        )
-        return jsonify({"ok": False, "error": "Daily quota exceeded"}), status_code
-
-    telemetry_context = record_request_validation(telemetry_context, status="success")
-    try:
-        answer = dispatch_tutor_api_request(
-            tutor_request,
-            request_context=telemetry_context,
-        )
-    except Exception:
-        status_code = 500
-        logger.exception(
-            "External tutor API request failed source=%s metadata=%s",
-            tutor_request["source"],
-            tutor_request["metadata"],
-        )
-        log_tutor_api_audit(
-            started_at=started_at,
-            client_ip=client_ip,
-            tutor_request=tutor_request,
-            question_length=len(question),
-            status_code=status_code,
-        )
-        return jsonify({"ok": False, "error": "internal_error"}), status_code
-
-    record_tutor_api_quota_success(api_key)
-    status_code = 200
-    log_tutor_api_audit(
-        started_at=started_at,
-        client_ip=client_ip,
-        tutor_request=tutor_request,
-        question_length=len(question),
-        status_code=status_code,
-    )
-    return jsonify(
-        {
-            "ok": True,
-            "answer": answer,
-            "source": TUTOR_API_SOURCE,
-        }
-    ), status_code
 
 
 @app.get("/assets/<path:filename>")

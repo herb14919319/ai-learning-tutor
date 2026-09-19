@@ -16,7 +16,6 @@ The product is centered on teaching and learning support, not open-ended general
 
 - Learners asking AI/ML/LLM study questions.
 - Beginners asking for learning guidance, roadmaps, or explanations.
-- External agents or systems that need to call a tutor capability through HTTP.
 - LINE or Facebook/Messenger users interacting with the same tutor through chat channels.
 - Little Tree users in a separate child-friendly AI literacy mode.
 
@@ -25,9 +24,6 @@ The product is centered on teaching and learning support, not open-ended general
 - LINE Bot webhook at `POST /callback`.
 - Web Chat through the homepage and `POST /web-chat`.
 - Facebook Page / Messenger webhook at `GET /webhook/messenger` and `POST /webhook/messenger`, gated by `MESSENGER_ENABLED=true`.
-- External agent API at `POST /api/agent/ask`.
-- External tutor API at `POST /api/tutor/ask`.
-- Test query endpoint at `GET /test`.
 
 ### High-Level Product Goals
 
@@ -109,12 +105,6 @@ Messenger support is implemented through `messenger_webhook.py` and `messenger_c
 
 Messenger user IDs are namespaced as `messenger:<sender_id>` before entering the shared tutor runtime.
 
-### API Flow
-
-`POST /api/agent/ask` accepts both a legacy direct question format and a capability-style format. Only `answer_question` is supported today. It returns metadata including `source_agent`, `handled_by`, `capability`, `caller`, `call_id`, and fixed `"confidence": "medium"`.
-
-`POST /api/tutor/ask` is stricter. It requires `X-API-Key`, validates request size and question length, applies process-local IP rate limits and API-key daily quotas, audits requests, then dispatches to the same tutor answer flow.
-
 ## 3. Core Components
 
 ### `main.py`
@@ -130,7 +120,6 @@ Messenger user IDs are namespaced as `messenger:<sender_id>` before entering the
 - Construction of `TutorAgent` and `LittleTreeAgent`.
 - Cross-channel answer functions: `generate_tutor_answer()`, `generate_ai_reply()`, and timeout wrappers.
 - LINE duplicate-event protection.
-- External agent and tutor API normalization, auth, rate limit, quota, and audit behavior.
 
 Its boundary is orchestration. It does not contain the Hung-Yi Lee retrieval logic or skill metadata matching itself; those are delegated to agent, guard, and skill modules.
 
@@ -230,7 +219,6 @@ Configuration is environment-variable based. Important variables include:
 - `AI_REPLY_TIMEOUT_SECONDS`
 - `PROCESSED_EVENT_TTL_SECONDS`
 - `BACKGROUND_WORKERS`
-- `AI_TUTOR_API_KEY`
 - `MESSENGER_ENABLED`
 - `MESSENGER_VERIFY_TOKEN`
 - `MESSENGER_PAGE_ACCESS_TOKEN`
@@ -325,8 +313,6 @@ Unsupported product requests are handled deterministically:
 
 - Casual chat and tool misuse are blocked by the guard.
 - Ambiguous messages are clarified without tutor invocation.
-- `/api/agent/ask` rejects unsupported tasks with HTTP 400.
-- `/api/tutor/ask` rejects missing, empty, too-long, or wrong-type questions.
 - Messenger ignores echoes, attachments, delivery events, and read events.
 
 ## 6. Deployment
@@ -386,9 +372,6 @@ flowchart LR
     LINE["LINE Bot"] --> Core["generate_tutor_answer()"]
     Web["Web Chat"] --> Core
     FB["Facebook / Messenger"] --> Core
-    AgentAPI["/api/agent/ask"] --> Core
-    TutorAPI["/api/tutor/ask"] --> Core
-    Test["/test"] --> Core
     Core --> Guard["Router Guard"]
     Guard --> Agent["TutorAgent"]
     Agent --> Skills["SkillRuntime / Knowledge Layer"]
@@ -418,8 +401,6 @@ Reusable pieces include:
 - `SkillRuntime`, `SkillCatalog`, `SkillManifest`, and `ModuleSkillAdapter`.
 - Process-local conversation context interface.
 - Error, timeout, and empty-response normalization.
-- External agent API capability shape.
-- API-key, rate-limit, quota, and audit pattern in `/api/tutor/ask`.
 
 ### Domain-Specific Parts
 
@@ -440,14 +421,11 @@ The reusable runtime is the shell: entry points, guard, context, routing, skill 
 
 - Conversation memory is in-process only. It is lost on restart and is not shared across multiple instances.
 - LINE duplicate-event protection is also in-process only.
-- API rate limits and daily quotas are in-process dictionaries, not durable or distributed.
 - Skill routing is keyword/metadata based, not semantic.
 - The primary knowledge retrieval path is a local subprocess call to `hungyi_kb.py`.
 - Hung-Yi context is truncated by character count rather than token-aware context packing.
 - There is no persistent user profile, analytics store, or conversation database.
 - The guard and routing dictionaries include mojibake-damaged strings in the current files, which makes content maintenance harder.
-- Only one external agent capability is supported today: `answer_question`.
-- `/api/agent/ask` does not require authentication in the current implementation.
 - Messenger support is text-only and ignores attachments.
 - LINE responses are truncated for LINE length limits.
 - The Dockerfile runs one Gunicorn worker with threads; process-local state would not be shared if worker count increased.

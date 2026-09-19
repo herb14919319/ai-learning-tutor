@@ -23,13 +23,9 @@ def read_records(path: Path) -> list[dict]:
 
 class RequestCorrelationTelemetryTest(unittest.TestCase):
     def setUp(self):
-        main.tutor_api_rate_limits.clear()
-        main.tutor_api_daily_quotas.clear()
         main.fa_web_rate_limits.clear()
 
     def tearDown(self):
-        main.tutor_api_rate_limits.clear()
-        main.tutor_api_daily_quotas.clear()
         main.fa_web_rate_limits.clear()
 
     def test_each_request_has_one_unique_id_across_the_lifecycle(self):
@@ -58,27 +54,11 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
             path = Path(tmpdir) / "runtime.jsonl"
             with patch.object(runtime_telemetry, "TELEMETRY_PATH", path), patch.object(
                 main, "route_learning_boundary", return_value=allowed
-            ), patch.object(main.tutor_agent, "answer", return_value="answer"), patch.dict(
-                os.environ, {"AI_TUTOR_API_KEY": "test-key"}
-            ):
+            ), patch.object(main.tutor_agent, "answer", return_value="answer"):
                 main.generate_tutor_reply("line:user", "What is RAG?")
                 main.generate_messenger_tutor_reply("messenger:user", "What is RAG?")
                 client = main.app.test_client()
                 client.post("/web-chat", json={"message": "What is RAG?"})
-                agent_response = client.post(
-                    "/api/agent/ask",
-                    json={"question": "What is RAG?"},
-                    headers={"X-API-Key": "test-key"},
-                )
-                client.post(
-                    "/api/tutor/ask",
-                    json={"question": "What is RAG?"},
-                    headers={"X-API-Key": "test-key"},
-                )
-                client.get(
-                    "/test?question=What+is+RAG%3F",
-                    headers={"X-API-Key": "test-key"},
-                )
             records = read_records(path)
 
         terminal_records = [
@@ -88,14 +68,9 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
         ]
         self.assertEqual(
             {record["entrypoint"] for record in terminal_records},
-            {"line", "messenger", "web_chat", "api_agent", "api_tutor", "test"},
+            {"line", "messenger", "web_chat"},
         )
-        self.assertEqual(len({record["request_id"] for record in terminal_records}), 6)
-        self.assertEqual(agent_response.get_json()["call_id"], next(
-            record["request_id"]
-            for record in terminal_records
-            if record["entrypoint"] == "api_agent"
-        ))
+        self.assertEqual(len({record["request_id"] for record in terminal_records}), 3)
 
     def test_guard_rejection_records_stable_reason_and_request_result(self):
         rejected = SimpleNamespace(allowed=False, intent="out_of_scope", response="rejected")
@@ -249,24 +224,6 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
         self.assertEqual(route["route"], "quiz")
         self.assertEqual(route["route_reason"], "matched_quiz")
         self.assertEqual(skill["skill_id"], "quiz")
-
-    def test_early_api_validation_is_terminal_and_call_id_is_correlated(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / "runtime.jsonl"
-            with patch.object(runtime_telemetry, "TELEMETRY_PATH", path), patch.dict(
-                os.environ, {"AI_TUTOR_API_KEY": "test-key"}
-            ):
-                response = main.app.test_client().post(
-                    "/api/agent/ask",
-                    json={"caller": "test"},
-                    headers={"X-API-Key": "test-key"},
-                )
-                records = read_records(path)
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json()["call_id"], records[0]["request_id"])
-        self.assertEqual(records[-1]["event"], "request_failed")
-        self.assertEqual(records[-1]["error_category"], "validation_error")
 
     def test_telemetry_allowlist_excludes_sensitive_values(self):
         secret_values = [

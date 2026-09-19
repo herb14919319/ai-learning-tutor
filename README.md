@@ -186,69 +186,6 @@ http://localhost:8080/assets/ai_map.png
 
 本服務可依據學習助教的教學風格/脈絡協助解釋 AI 相關概念，但不宣稱為李宏毅教授、台大或任何教育機構官方服務，也不宣稱取得官方授權。
 
-## Agent Call-in API
-
-External agents can call the tutor directly without using LINE webhook, push, reply, or Rich Menu behavior.
-
-```http
-POST /api/agent/ask
-Content-Type: application/json
-```
-
-```json
-{
-  "question": "What is RAG?",
-  "caller": "baeko",
-  "user_id": "amos"
-}
-```
-
-Recommended capability protocol for new integrations:
-
-```json
-{
-  "task": "answer_question",
-  "caller": "baeko",
-  "user_id": "amos",
-  "input": {
-    "question": "What is RAG?"
-  },
-  "context": {}
-}
-```
-
-Legacy clients can continue sending the simple question format:
-
-```json
-{
-  "question": "What is RAG?"
-}
-```
-
-Both request formats route to the same tutor answer generation flow and return the same response shape:
-
-```json
-{
-  "ok": true,
-  "call_id": "...",
-  "source_agent": "ai_learning_tutor",
-  "handled_by": "answer_question",
-  "capability": "answer_question",
-  "caller": "baeko",
-  "answer": "...",
-  "confidence": "medium"
-}
-```
-
-Only `answer_question` is supported today. Unsupported tasks return HTTP 400:
-
-```json
-{
-  "ok": false,
-  "error": "unsupported_task"
-}
-```
-
 ## Runtime Observability
 
 `/dashboard`, `/observability`, and `/api/runtime/telemetry` expose operational

@@ -6,7 +6,7 @@ This contract gives every Tutor request one operational identity from entrypoint
 
 ## 2. Scope
 
-Schema v2 applies to Tutor traffic entering through LINE, Messenger, Web Chat, `/api/agent/ask`, `/api/tutor/ask`, and authenticated `/test`. Explicit FA Web Chat requests also use the contract because they already share the model-call boundary.
+Schema v2 applies to Tutor traffic entering through LINE, Messenger, Web Chat, and explicit FA Web Chat requests that share the model-call boundary.
 
 Health checks, assets, dashboard pages, Rich Menu operations, and deterministic iPAS grading/course routes are outside request tracing. Extending correlation to those deterministic routes is deferred until they share a common runtime boundary.
 
@@ -44,7 +44,7 @@ Readers must:
 | Event | Level | Meaning |
 | --- | --- | --- |
 | `request_received` | request | An in-scope entrypoint accepted the runtime invocation. |
-| `request_validated` | request | Authentication, size, shape, rate, and quota checks succeeded or failed. |
+| `request_validated` | request | Request shape and rate checks succeeded or failed. |
 | `guard_evaluated` | request | The learning-boundary Guard allowed, rejected, or was intentionally skipped. |
 | `route_selected` | request | A stable runtime route was selected. A Skill failure may produce a second general route. |
 | `skill_selected` | request | The selected stable Skill ID, including `general`. |
@@ -64,7 +64,7 @@ Every v2 event contains:
 | `timestamp` | string | UTC ISO-8601 |
 | `request_id` | string | Opaque UUID-derived identifier, unchanged for the lifecycle |
 | `event` | string | One event type from section 5 |
-| `entrypoint` | string | `line`, `messenger`, `web_chat`, `api_agent`, `api_tutor`, or `test` |
+| `entrypoint` | string | `line`, `messenger`, `web_chat`, or `fa_web_chat` |
 | `user_scope` | string | `anonymous`, `authenticated`, or `channel_user` |
 | `status` | string | Event-specific status such as `received`, `success`, `error`, `rejected`, `skipped`, or `selected` |
 

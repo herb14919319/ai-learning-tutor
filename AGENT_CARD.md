@@ -30,9 +30,8 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 
 | User group | Supported surface |
 |---|---|
-| AI/ML/LLM learners | LINE, Web Chat, Messenger, `/api/tutor/ask`, `/api/agent/ask` |
+| AI/ML/LLM learners | LINE, Web Chat, Messenger |
 | Beginners seeking learning guidance or roadmaps | Same shared tutor runtime |
-| External agents or systems needing a tutor capability | `/api/agent/ask` and `/api/tutor/ask` |
 | LINE users using Rich Menu learning shortcuts | LINE webhook and asset replies |
 | Children, parents, teachers, and volunteers in AI literacy mode | Little Tree Companion mode |
 
@@ -51,7 +50,7 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 - Route allowed learning questions to a skill runtime or a general teaching fallback.
 - Prefer Hung-Yi Lee course-material retrieval for AI/ML tutoring when the `hungyi_lee` skill matches.
 - Maintain short process-local conversation context by `user_id`.
-- Expose the same tutor flow through LINE, Web Chat, Messenger, and HTTP APIs.
+- Expose the same tutor flow through LINE, Web Chat, and Messenger.
 - Support explicit Little Tree mode for child, parent, teacher, and volunteer AI literacy support.
 - Return deterministic fallback, clarification, redirect, timeout, or error messages instead of raw exceptions.
 
@@ -61,11 +60,9 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 - Image generation, drawing, roleplay, romantic companion behavior, fortune telling, tarot, astrology, resume writing, cover letters, poem/novel/email writing, or unrelated essay generation.
 - Direct homework, exam, worksheet, report, or assignment completion in Little Tree mode; the runtime guides thinking instead.
 - Unsafe or illegal child-mode requests, including self-harm, weapons, hacking, password theft, or illegal activity.
-- Unsupported external agent tasks other than `answer_question`.
 - Persistent long-term user profile management.
 - Cross-instance memory, distributed quota, or distributed duplicate-event tracking.
 - Autonomous modification of identity, personality, routing policy, or skill manifests at runtime.
-- Authentication for `/api/agent/ask`; this endpoint is implemented as unauthenticated today.
 - Medical, legal, financial, or other professional advice as a stated capability.
 
 ## 9. Core Capabilities
@@ -80,14 +77,12 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 | Short conversation memory | Implemented | Process-local in-memory context, six turns per user |
 | Active skill state | Implemented | Process-local active skill map by `user_id` |
 | Little Tree companion mode | Implemented | Command activation, intent classification, policy decision, deterministic starters, LLM fallback |
-| External agent API | Implemented | `/api/agent/ask`, only `answer_question` |
-| External tutor API | Implemented | `/api/tutor/ask` with API key, size validation, rate limit, daily quota, audit logging |
 | Runtime observability | Implemented, gated | `/dashboard`, `/observability`, and `/api/runtime/telemetry` require `DASHBOARD_API_KEY` or `OBSERVABILITY_API_KEY` with `X-Dashboard-Key` |
 | LINE channel | Implemented | `/callback`, signature validation, reply-then-push async flow, Rich Menu commands |
 | Web Chat | Implemented | `GET /` and `POST /web-chat` |
 | Messenger channel | Implemented, gated | Enabled only when `MESSENGER_ENABLED=true`; text messages only |
 | Acronym disambiguation | Implemented | MCP and AI-domain hints injected into prompts |
-| Delegation to other agents | Not implemented as outbound delegation | Other agents can call this agent; this agent does not call external agents |
+| Delegation to other agents | Not implemented | The runtime has no external-agent collaboration surface |
 
 ## 10. Runtime Overview
 
@@ -145,15 +140,6 @@ Operational summary:
 | `hungyi_lee` | `skills.hungyi_lee_skill` | `answer_ai_learning_question`, `grounded_tutoring` |
 | `little_tree_companion` | `skills.little_tree_companion` | `child_friendly_learning_companion` |
 
-### Agent/API collaboration
-
-| Endpoint | Collaboration shape |
-|---|---|
-| `POST /api/agent/ask` | External agents call `answer_question`; accepts legacy and capability-style payloads |
-| `POST /api/tutor/ask` | Authenticated external tutor API with API key, rate limit, quota, and audit logging |
-
-Current implementation supports inbound calls from other agents. It does not implement outbound delegation to other agents.
-
 ## 12. Memory Policy
 
 The agent is not stateless. It has process-local, non-durable memory.
@@ -163,7 +149,6 @@ The agent is not stateless. It has process-local, non-durable memory.
 | Conversation turns | Stored by `user_id`; max six turns, or twelve messages | In memory only; lost on process restart |
 | Active skill state | Stored by `user_id`, e.g. Little Tree active mode | In memory only; lost on process restart |
 | LINE duplicate-event cache | Process-local event key TTL | In memory only |
-| Tutor API rate limits and quotas | Process-local dictionaries | In memory only |
 
 Operational telemetry is separate from conversational memory. The local
 `data/runtime_telemetry.jsonl` file is a lightweight append-only observability
@@ -178,7 +163,6 @@ The implemented memory can record:
 - Assistant replies.
 - Active skill selection for a user.
 - Temporary webhook duplicate-event keys.
-- Temporary API request timestamps and quota counts.
 
 The implemented memory does not provide:
 
@@ -197,7 +181,7 @@ The implemented memory does not provide:
 - Beginner learning guidance and roadmaps.
 - Hung-Yi Lee material retrieval and teaching response composition.
 - Little Tree child-friendly AI literacy interactions when activated.
-- Channel orchestration for LINE, Web Chat, Messenger, and HTTP API responses.
+- Channel orchestration for LINE, Web Chat, and Messenger responses.
 - Fallback behavior for empty responses, timeouts, skill failures, OpenAI errors, and unsupported tasks.
 
 ### Must reject or redirect
@@ -205,8 +189,6 @@ The implemented memory does not provide:
 - Casual chat outside the learning product boundary.
 - Tool misuse requests listed in the deterministic guard, including image generation, roleplay, fortune telling, unrelated writing, and similar non-learning tasks.
 - Unknown or ambiguous messages that do not clearly express an AI-learning intent.
-- Unsupported `/api/agent/ask` tasks.
-- Invalid `/api/tutor/ask` requests: missing API key, wrong key, oversized payload, invalid or overlong question, quota exceeded, or rate limit exceeded.
 - Little Tree unsafe or illegal requests.
 
 ### Requires delegation
@@ -230,10 +212,7 @@ Needs clarification: future outbound multi-agent delegation policy is not implem
 | Little Tree policy | Detects unsafe/illegal terms and homework guidance; refuses unsafe requests and guides homework instead of answering directly |
 | LINE signature validation | `/callback` uses LINE webhook signature handling |
 | LINE duplicate guard | In-memory duplicate-event protection with TTL |
-| Tutor API authentication | `/api/tutor/ask` requires `X-API-Key` and configured `AI_TUTOR_API_KEY` |
 | Observability authentication | `/dashboard`, `/observability`, and `/api/runtime/telemetry` require `X-Dashboard-Key` and configured `DASHBOARD_API_KEY` or `OBSERVABILITY_API_KEY` |
-| Tutor API validation | Payload size limit, question type/length validation, rate limit, daily quota |
-| Tutor API audit logging | Logs timestamp, client IP, source, user ID, question length, status, and duration; tests verify key and answer are not logged |
 | Messenger enable gate | Messenger routes return 404 unless `MESSENGER_ENABLED=true` |
 | Fallback normalization | Empty, `None`, exception, timeout, and skill failure paths return fallback responses |
 | Persona guardrails in Hung-Yi skill | Skill instructions prohibit claiming to be Hung-Yi Lee, negative evaluations of specific entities, sexual jokes, and political jokes |
@@ -246,9 +225,7 @@ No separate policy engine, semantic safety classifier, persistent abuse store, o
 - Conversation memory is process-local only and lost on restart.
 - Active Little Tree mode is process-local only.
 - LINE duplicate-event protection is process-local only.
-- API rate limits and daily quotas are process-local dictionaries, not durable or distributed.
-- `/api/agent/ask` has no authentication.
-- Only one external agent capability is supported: `answer_question`.
+- Rate limits are process-local dictionaries, not durable or distributed.
 - Skill routing is keyword/metadata based, not semantic.
 - Hung-Yi retrieval depends on a local subprocess call to `hungyi_kb.py`.
 - Hung-Yi context is truncated by character count, not token-aware context packing.
@@ -267,9 +244,7 @@ The architecture document identifies evolution points implied by the current imp
 - Expand from a single knowledge agent into a catalog of skills.
 - Improve skill routing while preserving deterministic product-boundary checks.
 - Replace local static knowledge scripts with RAG services, document indexes, or other retrieval backends.
-- Extend external APIs so other agents can call additional future capabilities.
 - Reuse the runtime shell for enterprise assistants or other knowledge assistants by swapping skills, prompts, routing terms, and retrieval sources.
-- Add multi-agent behavior above the current tutor API, where other agents can call `answer_question` or future capabilities.
 
 TODO
 Needs clarification: no dated roadmap, release plan, owner, or committed milestones are present in the current repository.
@@ -285,8 +260,6 @@ The repository does not include formal release notes. The following milestones a
 | Shared tutor runtime | `generate_tutor_answer()`, `TutorAgent`, `SkillRuntime`, architecture document |
 | Router Guard boundary | `router_guard.py`, `tests/test_router_guard.py` |
 | In-memory conversation context | `memory/conversation_context.py`, `tests/test_conversation_context.py` |
-| External agent call-in API | README section and `/api/agent/ask` tests |
-| Authenticated tutor API | `/api/tutor/ask` code and tests for API key, validation, quotas, audit logging |
 | Little Tree mode | `agents/little_tree/*`, `skills/little_tree_companion.py`, Little Tree tests |
 | Messenger integration | `messenger_webhook.py`, `messenger_client.py`, Messenger tests |
 | Architecture extraction | `docs/architecture/AI_TUTOR_ARCHITECTURE.md` |
@@ -296,9 +269,9 @@ The repository does not include formal release notes. The following milestones a
 This Agent Card should allow another engineer to understand:
 
 - The agent is a bounded AI learning tutor, not a general assistant.
-- The main runtime is shared across LINE, Web Chat, Messenger, and HTTP APIs.
+- The main runtime is shared across LINE, Web Chat, and Messenger.
 - The main grounded knowledge path is the Hung-Yi Lee skill.
 - Little Tree is a separate active mode for child-friendly AI literacy.
 - Memory and rate limiting are in-process only.
-- External agent collaboration exists only as inbound API calls today.
+- External agent collaboration is not part of the current runtime surface.
 - The system's safety posture is deterministic and rule-based, with endpoint validation and prompt guardrails, not a full policy engine.
