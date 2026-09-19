@@ -22,11 +22,11 @@ DEFAULT_ENTRYPOINT_MODEL_PROVIDERS = {
 }
 
 ENTRYPOINT_PROVIDER_ENV_VARS = {
-    ENTRYPOINT_WEB_CHAT: "WEB_CHAT_MODEL_PROVIDER",
-    ENTRYPOINT_LINE: "LINE_MODEL_PROVIDER",
-    ENTRYPOINT_MESSENGER: "MESSENGER_MODEL_PROVIDER",
-    ENTRYPOINT_TUTOR: "API_MODEL_PROVIDER",
-    ENTRYPOINT_API: "API_MODEL_PROVIDER",
+    ENTRYPOINT_WEB_CHAT: ("WEB_CHAT_MODEL_PROVIDER",),
+    ENTRYPOINT_LINE: ("LINE_MODEL_PROVIDER",),
+    ENTRYPOINT_MESSENGER: ("MESSENGER_MODEL_PROVIDER",),
+    ENTRYPOINT_TUTOR: ("TUTOR_MODEL_PROVIDER", "API_MODEL_PROVIDER"),
+    ENTRYPOINT_API: ("API_MODEL_PROVIDER", "TUTOR_MODEL_PROVIDER"),
 }
 
 SUPPORTED_MODEL_PROVIDERS = {"openai", "gemini", "deepseek"}
@@ -46,10 +46,14 @@ def normalize_model_provider(provider: str | None) -> str:
 
 def resolve_model_provider(entrypoint: str) -> str:
     normalized_entrypoint = (entrypoint or "").strip().lower()
-    env_var = ENTRYPOINT_PROVIDER_ENV_VARS.get(normalized_entrypoint)
+    env_vars = ENTRYPOINT_PROVIDER_ENV_VARS.get(normalized_entrypoint, ())
     default_provider = DEFAULT_ENTRYPOINT_MODEL_PROVIDERS.get(
         normalized_entrypoint,
         os.getenv("MODEL_PROVIDER", DEFAULT_MODEL_PROVIDER),
     )
-    configured_provider = os.getenv(env_var, default_provider) if env_var else default_provider
+    configured_provider = default_provider
+    for env_var in env_vars:
+        if env_var in os.environ:
+            configured_provider = os.environ[env_var]
+            break
     return normalize_model_provider(configured_provider)

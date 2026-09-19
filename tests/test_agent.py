@@ -89,6 +89,7 @@ class ModelRoutingPolicyTest(unittest.TestCase):
                 "WEB_CHAT_MODEL_PROVIDER": "deepseek",
                 "LINE_MODEL_PROVIDER": "deepseek",
                 "MESSENGER_MODEL_PROVIDER": "deepseek",
+                "TUTOR_MODEL_PROVIDER": "deepseek",
                 "API_MODEL_PROVIDER": "deepseek",
             },
             clear=True,
@@ -99,9 +100,9 @@ class ModelRoutingPolicyTest(unittest.TestCase):
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "deepseek")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "deepseek")
 
-    def test_generate_tutor_answer_defaults_to_tutor_identity_with_api_provider_policy(self):
+    def test_generate_tutor_answer_defaults_to_tutor_identity_with_tutor_provider_policy(self):
         active_runtime = []
-        with patch.dict(os.environ, {"API_MODEL_PROVIDER": "deepseek"}, clear=True), patch.object(
+        with patch.dict(os.environ, {"TUTOR_MODEL_PROVIDER": "deepseek"}, clear=True), patch.object(
             main.tutor_agent,
             "answer",
             side_effect=lambda _message, user_id=None: active_runtime.append(
@@ -126,13 +127,94 @@ class ModelRoutingPolicyTest(unittest.TestCase):
             model_provider=None,
         )
 
-    def test_legacy_api_identity_keeps_api_provider_policy(self):
+    def test_explicit_model_provider_still_overrides_tutor_provider_policy(self):
+        with patch.dict(
+            os.environ,
+            {"TUTOR_MODEL_PROVIDER": "gemini"},
+            clear=True,
+        ), patch.object(
+            main.tutor_agent,
+            "answer",
+            side_effect=lambda _message, user_id=None: main._active_model_provider.get(),
+        ):
+            reply = main.generate_tutor_answer("What is RAG?", model_provider="deepseek")
+
+        self.assertEqual(reply, "deepseek")
+
+    def test_tutor_provider_prefers_canonical_env_over_legacy_env(self):
+        with patch.dict(
+            os.environ,
+            {"TUTOR_MODEL_PROVIDER": "deepseek", "API_MODEL_PROVIDER": "gemini"},
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "deepseek")
+
+    def test_tutor_provider_falls_back_to_legacy_env(self):
         with patch.dict(os.environ, {"API_MODEL_PROVIDER": "gemini"}, clear=True):
-            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "gemini")
             self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "gemini")
 
-    def test_model_provider_accepts_deepseek(self):
+    def test_tutor_provider_ignores_global_provider_when_entrypoint_envs_are_absent(self):
         with patch.dict(os.environ, {"MODEL_PROVIDER": "deepseek"}, clear=True):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "openai")
+
+    def test_legacy_api_provider_prefers_legacy_env(self):
+        with patch.dict(
+            os.environ,
+            {"API_MODEL_PROVIDER": "gemini", "TUTOR_MODEL_PROVIDER": "deepseek"},
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "gemini")
+
+    def test_legacy_api_provider_falls_back_to_tutor_env(self):
+        with patch.dict(os.environ, {"TUTOR_MODEL_PROVIDER": "deepseek"}, clear=True):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "deepseek")
+
+    def test_present_empty_provider_env_keeps_default_normalization(self):
+        with patch.dict(
+            os.environ,
+            {"TUTOR_MODEL_PROVIDER": "", "API_MODEL_PROVIDER": "deepseek"},
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_TUTOR), "openai")
+
+        with patch.dict(
+            os.environ,
+            {"API_MODEL_PROVIDER": "", "TUTOR_MODEL_PROVIDER": "deepseek"},
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_API), "openai")
+
+    def test_invalid_preferred_provider_env_keeps_value_error(self):
+        with patch.dict(
+            os.environ,
+            {"TUTOR_MODEL_PROVIDER": "claude", "API_MODEL_PROVIDER": "deepseek"},
+            clear=True,
+        ):
+            with self.assertRaises(ValueError):
+                main.resolve_model_provider(main.ENTRYPOINT_TUTOR)
+
+        with patch.dict(
+            os.environ,
+            {"API_MODEL_PROVIDER": "claude", "TUTOR_MODEL_PROVIDER": "deepseek"},
+            clear=True,
+        ):
+            with self.assertRaises(ValueError):
+                main.resolve_model_provider(main.ENTRYPOINT_API)
+
+    def test_channel_and_unknown_entrypoint_provider_routing_is_unchanged(self):
+        with patch.dict(
+            os.environ,
+            {
+                "WEB_CHAT_MODEL_PROVIDER": "gemini",
+                "LINE_MODEL_PROVIDER": "deepseek",
+                "MESSENGER_MODEL_PROVIDER": "gemini",
+                "MODEL_PROVIDER": "deepseek",
+            },
+            clear=True,
+        ):
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_WEB_CHAT), "gemini")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_LINE), "deepseek")
+            self.assertEqual(main.resolve_model_provider(main.ENTRYPOINT_MESSENGER), "gemini")
             self.assertEqual(main.resolve_model_provider("unknown"), "deepseek")
 
 
