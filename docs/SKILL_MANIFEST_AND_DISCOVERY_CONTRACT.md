@@ -32,7 +32,6 @@ Current classifications:
 
 - `hungyi_lee`: active Runtime Skill with a local wiki content root.
 - `ipas_ai_application_planner`: active Runtime Skill that also has explicitly wired course pages.
-- `fa`: dedicated Web package.
 - `ipas_net_zero_planner`: dedicated Web package with deterministic tools.
 - `little_tree_companion`: disabled legacy package; its active-state compatibility path remains unchanged.
 
@@ -224,7 +223,7 @@ If a request reaches a previously selected unavailable Skill, existing Tutor beh
 
 ## 16. Tests
 
-Contract tests cover validation, path security, content isolation, deterministic ordering, disabled/legacy behavior, duplicate handling, import/factory isolation, proof that invalid manifests are not imported, existing routing metadata, and diagnostics privacy. The complete application regression suite protects channel, API, provider, telemetry, iPAS, and FA behavior.
+Contract tests cover validation, path security, content isolation, deterministic ordering, disabled/legacy behavior, duplicate handling, import/factory isolation, proof that invalid manifests are not imported, existing routing metadata, and diagnostics privacy. The complete application regression suite protects channel, provider, telemetry, and iPAS behavior.
 
 ## 17. Deferred Work
 

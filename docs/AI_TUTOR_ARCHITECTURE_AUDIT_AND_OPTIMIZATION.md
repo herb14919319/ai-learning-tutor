@@ -40,7 +40,6 @@ The full suite passed: **229 tests, 0 failures, 0 errors**.
 | iPAS AI Application Planner | `skills/ipas_ai_application_planner/` plus direct routes in `main.py` |
 | iPAS Net-Zero Planner | `skills/ipas_net_zero_planner/` plus direct routes in `main.py` |
 | Hung-Yi Lee knowledge skill | `skills/hungyi_lee_skill.py`, `skills/hung-yi-lee-skill/` |
-| FA assistant | `skills/fa/`, explicit `skill_id=fa` Web Chat branch |
 | Legacy Little Tree | `agents/little_tree*`, `skills/little_tree_companion.py`, residual wiring in `main.py` |
 | Tests | `tests/`, standard-library `unittest` |
 | Deployment | `Dockerfile`: Gunicorn, one worker, eight threads |
@@ -65,7 +64,7 @@ channel/API adapter
   -> channel return or background push
 ```
 
-The two iPAS course web applications and FA branch are exceptions. They are direct routes to their respective Python modules and do not all pass through `SkillRuntime`.
+The two iPAS course web applications are exceptions. They are direct routes to their respective Python modules and do not pass through `SkillRuntime`.
 
 ## 3. Request Lifecycle
 
@@ -89,9 +88,9 @@ Identity is the LINE user ID when present, otherwise group/room ID. There is pro
 1. JSON and `message` are normalized.
 2. Empty and over-3,000-character questions are rejected.
 3. The existing process-local IP rate limiter runs.
-4. `skill_id=fa` uses the explicit deterministic FA flow.
-5. General Web Chat calls `generate_ai_reply()` with entrypoint `web_chat`.
-6. Public Web Chat is now stateless (`user_id=None`) because it has no authenticated identity.
+4. Requests containing `skill_id` are rejected; Web Chat does not expose direct Skill dispatch.
+5. Web Chat calls `generate_ai_reply()` with entrypoint `web_chat`.
+6. Public Web Chat is stateless (`user_id=None`) because it has no authenticated identity.
 7. Shared Guard, Tutor, Skill, prompt, provider, fallback, and telemetry flow runs.
 8. JSON `{"reply": ...}` is returned.
 

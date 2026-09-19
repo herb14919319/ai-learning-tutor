@@ -69,7 +69,6 @@ from runtime_telemetry import (
 from skills import ipas_ai_application_planner as ipas_ai_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
 from skills import little_tree as little_tree_skill
-from skills.fa import FaSkill
 
 
 load_dotenv()
@@ -350,12 +349,11 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
 
 tutor_agent = TutorAgent(ask_gpt)
 little_tree_agent = LittleTreeAgent(ask_gpt)
-fa_skill = FaSkill(ask_gpt)
 TUTOR_API_MAX_QUESTION_LENGTH = 3000
 TUTOR_API_RATE_LIMIT_WINDOW_SECONDS = 60
 TUTOR_API_RATE_LIMIT_REQUESTS = 20
-fa_web_rate_limits: dict[str, list[float]] = {}
-fa_web_rate_limits_lock = threading.Lock()
+web_chat_rate_limits: dict[str, list[float]] = {}
+web_chat_rate_limits_lock = threading.Lock()
 
 
 def truncate_for_line(text: str) -> str:
@@ -504,8 +502,8 @@ def tutor_api_client_ip() -> str:
     return request.remote_addr or "unknown"
 
 
-def fa_web_rate_limit_exceeded(client_ip: str) -> bool:
-    return rate_limit_exceeded(fa_web_rate_limits, fa_web_rate_limits_lock, client_ip)
+def web_chat_rate_limit_exceeded(client_ip: str) -> bool:
+    return rate_limit_exceeded(web_chat_rate_limits, web_chat_rate_limits_lock, client_ip)
 
 
 def rate_limit_exceeded(
@@ -550,38 +548,6 @@ def generate_ai_reply(
     if truncate:
         return truncate_for_line(reply)
     return reply
-
-
-def generate_fa_answer(
-    user_text: str,
-    *,
-    request_context: RequestTelemetryContext | None = None,
-) -> str:
-    provider = resolve_model_provider(ENTRYPOINT_WEB_CHAT)
-    provider_token = _active_model_provider.set(provider)
-    entrypoint_token = _active_entrypoint.set("fa_web_chat")
-    try:
-        if request_context is None:
-            return normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
-        with activate_request_context(request_context):
-            emit_runtime_event("guard_evaluated", status="skipped", guard_reason="explicit_skill")
-            emit_runtime_event("route_selected", status="success", route="fa", route_reason="explicit_skill")
-            emit_runtime_event("skill_selected", status="success", skill_id="fa")
-            try:
-                answer = normalize_response(fa_skill.answer(user_text), ERROR_FALLBACK_RESPONSE)
-            except Exception as exc:
-                record_request_terminal(
-                    request_context,
-                    status="error",
-                    error_category=categorize_provider_error(exc),
-                )
-                raise
-            outcome, error_category = current_request_outcome()
-            record_request_terminal(request_context, status=outcome, error_category=error_category)
-            return answer
-    finally:
-        _active_entrypoint.reset(entrypoint_token)
-        _active_model_provider.reset(provider_token)
 
 
 def reply_text(reply_token: str, text: str) -> None:
@@ -730,11 +696,6 @@ def health():
             "timestamp": timestamp,
         }
     )
-
-
-@app.get("/fa")
-def fa_page():
-    return render_template("fa.html")
 
 
 @app.get("/little-tree")
@@ -980,40 +941,13 @@ def web_chat():
         return jsonify({"reply": "問題內容過長，請縮短後再試。"}), 400
 
     client_ip = tutor_api_client_ip()
-    if fa_web_rate_limit_exceeded(client_ip):
+    if web_chat_rate_limit_exceeded(client_ip):
         reject_external_request(telemetry_context, "rate_limit_error")
         return jsonify({"error": "rate_limit_exceeded"}), 429
 
-    raw_skill_id = payload.get("skill_id")
-    skill_id = raw_skill_id.strip().lower() if isinstance(raw_skill_id, str) else ""
-    if skill_id:
-        if skill_id != "fa":
-            reject_external_request(telemetry_context, "validation_error")
-            return jsonify({"error": "unsupported_skill"}), 400
-
-        request_id = telemetry_context.request_id
-        telemetry_context = record_request_validation(telemetry_context, status="success")
-
-        started_at = time.perf_counter()
-        try:
-            reply = generate_fa_answer(message, request_context=telemetry_context)
-        except Exception as exc:
-            logger.exception(
-                "[FA_AUDIT] request_id=%s user_id=%s status=500 error=%s",
-                request_id,
-                "public-web",
-                exc,
-            )
-            return jsonify({"error": "fa_unavailable", "request_id": request_id}), 500
-
-        logger.info(
-            "[FA_AUDIT] request_id=%s user_id=%s status=200 question_length=%s duration_ms=%s",
-            request_id,
-            "public-web",
-            len(message),
-            round((time.perf_counter() - started_at) * 1000),
-        )
-        return jsonify({"reply": reply, "skill_id": "fa", "request_id": request_id})
+    if "skill_id" in payload:
+        reject_external_request(telemetry_context, "validation_error")
+        return jsonify({"error": "unsupported_skill"}), 400
 
     # Public Web Chat has no authenticated identity. Do not trust a caller-supplied
     # user_id or place unrelated visitors in one shared conversation bucket.

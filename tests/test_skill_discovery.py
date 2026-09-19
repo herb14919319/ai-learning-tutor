@@ -392,12 +392,10 @@ class ExistingSkillMigrationTest(unittest.TestCase):
     def test_non_runtime_and_legacy_packages_are_classified_but_not_routed(self):
         manifests = {manifest.name: manifest for manifest in list_skill_manifests()}
 
-        self.assertEqual(manifests["fa"].skill_type, "web")
         self.assertEqual(manifests["ipas_net_zero_planner"].skill_type, "web")
         self.assertEqual(manifests["little_tree"].skill_type, "web")
         self.assertEqual(manifests["little_tree_companion"].skill_type, "legacy")
         self.assertFalse(manifests["little_tree_companion"].enabled)
-        self.assertNotIn("fa", [metadata.name for metadata in list_skills()])
         self.assertNotIn("ipas_net_zero_planner", [metadata.name for metadata in list_skills()])
         self.assertNotIn("little_tree", [metadata.name for metadata in list_skills()])
 

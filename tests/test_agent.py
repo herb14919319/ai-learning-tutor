@@ -769,22 +769,20 @@ class LittleTreeCommandTest(unittest.TestCase):
 
 class WebChatTest(unittest.TestCase):
     def setUp(self):
-        main.fa_web_rate_limits.clear()
+        main.web_chat_rate_limits.clear()
 
     def tearDown(self):
-        main.fa_web_rate_limits.clear()
+        main.web_chat_rate_limits.clear()
 
     def test_health_check_returns_liveness_without_dependencies(self):
         dependency_names = (
             "ask_gpt",
             "generate_ai_reply",
-            "generate_fa_answer",
         )
         dependency_patches = [patch.object(main, name) for name in dependency_names]
 
         with dependency_patches[0] as ask_gpt, \
-             dependency_patches[1] as generate_ai_reply, \
-             dependency_patches[2] as generate_fa_answer:
+             dependency_patches[1] as generate_ai_reply:
             response = main.app.test_client().get("/health")
 
         self.assertEqual(response.status_code, 200)
@@ -795,7 +793,6 @@ class WebChatTest(unittest.TestCase):
         self.assertRegex(data["timestamp"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
         ask_gpt.assert_not_called()
         generate_ai_reply.assert_not_called()
-        generate_fa_answer.assert_not_called()
 
     def test_homepage_returns_web_chat_entry(self):
         response = main.app.test_client().get("/")
@@ -838,6 +835,23 @@ class WebChatTest(unittest.TestCase):
             request_context=ANY,
         )
 
+    def test_web_chat_rejects_direct_skill_dispatch(self):
+        for skill_id in ("fa", "unknown", ""):
+            with self.subTest(skill_id=skill_id), patch.object(main, "generate_ai_reply") as generate:
+                response = main.app.test_client().post(
+                    "/web-chat",
+                    json={"message": "What is RAG?", "skill_id": skill_id},
+                )
+
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.get_json(), {"error": "unsupported_skill"})
+            generate.assert_not_called()
+
+    def test_retired_fa_page_is_not_routed(self):
+        response = main.app.test_client().get("/fa")
+
+        self.assertEqual(response.status_code, 404)
+
     def test_web_chat_rejects_empty_message_without_calling_ai(self):
         with patch.object(main, "generate_ai_reply") as generate:
             response = main.app.test_client().post("/web-chat", json={"message": "   "})
@@ -859,7 +873,7 @@ class WebChatTest(unittest.TestCase):
         generate.assert_not_called()
 
     def test_web_chat_rate_limit_blocks_runtime(self):
-        main.fa_web_rate_limits["127.0.0.1"] = [
+        main.web_chat_rate_limits["127.0.0.1"] = [
             main.time.monotonic()
         ] * main.TUTOR_API_RATE_LIMIT_REQUESTS
         with patch.object(main, "generate_ai_reply") as generate:

@@ -23,10 +23,10 @@ def read_records(path: Path) -> list[dict]:
 
 class RequestCorrelationTelemetryTest(unittest.TestCase):
     def setUp(self):
-        main.fa_web_rate_limits.clear()
+        main.web_chat_rate_limits.clear()
 
     def tearDown(self):
-        main.fa_web_rate_limits.clear()
+        main.web_chat_rate_limits.clear()
 
     def test_each_request_has_one_unique_id_across_the_lifecycle(self):
         allowed = SimpleNamespace(allowed=True, intent="learning", response=None)
