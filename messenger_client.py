@@ -5,13 +5,15 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from meta_config import get_meta_api_version
+
 
 logger = logging.getLogger(__name__)
 
 
 def send_text_message(recipient_id: str, text: str) -> bool:
     page_access_token = os.getenv("MESSENGER_PAGE_ACCESS_TOKEN", "")
-    api_version = os.getenv("MESSENGER_API_VERSION", "v20.0")
+    api_version = get_meta_api_version()
 
     if not page_access_token:
         logger.error("Messenger Page Access Token is not configured")

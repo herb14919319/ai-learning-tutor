@@ -1,0 +1,16 @@
+{
+  "mcp": {
+    "keywords": [
+      "mcp",
+      "model context protocol"
+    ],
+    "sources": [
+      {
+        "name": "Model Context Protocol Official Introduction",
+        "authority": "primary",
+        "url": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro",
+        "host": "modelcontextprotocol.io"
+      }
+    ]
+  }
+}
