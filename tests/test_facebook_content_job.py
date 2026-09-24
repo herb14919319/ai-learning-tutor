@@ -16,12 +16,14 @@ from automation.content_review import (
 from automation.facebook_content_job import (
     CONFIG_ERROR_EXIT_CODE,
     EXIT_CODES,
+    ContentJobResult,
     JobStatus,
     answer_with_hungyi_skill,
     format_facebook_post,
     generate_post,
     main,
     production_config_errors,
+    run_publish_once,
     run_job,
     select_topic,
     validate_post,
@@ -149,6 +151,25 @@ class FacebookContentJobTest(unittest.TestCase):
         self.assertEqual(result.status, JobStatus.PUBLISHED)
         self.assertEqual(result.post_id, "page_123")
         publisher.assert_called_once()
+
+    def test_canonical_publish_entry_calls_existing_job_once(self):
+        with patch("automation.facebook_content_job.production_config_errors", return_value=()), patch(
+            "automation.facebook_content_job.run_job",
+            return_value=ContentJobResult(JobStatus.REVIEW_REJECTED),
+        ) as job:
+            result = run_publish_once()
+        self.assertEqual(result.status, JobStatus.REVIEW_REJECTED)
+        job.assert_called_once_with(publish=True)
+
+    def test_cli_publish_delegates_to_canonical_entry(self):
+        with patch("automation.facebook_content_job.load_dotenv"), patch(
+            "automation.facebook_content_job.run_publish_once",
+            return_value=ContentJobResult(JobStatus.REVIEW_REJECTED),
+        ) as job, patch("sys.argv", ["job", "--publish"]), patch(
+            "sys.stdout", new_callable=io.StringIO
+        ):
+            self.assertEqual(main(), 1)
+        job.assert_called_once_with()
 
     def test_config_preflight_is_presence_only_and_names_missing_fields(self):
         env = {

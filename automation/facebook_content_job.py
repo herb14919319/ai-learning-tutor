@@ -61,6 +61,12 @@ EXIT_CODES = {
 CONFIG_ERROR_EXIT_CODE = 2
 
 
+class ProductionConfigError(Exception):
+    def __init__(self, errors: tuple[str, ...]):
+        super().__init__("Production configuration is incomplete")
+        self.errors = errors
+
+
 def production_config_errors(environment: dict[str, str] | None = None) -> tuple[str, ...]:
     """Check presence only; never contact a model, source, or Facebook."""
     env = environment if environment is not None else os.environ
@@ -313,6 +319,14 @@ def run_job(
     )
 
 
+def run_publish_once() -> ContentJobResult:
+    """Canonical production entry point for the CLI and authenticated HTTP trigger."""
+    errors = production_config_errors()
+    if errors:
+        raise ProductionConfigError(errors)
+    return run_job(publish=True)
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate or publish one AI Learning Tutor Page post")
     mode = parser.add_mutually_exclusive_group()
@@ -327,16 +341,23 @@ def main() -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     load_dotenv()
     args = _parse_args()
-    if args.check_config or args.publish:
+    if args.check_config:
         config_errors = production_config_errors()
         if config_errors:
             for error in config_errors:
                 print(f"configuration_error: {error}")
             return CONFIG_ERROR_EXIT_CODE
-        if args.check_config:
-            print("production_configuration: valid")
-            return 0
-    result = run_job(publish=args.publish)
+        print("production_configuration: valid")
+        return 0
+    if args.publish:
+        try:
+            result = run_publish_once()
+        except ProductionConfigError as exc:
+            for error in exc.errors:
+                print(f"configuration_error: {error}")
+            return CONFIG_ERROR_EXIT_CODE
+    else:
+        result = run_job(publish=False)
     print(f"status: {result.status.value}")
     if result.topic:
         print(f"topic: {result.topic}")

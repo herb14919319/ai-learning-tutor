@@ -41,3 +41,17 @@ Run `python -m automation.facebook_content_job --check-config` in the Cron envir
 A review block is an expected safety result for an unsafe article, though Render records the nonzero exit for visibility. The current MCP topic remains in the topic pool. Run `python -m automation.facebook_content_job --dry-run` to inspect it without posting. Do not force a PASS.
 
 The job reads repository configuration and does not need files saved by earlier Cron runs. It does not persist topic history, review history, or Facebook post IDs. A single execution calls the publisher at most once. Duplicate prevention across separate runs and retry attempts is not persistent; do not rerun a successful publication without checking the Page first.
+
+## External Linux cron trigger
+
+The existing Flask service also exposes `POST /internal/jobs/facebook-publish`. Set `AI_TUTOR_CRON_SECRET` to a strong shared value in the Render web service and in the Linux cron host's environment. The request body is ignored; the server selects the topic and invokes the same one-shot publish function used by the CLI. The endpoint returns HTTP 200 for publication or a safe review block, 401 for invalid authorization, 409 for an overlapping job in the same web process, 503 for missing configuration, and 500/502 for runtime or publishing failures. It does not return article text or secret values. The lock is process-local; multiple Render processes or instances are not coordinated.
+
+Example command for the eventual external cron entry (do not run until ready to permit a real post):
+
+```bash
+curl --fail-with-body -X POST \
+  -H "Authorization: Bearer $AI_TUTOR_CRON_SECRET" \
+  "https://<AI-TUTOR-RENDER-HOST>/internal/jobs/facebook-publish"
+```
+
+Use either this external trigger or a Render Cron Job for a given schedule to avoid duplicate runs.

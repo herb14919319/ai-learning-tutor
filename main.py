@@ -17,6 +17,7 @@ from agents.little_tree_agent import (
     LittleTreeAgent,
 )
 from agents.tutor_agent import TutorAgent
+from automation.facebook_content_job import JobStatus, ProductionConfigError, run_publish_once
 from menu_router import handle_menu_command, is_menu_command
 from memory.conversation_context import clear_active_skill, get_active_skill
 import messenger_webhook
@@ -105,6 +106,7 @@ IPAS_NET_ZERO_CARDS_DIR = (
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
+facebook_publish_lock = threading.Lock()
 
 line_configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
@@ -696,6 +698,43 @@ def health():
             "timestamp": timestamp,
         }
     )
+
+
+@app.route("/internal/jobs/facebook-publish", methods=["POST"], provide_automatic_options=False)
+def trigger_facebook_publish():
+    secret = os.getenv("AI_TUTOR_CRON_SECRET", "").strip()
+    if not secret:
+        return jsonify({"ok": False, "state": "configuration_error"}), 503
+
+    authorization = request.headers.get("Authorization", "")
+    parts = authorization.split(" ")
+    if (
+        len(parts) != 2
+        or parts[0] != "Bearer"
+        or not parts[1]
+        or any(character.isspace() for character in parts[1])
+    ):
+        return jsonify({"ok": False, "state": "unauthorized"}), 401
+    if not hmac.compare_digest(parts[1], secret):
+        return jsonify({"ok": False, "state": "unauthorized"}), 401
+
+    if not facebook_publish_lock.acquire(blocking=False):
+        return jsonify({"ok": False, "state": "already_running"}), 409
+    try:
+        result = run_publish_once()
+    except ProductionConfigError:
+        return jsonify({"ok": False, "state": "configuration_error"}), 503
+    except Exception:
+        return jsonify({"ok": False, "state": "internal_error"}), 500
+    finally:
+        facebook_publish_lock.release()
+
+    if result.status is JobStatus.PUBLISHED:
+        return jsonify({"ok": True, "state": "published", "published": True, "post_id": result.post_id})
+    if result.status in (JobStatus.REVIEW_REJECTED, JobStatus.REVIEW_UNCERTAIN):
+        return jsonify({"ok": True, "state": result.status.value, "published": False})
+    status_code = 502 if result.status is JobStatus.PUBLISH_FAILED else 500
+    return jsonify({"ok": False, "state": result.status.value, "published": False}), status_code
 
 
 @app.get("/little-tree")
