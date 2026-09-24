@@ -50,6 +50,40 @@ class JobStatus(str, Enum):
     PUBLISHED = "published"
 
 
+EXIT_CODES = {
+    JobStatus.GENERATED: 0,
+    JobStatus.PUBLISHED: 0,
+    JobStatus.REVIEW_REJECTED: 1,
+    JobStatus.REVIEW_UNCERTAIN: 1,
+    JobStatus.VALIDATION_FAILED: 3,
+    JobStatus.PUBLISH_FAILED: 4,
+}
+CONFIG_ERROR_EXIT_CODE = 2
+
+
+def production_config_errors(environment: dict[str, str] | None = None) -> tuple[str, ...]:
+    """Check presence only; never contact a model, source, or Facebook."""
+    env = environment if environment is not None else os.environ
+    required = (
+        "MESSENGER_PAGE_ACCESS_TOKEN",
+        "MESSENGER_PAGE_ID",
+        "MESSENGER_API_VERSION",
+        "MODEL_PROVIDER",
+    )
+    errors = [f"{name} is not configured" for name in required if not env.get(name, "").strip()]
+    provider = env.get("MODEL_PROVIDER", "").strip().lower()
+    credential = {
+        "openai": "OPENAI_API_KEY",
+        "gemini": "GEMINI_API_KEY",
+        "deepseek": "DEEPSEEK_API_KEY",
+    }.get(provider)
+    if provider and credential is None:
+        errors.append("MODEL_PROVIDER must be openai, gemini, or deepseek")
+    elif credential and not env.get(credential, "").strip():
+        errors.append(f"{credential} is not configured")
+    return tuple(errors)
+
+
 @dataclass(frozen=True)
 class ValidationResult:
     valid: bool
@@ -256,7 +290,10 @@ def run_job(
             review=review,
         )
 
-    published = publisher(generated.post or "")
+    try:
+        published = publisher(generated.post or "")
+    except Exception:
+        published = PublishResult(False, error="Facebook Page publication failed")
     if not published.success:
         return ContentJobResult(
             JobStatus.PUBLISH_FAILED,
@@ -281,6 +318,7 @@ def _parse_args() -> argparse.Namespace:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="Generate and print only (default)")
     mode.add_argument("--publish", action="store_true", help="Publish through the Meta Graph API")
+    mode.add_argument("--check-config", action="store_true", help="Validate production configuration only")
     return parser.parse_args()
 
 
@@ -289,6 +327,15 @@ def main() -> int:
         sys.stdout.reconfigure(encoding="utf-8")
     load_dotenv()
     args = _parse_args()
+    if args.check_config or args.publish:
+        config_errors = production_config_errors()
+        if config_errors:
+            for error in config_errors:
+                print(f"configuration_error: {error}")
+            return CONFIG_ERROR_EXIT_CODE
+        if args.check_config:
+            print("production_configuration: valid")
+            return 0
     result = run_job(publish=args.publish)
     print(f"status: {result.status.value}")
     if result.topic:
@@ -319,7 +366,7 @@ def main() -> int:
         print(f"\npost_id: {result.post_id}")
     for error in result.errors:
         print(f"error: {error}")
-    return 0 if result.status in (JobStatus.GENERATED, JobStatus.PUBLISHED) else 1
+    return EXIT_CODES[result.status]
 
 
 if __name__ == "__main__":

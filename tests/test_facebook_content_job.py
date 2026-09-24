@@ -14,10 +14,14 @@ from automation.content_review import (
     review_content,
 )
 from automation.facebook_content_job import (
+    CONFIG_ERROR_EXIT_CODE,
+    EXIT_CODES,
     JobStatus,
     answer_with_hungyi_skill,
     format_facebook_post,
     generate_post,
+    main,
+    production_config_errors,
     run_job,
     select_topic,
     validate_post,
@@ -145,6 +149,45 @@ class FacebookContentJobTest(unittest.TestCase):
         self.assertEqual(result.status, JobStatus.PUBLISHED)
         self.assertEqual(result.post_id, "page_123")
         publisher.assert_called_once()
+
+    def test_config_preflight_is_presence_only_and_names_missing_fields(self):
+        env = {
+            "MODEL_PROVIDER": "gemini",
+            "MESSENGER_PAGE_ID": "123",
+            "MESSENGER_API_VERSION": "v20.0",
+        }
+        self.assertEqual(
+            production_config_errors(env),
+            ("MESSENGER_PAGE_ACCESS_TOKEN is not configured", "GEMINI_API_KEY is not configured"),
+        )
+        env.update(MESSENGER_PAGE_ACCESS_TOKEN="secret", GEMINI_API_KEY="model-secret")
+        self.assertEqual(production_config_errors(env), ())
+
+    def test_cli_config_check_and_publish_preflight_do_not_run_job(self):
+        with patch("automation.facebook_content_job.load_dotenv"), patch(
+            "automation.facebook_content_job.run_job"
+        ) as job, patch("sys.argv", ["job", "--check-config"]), patch(
+            "automation.facebook_content_job.production_config_errors", return_value=("MESSENGER_PAGE_ID is not configured",)
+        ), patch("sys.stdout", new_callable=io.StringIO) as output:
+            self.assertEqual(main(), CONFIG_ERROR_EXIT_CODE)
+            self.assertIn("MESSENGER_PAGE_ID", output.getvalue())
+            job.assert_not_called()
+
+        with patch("automation.facebook_content_job.load_dotenv"), patch(
+            "automation.facebook_content_job.run_job"
+        ) as job, patch("sys.argv", ["job", "--publish"]), patch(
+            "automation.facebook_content_job.production_config_errors", return_value=("OPENAI_API_KEY is not configured",)
+        ), patch("sys.stdout", new_callable=io.StringIO):
+            self.assertEqual(main(), CONFIG_ERROR_EXIT_CODE)
+            job.assert_not_called()
+
+    def test_exit_code_contract(self):
+        self.assertEqual(EXIT_CODES[JobStatus.GENERATED], 0)
+        self.assertEqual(EXIT_CODES[JobStatus.PUBLISHED], 0)
+        self.assertEqual(EXIT_CODES[JobStatus.REVIEW_REJECTED], 1)
+        self.assertEqual(EXIT_CODES[JobStatus.REVIEW_UNCERTAIN], 1)
+        self.assertEqual(EXIT_CODES[JobStatus.VALIDATION_FAILED], 3)
+        self.assertEqual(EXIT_CODES[JobStatus.PUBLISH_FAILED], 4)
 
     def test_reject_blocks_publication(self):
         publisher = Mock()

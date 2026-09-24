@@ -473,6 +473,15 @@ def aggregate_review(
             evidence,
             sources_used,
         )
+    if semantic_review.decision is ContentReviewDecision.REJECT:
+        return ContentReviewResult(
+            ContentReviewDecision.REJECT,
+            semantic_review.issues,
+            semantic_review.summary,
+            claims,
+            evidence,
+            sources_used,
+        )
     if extraction.failed:
         return ContentReviewResult(
             ContentReviewDecision.UNCERTAIN,
@@ -494,15 +503,6 @@ def aggregate_review(
             semantic_review.issues
             + (ReviewIssue("source verification", "Not all material claims have supporting authoritative evidence.", "high"),),
             "Authoritative evidence was unavailable or insufficient for a material claim.",
-            claims,
-            evidence,
-            sources_used,
-        )
-    if semantic_review.decision is ContentReviewDecision.REJECT:
-        return ContentReviewResult(
-            ContentReviewDecision.REJECT,
-            semantic_review.issues,
-            semantic_review.summary,
             claims,
             evidence,
             sources_used,
@@ -544,8 +544,13 @@ def review_content_with_sources(
     try:
         active_registry = registry or SourceRegistry.load()
     except Exception:
+        decision = (
+            ContentReviewDecision.REJECT
+            if semantic_review.decision is ContentReviewDecision.REJECT
+            else ContentReviewDecision.UNCERTAIN
+        )
         return ContentReviewResult(
-            ContentReviewDecision.UNCERTAIN,
+            decision,
             semantic_review.issues
             + (ReviewIssue("source registry", "The official source registry could not be loaded.", "high"),),
             "Official source resolution failed; publication is blocked.",

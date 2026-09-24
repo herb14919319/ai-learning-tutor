@@ -10,6 +10,7 @@ from automation.content_review import (
     ContentReviewDecision,
     ContentReviewResult,
     EvidenceVerdict,
+    ReviewIssue,
     SourceEvidence,
     VerificationClaim,
 )
@@ -99,6 +100,22 @@ class FakeTransport:
 
 
 class SourceBackedReviewTest(unittest.TestCase):
+    def test_semantic_reject_remains_reject_when_source_unavailable(self):
+        semantic_reject = ContentReviewResult(
+            ContentReviewDecision.REJECT,
+            (ReviewIssue("MCP = Model-Conditioned Policy", "MCP means Model Context Protocol.", "high"),),
+            "Incorrect MCP expansion.",
+        )
+        result = review_content_with_sources(
+            "MCP",
+            "MCP = Model-Conditioned Policy",
+            semantic_reviewer=lambda topic, post: semantic_reject,
+            claim_extractor=lambda topic, post: extraction("MCP = Model-Conditioned Policy"),
+            registry=mcp_registry(),
+            source_fetcher=Mock(side_effect=SourceFetchError("offline")),
+        )
+        self.assertEqual(result.decision, ContentReviewDecision.REJECT)
+
     def review(self, claim_text, **overrides):
         arguments = {
             "semantic_reviewer": lambda topic, post: SEMANTIC_PASS,
