@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.4",
+  "extends": "learning_chunk_schema_v0_3.json",
+  "description": "v0.3 plus an optional source-evidence comparison matrix for the page 80 asset-value table.",
+  "required": ["chunk_id", "title", "chapter", "section", "chunk_type", "source_evidence", "teaching_interpretation"],
+  "chunk_types": ["concept", "definition", "comparison", "process", "visual", "exam_point", "example"],
+  "source_evidence_required": ["source_file", "source_pages", "source_title", "observations"],
+  "teaching_interpretation_required": ["core_concept", "explanation", "exam_focus", "related_concepts"],
+  "relationships_optional": true,
+  "relationship_required": ["predicate", "target_chunk_id"],
+  "relationship_predicates": ["exploits", "belongs_to", "contributes_to", "precedes"],
+  "comparison_optional_in_source_evidence": true,
+  "comparison_required": ["members", "dimensions"],
+  "comparison_dimension_required": ["key", "label", "values"],
+  "comparison_value_required": ["member_chunk_id", "value", "source_page"],
+  "locator_note": "source_pages and comparison source_page are one-based PDF page numbers"
+}

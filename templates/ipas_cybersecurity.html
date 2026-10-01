@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>iPAS 資訊安全工程師初級｜CIA 三目標</title>
+    <title>iPAS 資訊安全工程師初級｜學習切片</title>
     <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas.css') }}">
     <style>
       .cyber-shell { max-width: 960px; margin: 2rem auto; padding: 0 1rem 3rem; }
@@ -24,7 +24,7 @@
       {% if error_message %}
       <section role="alert"><h1>課程暫時無法載入</h1><p>{{ error_message }}</p></section>
       {% else %}
-      <header><p>iPAS 資訊安全工程師初級 · 三個小主題</p><h1>{{ course_info.title }}</h1><p>從 CIA 三目標，走到風險概念關係與風險評鑑順序。</p></header>
+      <header><p>iPAS 資訊安全工程師初級 · 四個小主題</p><h1>{{ course_info.title }}</h1><p>包含 CIA、風險概念、風險評鑑與資訊資產分類。生成教材均顯示審核狀態。</p></header>
       <nav aria-label="主題導航">
         {% for topic in topics %}<a href="#{{ topic.chapter.chapter_id }}">{{ topic.chapter.title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
       </nav>
@@ -35,7 +35,8 @@
       <article id="{{ chapter.chapter_id }}">
       <section aria-labelledby="teaching-{{ chapter.chapter_id }}">
         <h2 id="teaching-{{ chapter.chapter_id }}">{{ chapter.title }}</h2>
-        <details><summary>閱讀完整教學稿</summary><pre>{{ chapter.markdown }}</pre></details>
+        <p class="source">教學稿審核狀態：{{ chapter.teaching_review_status }}</p>
+        {% if chapter.markdown %}<details><summary>閱讀完整教學稿</summary><pre>{{ chapter.markdown }}</pre></details>{% endif %}
         <p class="source">原始教材：{{ chapter.source_file }}，PDF 第 {{ chapter.source_pages | join('、') }} 頁。教學稿是衍生內容。</p>
       </section>
       <section aria-labelledby="concepts-{{ chapter.chapter_id }}">
@@ -46,6 +47,7 @@
           <p>{{ chunk.teaching_interpretation.core_concept }}</p>
           <p>{{ chunk.teaching_interpretation.explanation }}</p>
           <p><strong>考點：</strong>{{ chunk.teaching_interpretation.exam_focus }}</p>
+          <p class="source">審核狀態：{{ chunk.teaching_interpretation.review_status }}</p>
           <p class="source">{{ chunk.chunk_id }} · {{ chunk.source_evidence.source_file }} · PDF 第 {{ chunk.source_evidence.source_pages | join('、') }} 頁</p>
         </article>
         {% endfor %}
@@ -53,13 +55,14 @@
       <section aria-labelledby="cards-{{ chapter.chapter_id }}">
         <h2 id="cards-{{ chapter.chapter_id }}">複習卡片</h2>
         {% for card in cards %}
-        <details><summary>{{ card.front }}</summary><p>{{ card.back }}</p><p class="source">對應 {{ card.chunk_ids | join('、') }}</p></details>
+        <details><summary>{{ card.front }}</summary><p>{{ card.back }}</p><p class="source">對應 {{ card.chunk_ids | join('、') }} · {{ card.review_status }}</p></details>
         {% endfor %}
       </section>
       <section aria-labelledby="quiz-{{ chapter.chapter_id }}" data-answer-url="{{ url_for('ipas_cybersecurity_answer') }}">
         <h2 id="quiz-{{ chapter.chapter_id }}">原創練習題</h2>
         {% for question in questions %}
         <form class="cia-question" data-question-id="{{ question.question_id }}">
+          <p class="source">審核狀態：{{ question.review_status }}</p>
           <fieldset><legend><strong>{{ loop.index }}. {{ question.question }}</strong></legend>
             {% for letter, option in question.options.items() %}
             <label><input type="radio" name="answer" value="{{ letter }}" required> {{ letter }}. {{ option }}</label>

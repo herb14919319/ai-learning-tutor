@@ -37,5 +37,18 @@
     "card_file": "cards/assessment_flashcards.json",
     "question_file": "assessment_questions.json",
     "schema_file": "learning_chunk_schema_v0_3.json"
+  },
+  {
+    "chapter_id": "I11-ASSET",
+    "title": "資訊安全管理概論：資訊資產清冊與價值分類",
+    "order": 4,
+    "status": "phase4_pilot",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_pages": [77, 78, 79, 80],
+    "teaching_file": "asset_teaching.md",
+    "chunk_file": "asset_chunks.json",
+    "card_file": "cards/asset_flashcards.json",
+    "question_file": "asset_questions.json",
+    "schema_file": "learning_chunk_schema_v0_4.json"
   }
 ]

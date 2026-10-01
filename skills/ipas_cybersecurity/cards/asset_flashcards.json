@@ -1,0 +1,110 @@
+[
+  {
+    "card_id": "I11-ASSET-F001",
+    "front": "第 77 頁列出哪些資訊資產類別？",
+    "back": "實體、軟體、電子資訊、書面文件、服務與人員。",
+    "chunk_ids": [
+      "I11-ASSET-001"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F002",
+    "front": "清冊、分類與控管之間如何銜接？",
+    "back": "先蒐集清冊，再分類群組，依類別實做控管，並以管理機制維持更新。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-002"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F003",
+    "front": "資訊資產清冊範例至少記錄哪些資訊？",
+    "back": "資產識別與類別、名稱與說明、權責／保管／使用單位及資產價值。",
+    "chunk_ids": [
+      "I11-ASSET-003"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F004",
+    "front": "A 級對應何種潛在影響與業務損害條件？",
+    "back": "極高度；表列損害持續一個月（含）以上。",
+    "chunk_ids": [
+      "I11-ASSET-004"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F005",
+    "front": "B 級與 A 級的影響標籤如何不同？",
+    "back": "B 級是高度，A 級是極高度；兩級的影響範圍與持續條件也不同。",
+    "chunk_ids": [
+      "I11-ASSET-004",
+      "I11-ASSET-005"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F006",
+    "front": "C 級的業務損害期間與影響標籤？",
+    "back": "一天（含）以上；中度。",
+    "chunk_ids": [
+      "I11-ASSET-006"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F007",
+    "front": "D 級有沒有來源給定的天數門檻？",
+    "back": "沒有。來源說意外事件不影響業務工作或營運，對應低度。",
+    "chunk_ids": [
+      "I11-ASSET-007"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F008",
+    "front": "一星期（含）以上的損害與哪一級同列？",
+    "back": "B 級；仍需連同範圍與影響標籤核對。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-005"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F009",
+    "front": "資產清冊表與價值分類表有何差別？",
+    "back": "清冊記錄資產及權責等欄位；分類表比較 A–D 級的範圍、損害條件與影響。",
+    "chunk_ids": [
+      "I11-ASSET-003",
+      "I11-ASSET-001"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-ASSET-F010",
+    "front": "為何不能只靠級別字母判斷資產分類？",
+    "back": "第 80 頁每級同時給出分類內容與潛在影響，應核對完整條件。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-004",
+      "I11-ASSET-005",
+      "I11-ASSET-006",
+      "I11-ASSET-007"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  }
+]

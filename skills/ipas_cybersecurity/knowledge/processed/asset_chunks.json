@@ -1,0 +1,307 @@
+[
+  {
+    "chunk_id": "I11-ASSET-001",
+    "title": "資訊資產分類與清冊",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "comparison",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        77,
+        78,
+        79,
+        80
+      ],
+      "source_title": [
+        "資訊資產項目",
+        "資訊資產蒐集與管理",
+        "資訊資產清冊",
+        "資訊資產價值分類"
+      ],
+      "observations": [
+        "第 77 頁列出實體、軟體、電子資訊、書面文件、服務與人員六類資產。",
+        "第 78 頁以循環圖呈現清冊蒐集、分類群組、依類別管控及管理機制。",
+        "第 79 頁展示資訊資產清冊範例；第 80 頁以 A 至 D 四級表格對照分類內容與潛在影響等級。"
+      ],
+      "comparison": {
+        "members": [
+          "I11-ASSET-004",
+          "I11-ASSET-005",
+          "I11-ASSET-006",
+          "I11-ASSET-007"
+        ],
+        "dimensions": [
+          {
+            "key": "affected_scope",
+            "label": "分類內容所述影響範圍",
+            "values": [
+              {
+                "member_chunk_id": "I11-ASSET-004",
+                "value": "國家安全的重要機敏資訊或系統",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-005",
+                "value": "社會秩序、民生體系運作及民眾隱私之機敏資訊或系統",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-006",
+                "value": "地方縣市級社會秩序、人民生命財產之重要資訊或系統",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-007",
+                "value": "未列具體範圍；以不影響業務工作或營運描述",
+                "source_page": 80
+              }
+            ]
+          },
+          {
+            "key": "business_effect",
+            "label": "業務推動損害條件",
+            "values": [
+              {
+                "member_chunk_id": "I11-ASSET-004",
+                "value": "持續一個月（含）以上",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-005",
+                "value": "持續一星期（含）以上",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-006",
+                "value": "持續一天（含）以上",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-007",
+                "value": "意外事件不影響業務工作或營運；未列時間門檻",
+                "source_page": 80
+              }
+            ]
+          },
+          {
+            "key": "potential_impact",
+            "label": "潛在影響等級",
+            "values": [
+              {
+                "member_chunk_id": "I11-ASSET-004",
+                "value": "極高度",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-005",
+                "value": "高度",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-006",
+                "value": "中度",
+                "source_page": 80
+              },
+              {
+                "member_chunk_id": "I11-ASSET-007",
+                "value": "低度",
+                "source_page": 80
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "teaching_interpretation": {
+      "core_concept": "先辨認並登錄資產，再依來源表格的影響條件區分 A、B、C、D 級。",
+      "explanation": "這四級是第 80 頁所示的來源分類例，不應當作所有組織通用的法定級距。",
+      "exam_focus": "同時看受影響範圍、業務持續損害條件與潛在影響等級，不能只背 A 到 D 字母。",
+      "related_concepts": [
+        "I11-ASSET-002",
+        "I11-ASSET-003",
+        "I11-ASSET-004",
+        "I11-ASSET-005",
+        "I11-ASSET-006",
+        "I11-ASSET-007"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-002",
+    "title": "資訊資產蒐集與持續管理",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "process",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        78
+      ],
+      "source_title": [
+        "資訊資產蒐集與管理"
+      ],
+      "observations": [
+        "圖示從蒐集資訊資產清冊，接到分類群組、依類別實做控管與管理機制；旁註要求維持清冊正確性並設計更新流程。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "資產管理是清冊、分類、控管和更新的持續循環。",
+      "explanation": "清冊錯漏會讓後面的分類與控管失準；來源也舉核心設備備援、內部機密資料不得任意複製等差異化控管例。",
+      "exam_focus": "清冊需要更新，分類後的管控應隨資產特性而異。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-003"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-003",
+    "title": "資訊資產清冊欄位",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "visual",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        79
+      ],
+      "source_title": [
+        "資訊資產清冊"
+      ],
+      "observations": [
+        "清冊範例表頭列有資產編號、資產類別、資產名稱、資產說明、權責單位、保管單位、使用單位及資產價值。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "資產清冊記錄辨識、權責與價值資訊。",
+      "explanation": "來源展示的是空白清冊樣式；欄位能把資產類別、責任歸屬與價值記錄連起來。",
+      "exam_focus": "不要把資產價值分級表誤認為清冊欄位表。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-002"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-004",
+    "title": "A 級資產價值",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        80
+      ],
+      "source_title": [
+        "資訊資產價值分類"
+      ],
+      "observations": [
+        "A 級列涉及國家安全的重要機敏資訊或系統，業務推動損害持續一個月（含）以上，潛在影響為極高度。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "A 級在本表對應極高度潛在影響。",
+      "explanation": "來源列的是國家安全範圍與一個月（含）以上的業務損害條件。",
+      "exam_focus": "區分 A 級與 B 級時，同時核對範圍、時間與影響標籤。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-005"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-005",
+    "title": "B 級資產價值",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        80
+      ],
+      "source_title": [
+        "資訊資產價值分類"
+      ],
+      "observations": [
+        "B 級列涉及社會秩序、民生體系運作及民眾隱私的機敏資訊或系統，業務推動損害持續一星期（含）以上，潛在影響為高度。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "B 級在本表對應高度潛在影響。",
+      "explanation": "來源列的是社會、民生與隱私範圍，以及一星期（含）以上的業務損害條件。",
+      "exam_focus": "B 級不是單靠『隱私』二字決定；需結合表格整列條件。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-004",
+        "I11-ASSET-006"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-006",
+    "title": "C 級資產價值",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        80
+      ],
+      "source_title": [
+        "資訊資產價值分類"
+      ],
+      "observations": [
+        "C 級列涉及地方縣市級社會秩序、人民生命財產的重要資訊或系統，業務推動損害持續一天（含）以上，潛在影響為中度。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "C 級在本表對應中度潛在影響。",
+      "explanation": "來源列的是地方縣市級與人民生命財產範圍，以及一天（含）以上的業務損害條件。",
+      "exam_focus": "C 級與 B 級的範圍、期間及影響標籤都不同。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-005",
+        "I11-ASSET-007"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSET-007",
+    "title": "D 級資產價值",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊資產項目／蒐集、清冊與價值分類",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        80
+      ],
+      "source_title": [
+        "資訊資產價值分類"
+      ],
+      "observations": [
+        "D 級列意外事件不影響業務工作或營運，潛在影響為低度；表內未列持續時間門檻。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "D 級在本表對應低度潛在影響。",
+      "explanation": "來源以不影響業務工作或營運描述 D 級，沒有給一個可與 A–C 對稱的天數。",
+      "exam_focus": "不要自行補出 D 級的時間門檻。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-006"
+      ],
+      "review_status": "pending_review"
+    }
+  }
+]

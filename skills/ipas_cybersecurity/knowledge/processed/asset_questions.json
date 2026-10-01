@@ -1,0 +1,194 @@
+[
+  {
+    "question_id": "I11-ASSET-Q001",
+    "cognitive_level": "recall",
+    "question": "來源第 77 頁把哪一項列為資訊資產類別？",
+    "options": {
+      "A": "人員",
+      "B": "僅伺服器",
+      "C": "僅加密金鑰",
+      "D": "僅紙本檔案"
+    },
+    "correct_answer": "A",
+    "explanation": "第 77 頁的人員是六類資產之一。",
+    "chunk_ids": [
+      "I11-ASSET-001"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q002",
+    "cognitive_level": "distinction",
+    "question": "清冊範例表中的「權責單位」屬於哪一類資訊？",
+    "options": {
+      "A": "資產責任歸屬",
+      "B": "A–D 影響等級",
+      "C": "一週停損門檻",
+      "D": "風險發生可能性"
+    },
+    "correct_answer": "A",
+    "explanation": "第 79 頁清冊欄位記錄權責單位；第 80 頁才是價值級別表。",
+    "chunk_ids": [
+      "I11-ASSET-003"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q003",
+    "cognitive_level": "comparison",
+    "question": "第 80 頁哪一級對應「極高度」潛在影響？",
+    "options": {
+      "A": "A 級",
+      "B": "B 級",
+      "C": "C 級",
+      "D": "D 級"
+    },
+    "correct_answer": "A",
+    "explanation": "A 級表列極高度；其餘依序為高度、中度、低度。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-004"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "comparison_chunk_id": "I11-ASSET-001"
+  },
+  {
+    "question_id": "I11-ASSET-Q004",
+    "cognitive_level": "comparison",
+    "question": "哪一組「級別—業務損害條件」符合第 80 頁？",
+    "options": {
+      "A": "B—持續一星期（含）以上",
+      "B": "A—持續一天（含）以上",
+      "C": "C—持續一個月（含）以上",
+      "D": "D—持續一星期（含）以上"
+    },
+    "correct_answer": "A",
+    "explanation": "表格的 A、B、C 列分別是一個月、一星期、一天（含）以上；D 未列時間門檻。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-004",
+      "I11-ASSET-005",
+      "I11-ASSET-006",
+      "I11-ASSET-007"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "comparison_chunk_id": "I11-ASSET-001"
+  },
+  {
+    "question_id": "I11-ASSET-Q005",
+    "cognitive_level": "distinction",
+    "question": "對 D 級的描述何者最符合來源？",
+    "options": {
+      "A": "意外事件不影響業務工作或營運，潛在影響低度",
+      "B": "一定停工少於一天",
+      "C": "涉及國家安全，影響極高度",
+      "D": "一定停工滿一星期"
+    },
+    "correct_answer": "A",
+    "explanation": "第 80 頁以不影響業務工作或營運描述 D，未設天數門檻。",
+    "chunk_ids": [
+      "I11-ASSET-007"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q006",
+    "cognitive_level": "scenario",
+    "question": "某來源示例中的資訊或系統符合地方縣市級社會秩序範圍，且業務推動損害達一天（含）以上；應先對照哪一列？",
+    "options": {
+      "A": "A 級",
+      "B": "B 級",
+      "C": "C 級",
+      "D": "D 級"
+    },
+    "correct_answer": "C",
+    "explanation": "這是依第 80 頁 C 級整列條件編寫的原創情境。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-006"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q007",
+    "cognitive_level": "scenario",
+    "question": "團隊已有資產清冊，下一步想依資產特性套用不同管控，應先做什麼？",
+    "options": {
+      "A": "分類群組",
+      "B": "直接刪除清冊",
+      "C": "把所有資產固定列 A 級",
+      "D": "略過更新流程"
+    },
+    "correct_answer": "A",
+    "explanation": "第 78 頁圖示將分類群組放在差異化管控之前。",
+    "chunk_ids": [
+      "I11-ASSET-002"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q008",
+    "cognitive_level": "comparison",
+    "question": "來源表中 B 級與 C 級的潛在影響標籤分別為何？",
+    "options": {
+      "A": "高度、中度",
+      "B": "極高度、高度",
+      "C": "中度、低度",
+      "D": "低度、極高度"
+    },
+    "correct_answer": "A",
+    "explanation": "第 80 頁 B 為高度、C 為中度。",
+    "chunk_ids": [
+      "I11-ASSET-001",
+      "I11-ASSET-005",
+      "I11-ASSET-006"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review",
+    "comparison_chunk_id": "I11-ASSET-001"
+  },
+  {
+    "question_id": "I11-ASSET-Q009",
+    "cognitive_level": "distinction",
+    "question": "以下何者是第 79 頁清冊範例的欄位，而非第 80 頁的影響等級？",
+    "options": {
+      "A": "保管單位",
+      "B": "極高度",
+      "C": "高度",
+      "D": "中度"
+    },
+    "correct_answer": "A",
+    "explanation": "保管單位是清冊欄位，其他三項是分類表的潛在影響標籤。",
+    "chunk_ids": [
+      "I11-ASSET-003",
+      "I11-ASSET-001"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  },
+  {
+    "question_id": "I11-ASSET-Q010",
+    "cognitive_level": "scenario",
+    "question": "清冊一直未更新，導致新設備沒有被分類。依第 78 頁圖示，最直接缺少哪個管理要求？",
+    "options": {
+      "A": "維持清冊正確性並設計更新流程",
+      "B": "直接把設備視為 D 級",
+      "C": "停止資產控管",
+      "D": "把清冊當作考古題"
+    },
+    "correct_answer": "A",
+    "explanation": "第 78 頁明列清冊正確性與更新流程；情境為原創。",
+    "chunk_ids": [
+      "I11-ASSET-002"
+    ],
+    "question_type": "single_choice_generated",
+    "review_status": "pending_review"
+  }
+]
