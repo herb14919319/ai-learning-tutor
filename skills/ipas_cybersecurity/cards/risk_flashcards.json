@@ -1,0 +1,8 @@
+[
+  {"card_id":"I11-RISK-F001","front":"在風險敘述中，『資產』回答哪個問題？","back":"要保護什麼、什麼可能承受衝擊。","chunk_ids":["I11-RISK-001"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-RISK-F002","front":"威脅與脆弱性有什麼不同？","back":"威脅是可能造成不利事件的來源或情境；脆弱性是資產上可被利用的弱點。來源關係是威脅利用脆弱性。","chunk_ids":["I11-RISK-002","I11-RISK-003"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-RISK-F003","front":"在來源的疾病類比中，病毒與抵抗力弱分別代表什麼？","back":"病毒代表威脅；抵抗力弱代表脆弱性。","chunk_ids":["I11-RISK-002","I11-RISK-003"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-RISK-F004","front":"衝擊與可能性如何區分？","back":"衝擊看事件發生後的後果；可能性看事件發生的機會。","chunk_ids":["I11-RISK-004"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-RISK-F005","front":"為什麼『有威脅』不等於已完整描述風險？","back":"還要辨識資產及其脆弱性，並考慮可能性與衝擊。這是來源第 92、95 頁的精簡安全關係。","chunk_ids":["I11-RISK-001","I11-RISK-002","I11-RISK-003","I11-RISK-004","I11-RISK-005"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-RISK-F006","front":"第 93 頁的較廣風險視角關心什麼？","back":"不確定性對組織目標的影響；不要把第 92 頁的安全示意圖當作唯一風險定義。","chunk_ids":["I11-RISK-005"],"content_origin":"generated_teaching","review_status":"pending_review"}
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "chapter_id": "I11-CIA",
+    "title": "資訊安全管理概論：CIA 三目標",
+    "order": 1,
+    "status": "phase1_slice",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_pages": [13, 15, 16, 17],
+    "teaching_file": "cia_teaching.md",
+    "chunk_file": "cia_chunks.json",
+    "card_file": "cards/cia_flashcards.json",
+    "question_file": "cia_questions.json",
+    "schema_file": "learning_chunk_schema_v0_1.json"
+  },
+  {
+    "chapter_id": "I11-RISK",
+    "title": "資訊安全管理概論：威脅、脆弱性與風險",
+    "order": 2,
+    "status": "phase2_slice",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_pages": [92, 93, 95],
+    "teaching_file": "risk_teaching.md",
+    "chunk_file": "risk_chunks.json",
+    "card_file": "cards/risk_flashcards.json",
+    "question_file": "risk_questions.json",
+    "schema_file": "learning_chunk_schema_v0_2.json"
+  },
+  {
+    "chapter_id": "I11-ASSESS",
+    "title": "資訊安全管理概論：風險評鑑三步驟",
+    "order": 3,
+    "status": "phase3_slice",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_pages": [103, 105],
+    "teaching_file": "assessment_teaching.md",
+    "chunk_file": "assessment_chunks.json",
+    "card_file": "cards/assessment_flashcards.json",
+    "question_file": "assessment_questions.json",
+    "schema_file": "learning_chunk_schema_v0_3.json"
+  }
+]

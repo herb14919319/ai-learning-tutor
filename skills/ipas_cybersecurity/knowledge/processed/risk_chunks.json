@@ -1,0 +1,105 @@
+[
+  {
+    "chunk_id": "I11-RISK-001",
+    "title": "資訊資產 Asset",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險的定義／資產",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [92, 95],
+      "source_title": ["風險的定義", "認識風險管理"],
+      "observations": ["第 92 頁把資產畫成脆弱性與衝擊所在的範圍，並在文字中說明組織資訊資產可能受到衝擊。", "第 95 頁以人作為資產的類比。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "資產是組織要保護、可能承受衝擊的對象。",
+      "explanation": "在教學情境中，BA 控制資料庫可視為要保護的資訊資產；這是生成示例，不是投影片原例。",
+      "exam_focus": "辨認風險敘述中的『要保護什麼』，不要把資產誤當威脅。",
+      "related_concepts": ["I11-RISK-002", "I11-RISK-003", "I11-RISK-005"],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-RISK-002",
+    "title": "威脅 Threat",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險的定義／威脅",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [92, 95],
+      "source_title": ["風險的定義", "認識風險管理"],
+      "observations": ["第 92 頁的圖示和文字把威脅放在利用脆弱性的位置。", "第 95 頁的類比把病毒標作威脅。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "威脅是可能利用弱點、導致不利事件的來源或情境。",
+      "explanation": "例如試圖利用弱密碼的攻擊者可作為教學情境中的威脅；此例不是來源投影片的原例。",
+      "exam_focus": "威脅是可能造成事件的來源，脆弱性是被利用的弱點。",
+      "related_concepts": ["I11-RISK-003", "I11-RISK-005"],
+      "review_status": "pending_review"
+    },
+    "relationships": [{"predicate": "exploits", "target_chunk_id": "I11-RISK-003"}]
+  },
+  {
+    "chunk_id": "I11-RISK-003",
+    "title": "脆弱性 Vulnerability",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險的定義／脆弱性",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [92, 95],
+      "source_title": ["風險的定義", "認識風險管理"],
+      "observations": ["第 92 頁把脆弱性標在資產範圍內，並畫出威脅利用它。", "第 95 頁以人體抵抗力弱作為脆弱性的類比。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "脆弱性是資產上可被威脅利用的弱點。",
+      "explanation": "弱密碼是生成教學示例中的系統脆弱性；它和試圖登入的攻擊者不是同一概念。",
+      "exam_focus": "看到『弱點、缺口、未補強之處』要先想到脆弱性。",
+      "related_concepts": ["I11-RISK-001", "I11-RISK-002", "I11-RISK-005"],
+      "review_status": "pending_review"
+    },
+    "relationships": [{"predicate": "belongs_to", "target_chunk_id": "I11-RISK-001"}]
+  },
+  {
+    "chunk_id": "I11-RISK-004",
+    "title": "衝擊與可能性 Impact / Likelihood",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險的定義／衝擊與可能性",
+    "chunk_type": "comparison",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [92, 93, 95],
+      "source_title": ["風險的定義", "認識風險管理"],
+      "observations": ["第 92 頁區分受到的衝擊與發生的可能性，並說風險由兩者結合判斷。", "第 93 頁說明風險可用潛在事件的可能性與影響來描述。", "第 95 頁的病毒類比示範脆弱性與流感盛行程度變化會影響風險。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "衝擊問『發生後多嚴重』；可能性問『多可能發生』。",
+      "explanation": "同一 IoT 服務故障的後果與發生機會是不同評估面向。這是生成的工程類比；來源只說兩者共同影響風險，沒有提供通用數值公式。",
+      "exam_focus": "不要把衝擊和可能性當成同義詞，也不要把簡化關係寫成來源未給的固定計算式。",
+      "related_concepts": ["I11-RISK-005"],
+      "review_status": "pending_review"
+    },
+    "relationships": [{"predicate": "contributes_to", "target_chunk_id": "I11-RISK-005"}]
+  },
+  {
+    "chunk_id": "I11-RISK-005",
+    "title": "風險 Risk：關係整合",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險的定義／概念關係",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [92, 93, 95],
+      "source_title": ["風險的定義", "認識風險管理"],
+      "observations": ["第 92 頁把威脅、脆弱性、資產、衝擊、可能性連到風險，並說應在規劃資安作為前先評估風險。", "第 93 頁引用 ISO 31000:2018，從組織目標的不確定影響描述風險。", "第 95 頁再次用精簡定義和疾病類比說明威脅利用資產脆弱性造成衝擊的可能性。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "風險是多個條件共同作用下，組織目標或資產可能受影響的情況。",
+      "explanation": "先辨識要保護的資產、可能的威脅與可被利用的脆弱性，再分辨可能性和衝擊。這是教學整理，不把來源中的簡化安全圖誤作唯一風險定義。",
+      "exam_focus": "題目若問風險，不能只回答『有威脅』或『有漏洞』；也要看可能發生的後果及機會。",
+      "related_concepts": ["I11-RISK-001", "I11-RISK-002", "I11-RISK-003", "I11-RISK-004"],
+      "review_status": "pending_review"
+    }
+  }
+]

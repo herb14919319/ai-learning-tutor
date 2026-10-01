@@ -68,6 +68,7 @@ from runtime_telemetry import (
     write_runtime_telemetry,
 )
 from skills import ipas_ai_application_planner as ipas_ai_skill
+from skills import ipas_cybersecurity as ipas_cyber_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
 from skills import little_tree as little_tree_skill
 
@@ -866,6 +867,50 @@ def ipas_ai_answer():
         return ipas_ai_api_error("internal_error", "批改失敗，請稍後再試。", 500)
 
     return jsonify({"ok": True, **result})
+
+
+@app.get("/ipas/cybersecurity")
+def ipas_cybersecurity_page():
+    try:
+        chapter_index = ipas_cyber_skill.get_chapters()
+        return render_template(
+            "ipas_cybersecurity.html",
+            course_info=ipas_cyber_skill.get_course_info(),
+            topics=[
+                {
+                    "chapter": ipas_cyber_skill.get_chapter(item["chapter_id"]),
+                    "cards": ipas_cyber_skill.get_flashcards(item["chapter_id"]),
+                    "questions": ipas_cyber_skill.get_questions(item["chapter_id"]),
+                }
+                for item in chapter_index
+            ],
+            error_message=None,
+        )
+    except ipas_cyber_skill.DataUnavailableError:
+        logger.warning("iPAS cybersecurity CIA materials are unavailable")
+        return render_template(
+            "ipas_cybersecurity.html", course_info={}, topics=[],
+            error_message="資安教材目前無法載入。",
+        ), 503
+
+
+@app.post("/api/ipas/cybersecurity/answer")
+def ipas_cybersecurity_answer():
+    payload = request.get_json(silent=True) if request.is_json else None
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "invalid_json", "message": "請提供有效的 JSON 請求。"}), 400
+    question_id = payload.get("question_id")
+    selected = payload.get("answer")
+    if not isinstance(question_id, str) or not question_id.strip():
+        return jsonify({"ok": False, "error": "missing_question_id", "message": "缺少 question_id。"}), 400
+    if not isinstance(selected, str) or selected.strip().upper() not in {"A", "B", "C", "D"}:
+        return jsonify({"ok": False, "error": "invalid_answer", "message": "answer 必須是 A、B、C 或 D。"}), 400
+    try:
+        return jsonify({"ok": True, **ipas_cyber_skill.submit_answer(question_id, selected)})
+    except ValueError:
+        return jsonify({"ok": False, "error": "question_not_found", "message": "找不到指定的題目。"}), 404
+    except ipas_cyber_skill.DataUnavailableError:
+        return jsonify({"ok": False, "error": "skill_unavailable", "message": "資安教材目前無法使用。"}), 503
 
 
 @app.get("/ipas/net-zero-planner")

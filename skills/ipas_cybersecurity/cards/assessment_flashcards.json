@@ -1,0 +1,8 @@
+[
+  {"card_id":"I11-ASSESS-F001","front":"一次風險評鑑的三步驟順序是什麼？","back":"風險識別 → 風險分析 → 風險評估。第 105 頁以箭頭明示。","chunk_ids":["I11-ASSESS-001","I11-ASSESS-002","I11-ASSESS-003","I11-ASSESS-004"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-ASSESS-F002","front":"風險識別要先找出哪些內容？","back":"資產、威脅與脆弱性、現有控制措施和可能後果。","chunk_ids":["I11-ASSESS-002"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-ASSESS-F003","front":"風險分析處理後果與可能性後，要得到什麼？","back":"風險等級。來源第 105 頁把它列在第二步。","chunk_ids":["I11-ASSESS-003"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-ASSESS-F004","front":"風險評估這一步回答什麼問題？","back":"風險是否在可接受等級內。","chunk_ids":["I11-ASSESS-004"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-ASSESS-F005","front":"風險評鑑與風險評估是同一層級嗎？","back":"不是。風險評鑑是整個階段；風險評估是識別、分析之後的第三步。","chunk_ids":["I11-ASSESS-001","I11-ASSESS-004"],"content_origin":"generated_teaching","review_status":"pending_review"},
+  {"card_id":"I11-ASSESS-F006","front":"第 103 頁說評鑑可反覆進行，是否推翻第 105 頁三步驟順序？","back":"沒有。一次評鑑內仍先識別、再分析、後評估；整體評鑑可以重做。","chunk_ids":["I11-ASSESS-001","I11-ASSESS-002","I11-ASSESS-003","I11-ASSESS-004"],"content_origin":"generated_teaching","review_status":"pending_review"}
+]

@@ -378,7 +378,7 @@ class ExistingSkillMigrationTest(unittest.TestCase):
         active_ids = [metadata.name for metadata in list_skills()]
         self.assertEqual(
             active_ids,
-            ["ipas_ai_application_planner", "hungyi_lee"],
+            ["ipas_cybersecurity", "ipas_ai_application_planner", "hungyi_lee"],
         )
         hungyi = get_skill_metadata("hungyi_lee")
         ipas = get_skill_metadata("ipas_ai_application_planner")

@@ -1,0 +1,9 @@
+{
+  "schema_version": "0.1",
+  "description": "One semantic learning unit. Source evidence is separate from generated teaching interpretation.",
+  "required": ["chunk_id", "title", "chapter", "section", "chunk_type", "source_evidence", "teaching_interpretation"],
+  "chunk_types": ["concept", "definition", "comparison", "process", "visual", "exam_point", "example"],
+  "source_evidence_required": ["source_file", "source_pages", "source_title", "observations"],
+  "teaching_interpretation_required": ["core_concept", "explanation", "exam_focus", "related_concepts"],
+  "locator_note": "source_pages are one-based PDF page numbers, not generated slide IDs"
+}

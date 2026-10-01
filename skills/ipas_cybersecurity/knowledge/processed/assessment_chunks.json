@@ -1,0 +1,84 @@
+[
+  {
+    "chunk_id": "I11-ASSESS-001",
+    "title": "風險評鑑：三步驟總覽",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險管理的流程／風險評鑑階段",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [103, 105],
+      "source_title": ["風險管理的流程 - 風險評鑑階段", "風險管理的流程 - 風險評鑑階段詳細風險評鑑"],
+      "observations": ["第 103 頁說明風險評鑑依既定範圍反覆進行，目的包括識別風險與決定處理優先順序。", "第 105 頁以垂直箭頭明列風險識別、風險分析、風險評估的順序。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "一次風險評鑑的主線是先識別、再分析、最後評估可接受程度。",
+      "explanation": "這是同一評鑑階段內的三步驟，不等於第 99 頁完整的風險管理生命週期；第 103 頁也提醒評鑑可以反覆進行。",
+      "exam_focus": "不要把『風險評鑑』和最後一步『風險評估』混成同一層級。",
+      "related_concepts": ["I11-ASSESS-002", "I11-ASSESS-003", "I11-ASSESS-004"],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-ASSESS-002",
+    "title": "第一步：風險識別",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險評鑑／風險識別",
+    "chunk_type": "process",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [103, 105],
+      "source_title": ["風險管理的流程 - 風險評鑑階段", "風險管理的流程 - 風險評鑑階段詳細風險評鑑"],
+      "observations": ["第 103 頁把識別資訊資產的風險列為風險評鑑目的之一。", "第 105 頁將風險識別列為第一個方塊，並列出資產、威脅與脆弱性、現有控制措施及後果的識別。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "先找出要評鑑的資產和可能的風險情境。",
+      "explanation": "先盤點資產、威脅、弱點、現有控制和可能後果，才能在下一步分析大小；BA 設備清單是生成的工程示例。",
+      "exam_focus": "識別回答『有哪些』，還不是估算風險等級或決定可接受性。",
+      "related_concepts": ["I11-ASSESS-001", "I11-ASSESS-003"],
+      "review_status": "pending_review"
+    },
+    "relationships": [{"predicate": "precedes", "target_chunk_id": "I11-ASSESS-003"}]
+  },
+  {
+    "chunk_id": "I11-ASSESS-003",
+    "title": "第二步：風險分析",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險評鑑／風險分析",
+    "chunk_type": "process",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [105],
+      "source_title": ["風險管理的流程 - 風險評鑑階段詳細風險評鑑"],
+      "observations": ["第 105 頁將風險分析列為第二個方塊，內容包括後果評鑑、事件可能性評鑑，以及決定風險等級。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "對已識別的情境分析後果與可能性，得到風險等級。",
+      "explanation": "在生成示例中，可估計 BA 控制器設定遭改動的後果與發生機會；來源此頁未提供通用數值公式。",
+      "exam_focus": "分析回答『有多大』，不同於前一步列出情境，也不同於下一步判斷可接受性。",
+      "related_concepts": ["I11-ASSESS-002", "I11-ASSESS-004"],
+      "review_status": "pending_review"
+    },
+    "relationships": [{"predicate": "precedes", "target_chunk_id": "I11-ASSESS-004"}]
+  },
+  {
+    "chunk_id": "I11-ASSESS-004",
+    "title": "第三步：風險評估",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "風險評鑑／風險評估",
+    "chunk_type": "process",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [105],
+      "source_title": ["風險管理的流程 - 風險評鑑階段詳細風險評鑑"],
+      "observations": ["第 105 頁將風險評估列為第三個方塊，並把決定風險可接受等級列為其內容。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "依分析結果判斷風險是否落在可接受範圍。",
+      "explanation": "在生成示例中，團隊依已得到的風險等級判斷 BA 控制器風險是否可接受，再考慮後續處理；後續處理不是本三步驟切片的第四步。",
+      "exam_focus": "評估回答『可接受嗎』，不要與第二步的風險等級分析互換。",
+      "related_concepts": ["I11-ASSESS-001", "I11-ASSESS-003"],
+      "review_status": "pending_review"
+    }
+  }
+]

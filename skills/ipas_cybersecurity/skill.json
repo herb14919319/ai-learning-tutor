@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "skill_id": "ipas_cybersecurity",
+  "display_name": "iPAS Cybersecurity Beginner",
+  "description": "Source-grounded CIA, risk relationship, and risk assessment process slices for iPAS junior Cybersecurity Engineer.",
+  "status": "active",
+  "skill_type": "runtime",
+  "entrypoint": "skills.ipas_cybersecurity",
+  "priority": 190,
+  "aliases": ["iPAS Cybersecurity Beginner", "iPAS 資訊安全工程師"],
+  "domains": ["資訊安全工程師", "資安工程師"],
+  "keywords": ["CIA Triad", "資訊安全三目標", "CIA 三目標", "I11-CIA", "I11-RISK", "I11-ASSESS", "資訊安全風險", "資安風險", "風險評鑑流程"],
+  "capabilities": ["concept_review", "flashcards", "quiz", "source_traceability"],
+  "content_root": "knowledge/processed",
+  "chapter_index": "chapter_index.json"
+}

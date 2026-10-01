@@ -1,0 +1,78 @@
+[
+  {
+    "chunk_id": "I11-CIA-001",
+    "title": "CIA 三目標總覽",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊安全管理概念／資訊安全的三個目標",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [13, 15, 16],
+      "source_title": ["資訊安全的目標", "資訊安全的三個目標"],
+      "observations": ["第 13 頁明列機密性、完整性、可用性為資訊安全目標。", "第 15 頁以並列三色方塊呈現三個核心概念；第 16 頁分別補充三者涵義。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "CIA 是三種不同的保護目標，判斷事件時先看哪一種目標受影響。",
+      "explanation": "機密性關心誰能看見，完整性關心資料是否正確且未被任意更動，可用性關心需要時是否取得到服務。",
+      "exam_focus": "不要把資料外洩、資料被竄改、服務中斷視為同一種失效。",
+      "related_concepts": ["I11-CIA-002", "I11-CIA-003", "I11-CIA-004"]
+    }
+  },
+  {
+    "chunk_id": "I11-CIA-002",
+    "title": "機密性 Confidentiality",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊安全的目標／機密性保護",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [13, 16, 17],
+      "source_title": ["資訊安全的目標", "資訊安全的三個目標", "保護資訊 C.I.A. 不同的技術與方法"],
+      "observations": ["第 13 頁說明資訊應保持保密，只讓有合法權限的人使用。", "第 16 頁說明防止機密資訊外洩；第 17 頁列出存取控制與加解密技術作為機密性保護方法。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "機密性是限制未授權者接觸資訊。",
+      "explanation": "例如 BA/IBMS 設備維護帳號只能讀取被授權的樓層資料；權限與加密有助於避免外洩。此設備情境是教學示例。",
+      "exam_focus": "未授權讀取或資料外洩主要對應機密性；不能只因系統仍在線上就認為安全。",
+      "related_concepts": ["I11-CIA-001", "I11-CIA-003"]
+    }
+  },
+  {
+    "chunk_id": "I11-CIA-003",
+    "title": "完整性 Integrity",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊安全的目標／完整性保護",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [13, 16, 17],
+      "source_title": ["資訊安全的目標", "資訊安全的三個目標", "保護資訊 C.I.A. 不同的技術與方法"],
+      "observations": ["第 13 頁把完整性連到資訊正確性及避免非法更改。", "第 16 頁補充人為惡意竄改、自然雜訊干擾、假冒或未授權處理等情況；第 17 頁列出存取控制、雜湊函數與數位簽章。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "完整性是讓資訊或系統維持正確、未遭未授權更改。",
+      "explanation": "例如資料庫溫度設定值若被改成錯誤數字，即使只有授權者能看見，完整性仍可能失守。此資料庫情境是教學示例。",
+      "exam_focus": "問到竄改、資料正確性或驗證內容未變，優先想到完整性；雜湊可用於變更偵測，但本切片不展開密碼學細節。",
+      "related_concepts": ["I11-CIA-001", "I11-CIA-002", "I11-CIA-004"]
+    }
+  },
+  {
+    "chunk_id": "I11-CIA-004",
+    "title": "可用性 Availability",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "資訊安全的目標／可用性保護",
+    "chunk_type": "definition",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [13, 16, 17],
+      "source_title": ["資訊安全的目標", "資訊安全的三個目標", "保護資訊 C.I.A. 不同的技術與方法"],
+      "observations": ["第 13 頁說明資訊在需要時能正常使用。", "第 16 頁強調資訊與處理能力的可獲得性，以及避免故障或惡意阻斷服務；第 17 頁列出備份、容量規劃、存取控制、容錯及負載平衡等方法。"]
+    },
+    "teaching_interpretation": {
+      "core_concept": "可用性是授權使用者在需要時能取得資訊與服務。",
+      "explanation": "例如 IoT 告警伺服器故障使值班人員無法收到警報，即使資料沒有外洩或被修改，可用性仍受損。此伺服器情境是教學示例。",
+      "exam_focus": "停機、阻斷服務和無法及時取得資訊主要對應可用性；備份與容錯是典型措施。",
+      "related_concepts": ["I11-CIA-001", "I11-CIA-003"]
+    }
+  }
+]

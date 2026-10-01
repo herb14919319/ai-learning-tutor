@@ -1,0 +1,8 @@
+[
+  {"card_id":"I11-CIA-F001","front":"CIA 的三個目標各在保護什麼？","back":"機密性：限制未授權接觸；完整性：保持資訊正確且未被任意更動；可用性：需要時取得到資訊或服務。","chunk_ids":["I11-CIA-001","I11-CIA-002","I11-CIA-003","I11-CIA-004"],"content_origin":"generated_teaching"},
+  {"card_id":"I11-CIA-F002","front":"未授權者讀到設備資料，最直接影響哪個 CIA 目標？","back":"機密性。核心是未授權接觸或外洩。","chunk_ids":["I11-CIA-002"],"content_origin":"generated_teaching"},
+  {"card_id":"I11-CIA-F003","front":"資料庫設定值被悄悄改錯，最直接影響哪個 CIA 目標？","back":"完整性。核心是內容正確性與防止未授權更動。","chunk_ids":["I11-CIA-003"],"content_origin":"generated_teaching"},
+  {"card_id":"I11-CIA-F004","front":"伺服器故障，授權使用者無法取得服務，最直接影響哪個 CIA 目標？","back":"可用性。核心是需要時能取得資訊和服務。","chunk_ids":["I11-CIA-004"],"content_origin":"generated_teaching"},
+  {"card_id":"I11-CIA-F005","front":"存取控制只能保護機密性嗎？","back":"不能。來源第 17 頁也把存取控制列為完整性與可用性的保護方法；判題要看受影響的目標。","chunk_ids":["I11-CIA-002","I11-CIA-003","I11-CIA-004"],"content_origin":"generated_teaching"},
+  {"card_id":"I11-CIA-F006","front":"如何用三個短問句快速區分 CIA？","back":"誰看到了？內容被改了嗎？需要時用得到嗎？這是教學記憶線索。","chunk_ids":["I11-CIA-001"],"content_origin":"generated_teaching"}
+]
