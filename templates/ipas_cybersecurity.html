@@ -36,6 +36,7 @@
       <section aria-labelledby="teaching-{{ chapter.chapter_id }}">
         <h2 id="teaching-{{ chapter.chapter_id }}">{{ chapter.title }}</h2>
         <p class="source">教學稿審核狀態：{{ chapter.teaching_review_status }}</p>
+        {% if chapter.teaching_blocked_by %}<p class="source">教學稿因引用需修訂或已退回的 Learning Chunk 暫停顯示：{{ chapter.teaching_blocked_by | join('、') }}</p>{% endif %}
         {% if chapter.markdown %}<details><summary>閱讀完整教學稿</summary><pre>{{ chapter.markdown }}</pre></details>{% endif %}
         <p class="source">原始教材：{{ chapter.source_file }}，PDF 第 {{ chapter.source_pages | join('、') }} 頁。教學稿是衍生內容。</p>
       </section>

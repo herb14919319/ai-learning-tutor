@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable
 
-from .review import ReviewError, effective_status, load_ledger
+from .review import ReviewError, digest, effective_status, generated_payload, load_ledger, status_with_dependencies
 
 ROOT = Path(__file__).resolve().parent
 PROCESSED = ROOT / "knowledge" / "processed"
@@ -270,7 +270,12 @@ class IpasCybersecuritySkill:
         if topic is None:
             raise ValueError(f"找不到資安切片：{chapter}")
         reviews = self._load()["reviews"]
-        teaching_status = effective_status("teaching", topic["index"]["chapter_id"], topic["teaching"], reviews)
+        teaching_dependencies = {
+            chunk["chunk_id"]: digest(generated_payload("chunk", chunk)) for chunk in topic["chunks"]
+        }
+        teaching_status = status_with_dependencies(
+            "teaching", topic["index"]["chapter_id"], topic["teaching"], reviews, teaching_dependencies
+        )
         markdown = topic["teaching"] if teaching_status in {"pending_review", "reviewed"} else ""
         markdown = markdown.replace("Review status: `pending_review`", f"Review status: `{teaching_status}`")
         visible_chunks = []
@@ -280,7 +285,12 @@ class IpasCybersecuritySkill:
                 chunk = deepcopy(original)
                 chunk["teaching_interpretation"]["review_status"] = status
                 visible_chunks.append(chunk)
-        return {**topic["index"], "markdown": markdown, "teaching_review_status": teaching_status, "chunks": visible_chunks}
+        hidden_chunks = sorted({item["chunk_id"] for item in topic["chunks"]}
+                               - {item["chunk_id"] for item in visible_chunks})
+        if hidden_chunks:
+            markdown = ""
+        return {**topic["index"], "markdown": markdown, "teaching_review_status": teaching_status,
+                "teaching_blocked_by": hidden_chunks, "chunks": visible_chunks}
 
     def get_flashcards(self, chapter: str = DEFAULT_CHAPTER) -> list[dict[str, Any]]:
         topic = self._load()["topics"].get(str(chapter).upper())
@@ -290,7 +300,9 @@ class IpasCybersecuritySkill:
         visible_ids = {item["chunk_id"] for item in self.get_chapter(chapter)["chunks"]}
         result = []
         for item in topic["cards"]:
-            status = effective_status("card", item["card_id"], item, reviews)
+            dependencies = {chunk_id: digest(generated_payload("chunk", self._load()["chunks"][chunk_id]))
+                            for chunk_id in item["chunk_ids"]}
+            status = status_with_dependencies("card", item["card_id"], item, reviews, dependencies)
             if status in {"pending_review", "reviewed"} and set(item["chunk_ids"]) <= visible_ids:
                 result.append({**item, "review_status": status})
         return result
@@ -304,7 +316,11 @@ class IpasCybersecuritySkill:
         return [
             {**{key: value for key, value in item.items() if key not in {"correct_answer", "explanation"}}, "review_status": status}
             for item in topic["questions"]
-            if (status := effective_status("question", item["question_id"], item, reviews)) in {"pending_review", "reviewed"}
+            if (status := status_with_dependencies(
+                "question", item["question_id"], item, reviews,
+                {chunk_id: digest(generated_payload("chunk", self._load()["chunks"][chunk_id]))
+                 for chunk_id in item["chunk_ids"]}
+            )) in {"pending_review", "reviewed"}
             and set(item["chunk_ids"]) <= visible_ids
         ]
 
@@ -328,7 +344,8 @@ class IpasCybersecuritySkill:
             }
             for chunk_id in question["chunk_ids"]
         ]
-        review_status = effective_status("question", question["question_id"], question, self._load()["reviews"])
+        review_status = next(item["review_status"] for item in self.get_questions(topic_id)
+                             if item["question_id"] == question["question_id"])
         return {"question_id": question["question_id"], "selected_answer": answer, "correct": answer == question["correct_answer"], "correct_answer": question["correct_answer"], "explanation": question["explanation"], "chunk_ids": question["chunk_ids"], "source_references": source_references, "review_status": review_status}
 
     def get_sources(self) -> dict[str, Any]:
@@ -348,10 +365,10 @@ class IpasCybersecuritySkill:
             (("衝擊", "impact", "可能性", "likelihood"), "I11-RISK-004"),
             (("風險評鑑", "風險識別", "風險分析", "risk assessment"), "I11-ASSESS-001"),
             (("資訊資產清冊", "資產清冊", "價值分類", "資產分類", "asset classification"), "I11-ASSET-001"),
-            (("A 級資產", "A級資產"), "I11-ASSET-004"),
-            (("B 級資產", "B級資產"), "I11-ASSET-005"),
-            (("C 級資產", "C級資產"), "I11-ASSET-006"),
-            (("D 級資產", "D級資產"), "I11-ASSET-007"),
+            (("a 級資產", "a級資產"), "I11-ASSET-004"),
+            (("b 級資產", "b級資產"), "I11-ASSET-005"),
+            (("c 級資產", "c級資產"), "I11-ASSET-006"),
+            (("d 級資產", "d級資產"), "I11-ASSET-007"),
             (("風險", "risk"), "I11-RISK-005"),
             (("資產", "asset"), "I11-RISK-001"),
             (("cia", "三目標", "資訊安全工程師"), "I11-CIA-001"),

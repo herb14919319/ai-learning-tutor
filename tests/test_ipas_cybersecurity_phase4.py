@@ -36,7 +36,8 @@ class CybersecurityPhase4Test(unittest.TestCase):
         self.assertEqual([cell["value"] for cell in matrix["dimensions"][1]["values"][:3]],
                          ["持續一個月（含）以上", "持續一星期（含）以上", "持續一天（含）以上"])
         self.assertTrue(all(cell["source_page"] == 80 for dimension in matrix["dimensions"] for cell in dimension["values"]))
-        self.assertTrue(all(chunk["teaching_interpretation"]["review_status"] == "pending_review" for chunk in chapter["chunks"]))
+        self.assertTrue(all(chunk["teaching_interpretation"]["review_status"] in {"pending_review", "reviewed"}
+                            for chunk in chapter["chunks"]))
         self.assertEqual([len(self.skill.get_chapter(name)["chunks"]) for name in ("I11-CIA", "I11-RISK", "I11-ASSESS")],
                          [4, 5, 4])
 
@@ -45,7 +46,8 @@ class CybersecurityPhase4Test(unittest.TestCase):
         cards = self.skill.get_flashcards("I11-ASSET")
         questions = self.skill.get_questions("I11-ASSET")
         self.assertEqual((len(cards), len(questions)), (10, 10))
-        self.assertTrue(all(set(item["chunk_ids"]) <= ids and item["review_status"] == "pending_review" for item in cards + questions))
+        self.assertTrue(all(set(item["chunk_ids"]) <= ids and item["review_status"] in {"pending_review", "reviewed"}
+                            for item in cards + questions))
         self.assertTrue(all("correct_answer" not in item and "explanation" not in item for item in questions))
         self.assertEqual({item["cognitive_level"] for item in questions}, {"recall", "distinction", "comparison", "scenario"})
         client = main.app.test_client()
@@ -107,6 +109,12 @@ class CybersecurityPhase4Test(unittest.TestCase):
             self.assertTrue(accepted["reviewed_at"])
             record_decision("question", "I11-ASSET-Q001", "revise", "收緊題幹條件", processed, cards)
             self.assertNotIn("I11-ASSET-Q001", {q["question_id"] for q in IpasCybersecuritySkill(processed_dir=processed, cards_dir=cards).get_questions("I11-ASSET")})
+            with self.assertRaisesRegex(ReviewError, "Revise generated content"):
+                record_decision("question", "I11-ASSET-Q001", "accept", "複核完成", processed, cards)
+            revised_path = processed / "asset_questions.json"
+            revised_questions = json.loads(revised_path.read_text(encoding="utf-8"))
+            revised_questions[0]["question"] += "（明確條件）"
+            revised_path.write_text(json.dumps(revised_questions, ensure_ascii=False), encoding="utf-8")
             record_decision("question", "I11-ASSET-Q001", "accept", "複核完成", processed, cards)
             revised = record_decision("card", "I11-ASSET-F001", "revise", "請重寫卡片背面", processed, cards)
             self.assertEqual(revised["note"], "請重寫卡片背面")

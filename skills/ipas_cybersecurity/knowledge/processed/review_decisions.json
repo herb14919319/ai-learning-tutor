@@ -1,1 +1,687 @@
-[]
+[
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-001",
+    "decision": "accept",
+    "content_sha256": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+    "reviewed_content": {
+      "core_concept": "先辨認並登錄資產，再依來源表格的影響條件區分 A、B、C、D 級。",
+      "explanation": "這四級是第 80 頁所示的來源分類例，不應當作所有組織通用的法定級距。",
+      "exam_focus": "同時看受影響範圍、業務持續損害條件與潛在影響等級，不能只背 A 到 D 字母。",
+      "related_concepts": [
+        "I11-ASSET-002",
+        "I11-ASSET-003",
+        "I11-ASSET-004",
+        "I11-ASSET-005",
+        "I11-ASSET-006",
+        "I11-ASSET-007"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:52:49+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-002",
+    "decision": "accept",
+    "content_sha256": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7",
+    "reviewed_content": {
+      "core_concept": "資產管理是清冊、分類、控管和更新的持續循環。",
+      "explanation": "清冊錯漏會讓後面的分類與控管失準；來源也舉核心設備備援、內部機密資料不得任意複製等差異化控管例。",
+      "exam_focus": "清冊需要更新，分類後的管控應隨資產特性而異。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-003"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:53:49+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-003",
+    "decision": "accept",
+    "content_sha256": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7",
+    "reviewed_content": {
+      "core_concept": "資產清冊記錄辨識、權責與價值資訊。",
+      "explanation": "來源展示的是空白清冊樣式；欄位能把資產類別、責任歸屬與價值記錄連起來。",
+      "exam_focus": "不要把資產價值分級表誤認為清冊欄位表。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-002"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:54:36+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-004",
+    "decision": "accept",
+    "content_sha256": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+    "reviewed_content": {
+      "core_concept": "A 級在本表對應極高度潛在影響。",
+      "explanation": "來源列的是國家安全範圍與一個月（含）以上的業務損害條件。",
+      "exam_focus": "區分 A 級與 B 級時，同時核對範圍、時間與影響標籤。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-005"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:56:32+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-005",
+    "decision": "accept",
+    "content_sha256": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+    "reviewed_content": {
+      "core_concept": "B 級在本表對應高度潛在影響。",
+      "explanation": "來源列的是社會、民生與隱私範圍，以及一星期（含）以上的業務損害條件。",
+      "exam_focus": "B 級不是單靠『隱私』二字決定；需結合表格整列條件。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-004",
+        "I11-ASSET-006"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:57:40+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-006",
+    "decision": "accept",
+    "content_sha256": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b",
+    "reviewed_content": {
+      "core_concept": "C 級在本表對應中度潛在影響。",
+      "explanation": "來源列的是地方縣市級與人民生命財產範圍，以及一天（含）以上的業務損害條件。",
+      "exam_focus": "C 級與 B 級的範圍、期間及影響標籤都不同。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-005",
+        "I11-ASSET-007"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:58:56+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-ASSET-007",
+    "decision": "accept",
+    "content_sha256": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f",
+    "reviewed_content": {
+      "core_concept": "D 級在本表對應低度潛在影響。",
+      "explanation": "來源以不影響業務工作或營運描述 D 級，沒有給一個可與 A–C 對稱的天數。",
+      "exam_focus": "不要自行補出 D 級的時間門檻。",
+      "related_concepts": [
+        "I11-ASSET-001",
+        "I11-ASSET-006"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-01T01:59:58+00:00",
+    "note": ""
+  },
+  {
+    "kind": "teaching",
+    "asset_id": "I11-ASSET",
+    "decision": "revise",
+    "content_sha256": "62b208a9faa78f704aef06294ac1bdd6f97fbccb5472d6f9e289f9d87b121b2b",
+    "reviewed_content": "# I11 資訊安全管理概論：資訊資產清冊與價值分類\n\n> Review status: `pending_review`。以下是生成教學整理，不是來源逐字稿。來源：`iPAS_資訊安全管理概論_PART_I.pdf`，PDF 第 77–80 頁；對應 `I11-ASSET-001`–`007`。\n\n## 從資產辨認到維護清冊\n\n第 77 頁列出實體、軟體、電子資訊、書面文件、服務、人員六類資產。第 78 頁把清冊蒐集、分類群組、依類別控管及管理機制畫成循環，並要求保持清冊正確、設計更新流程。`I11-ASSET-001`、`002`\n\n第 79 頁的清冊範例記錄資產編號、類別、名稱、說明、權責／保管／使用單位及資產價值。這是登錄用的表；第 80 頁則是比較價值級別的表。`I11-ASSET-003`\n\n## 同一張表的三個比較維度\n\n| 來源級別 | 分類內容所述影響範圍 | 業務損害條件 | 潛在影響 |\n| --- | --- | --- | --- |\n| A | 國家安全的重要機敏資訊或系統 | 持續一個月（含）以上 | 極高度 |\n| B | 社會秩序、民生體系及民眾隱私的機敏資訊或系統 | 持續一星期（含）以上 | 高度 |\n| C | 地方縣市級社會秩序、人民生命財產的重要資訊或系統 | 持續一天（含）以上 | 中度 |\n| D | 表中未列具體範圍；描述意外事件不影響業務工作或營運 | 未列時間門檻 | 低度 |\n\n此表是對來源第 80 頁的**教學摘要**；完整分類條件仍以原始 PDF 為準。`I11-ASSET-001`、`004`–`007`\n\n**原創情境**：若一份清冊漏掉新設備，先補登與確認權責，再依適用的分類條件判定並實施管控。這個情境不是投影片案例，也不能僅憑單一時間線索替真實組織決定級別。\n\n考點：D 列沒有「少於一天」的文字，不能自行填入；A、B、C 的期間也要與其範圍及影響標籤一起讀。所有生成解釋、卡片和練習題均待人工審核。",
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-002": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7",
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7",
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b",
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:17:54+00:00",
+    "note": "Owner instruction: update the final sentence to reflect the actual review lifecycle; do not imply teaching approval before explicit acceptance; preserve all other teaching content."
+  },
+  {
+    "kind": "teaching",
+    "asset_id": "I11-ASSET",
+    "decision": "accept",
+    "content_sha256": "a9d41bc226ad3b93b228105b89f02108de185fd64903f504d7661e58e8943ea6",
+    "reviewed_content": "# I11 資訊安全管理概論：資訊資產清冊與價值分類\n\n> Review status: `pending_review`。以下是生成教學整理，不是來源逐字稿。來源：`iPAS_資訊安全管理概論_PART_I.pdf`，PDF 第 77–80 頁；對應 `I11-ASSET-001`–`007`。\n\n## 從資產辨認到維護清冊\n\n第 77 頁列出實體、軟體、電子資訊、書面文件、服務、人員六類資產。第 78 頁把清冊蒐集、分類群組、依類別控管及管理機制畫成循環，並要求保持清冊正確、設計更新流程。`I11-ASSET-001`、`002`\n\n第 79 頁的清冊範例記錄資產編號、類別、名稱、說明、權責／保管／使用單位及資產價值。這是登錄用的表；第 80 頁則是比較價值級別的表。`I11-ASSET-003`\n\n## 同一張表的三個比較維度\n\n| 來源級別 | 分類內容所述影響範圍 | 業務損害條件 | 潛在影響 |\n| --- | --- | --- | --- |\n| A | 國家安全的重要機敏資訊或系統 | 持續一個月（含）以上 | 極高度 |\n| B | 社會秩序、民生體系及民眾隱私的機敏資訊或系統 | 持續一星期（含）以上 | 高度 |\n| C | 地方縣市級社會秩序、人民生命財產的重要資訊或系統 | 持續一天（含）以上 | 中度 |\n| D | 表中未列具體範圍；描述意外事件不影響業務工作或營運 | 未列時間門檻 | 低度 |\n\n此表是對來源第 80 頁的**教學摘要**；完整分類條件仍以原始 PDF 為準。`I11-ASSET-001`、`004`–`007`\n\n**原創情境**：若一份清冊漏掉新設備，先補登與確認權責，再依適用的分類條件判定並實施管控。這個情境不是投影片案例，也不能僅憑單一時間線索替真實組織決定級別。\n\n考點：D 列沒有「少於一天」的文字，不能自行填入；A、B、C 的期間也要與其範圍及影響標籤一起讀。七個對應區塊已完成審核；本節教學內容、卡片和練習題須分別由擁有者審核，狀態以各自審核紀錄為準。",
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-002": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7",
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7",
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b",
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:19:02+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F001",
+    "decision": "accept",
+    "content_sha256": "acf61e96751bcb3a68faf623cc4116e28e65e0ca8f845657bf8baed338f4736f",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F001",
+      "front": "第 77 頁列出哪些資訊資產類別？",
+      "back": "實體、軟體、電子資訊、書面文件、服務與人員。",
+      "chunk_ids": [
+        "I11-ASSET-001"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832"
+    },
+    "reviewed_at": "2026-10-02T00:20:20+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F002",
+    "decision": "accept",
+    "content_sha256": "38ff6cf6af683aff351c0918fdcd18b608212f964ff6e9a44ff7a0aa797c51cb",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F002",
+      "front": "清冊、分類與控管之間如何銜接？",
+      "back": "先蒐集清冊，再分類群組，依類別實做控管，並以管理機制維持更新。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-002"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-002": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7"
+    },
+    "reviewed_at": "2026-10-02T00:20:21+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F003",
+    "decision": "accept",
+    "content_sha256": "ac13f113018ff83ed020d1c394c3d5b105a3dfe14969e40282be465383c9a341",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F003",
+      "front": "資訊資產清冊範例至少記錄哪些資訊？",
+      "back": "資產識別與類別、名稱與說明、權責／保管／使用單位及資產價值。",
+      "chunk_ids": [
+        "I11-ASSET-003"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7"
+    },
+    "reviewed_at": "2026-10-02T00:20:21+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F004",
+    "decision": "accept",
+    "content_sha256": "fd7725043e5bfd7410b028a664035990712c226113f0237bfab51c5284d46740",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F004",
+      "front": "A 級對應何種潛在影響與業務損害條件？",
+      "back": "極高度；表列損害持續一個月（含）以上。",
+      "chunk_ids": [
+        "I11-ASSET-004"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f"
+    },
+    "reviewed_at": "2026-10-02T00:20:21+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F005",
+    "decision": "accept",
+    "content_sha256": "150480edb81b6bc60951107fc679ac2fe49036dc016912487caf0c8b8643f926",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F005",
+      "front": "B 級與 A 級的影響標籤如何不同？",
+      "back": "B 級是高度，A 級是極高度；兩級的影響範圍與持續條件也不同。",
+      "chunk_ids": [
+        "I11-ASSET-004",
+        "I11-ASSET-005"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a"
+    },
+    "reviewed_at": "2026-10-02T00:20:22+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F006",
+    "decision": "accept",
+    "content_sha256": "77bb4e242254f94c691ab7709f1fb0df8af769ccdf9a905e7baa8461c1000037",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F006",
+      "front": "C 級的業務損害期間與影響標籤？",
+      "back": "一天（含）以上；中度。",
+      "chunk_ids": [
+        "I11-ASSET-006"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b"
+    },
+    "reviewed_at": "2026-10-02T00:21:13+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F007",
+    "decision": "accept",
+    "content_sha256": "504df6962883dc313dc53141e95b54e5aa6b767e32803c6b41aa150f0b5d0a41",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F007",
+      "front": "D 級有沒有來源給定的天數門檻？",
+      "back": "沒有。來源說意外事件不影響業務工作或營運，對應低度。",
+      "chunk_ids": [
+        "I11-ASSET-007"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:21:13+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F008",
+    "decision": "accept",
+    "content_sha256": "8f21839119cbf243a170ae2aaccbfdcf9133d0b37901878b5b21969f08a6650a",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F008",
+      "front": "一星期（含）以上的損害與哪一級同列？",
+      "back": "B 級；仍需連同範圍與影響標籤核對。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-005"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a"
+    },
+    "reviewed_at": "2026-10-02T00:21:14+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F009",
+    "decision": "accept",
+    "content_sha256": "acf0d49d465f62136587c96855bccccd4e5c745dcc33043413e0f5f50b953072",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F009",
+      "front": "資產清冊表與價值分類表有何差別？",
+      "back": "清冊記錄資產及權責等欄位；分類表比較 A–D 級的範圍、損害條件與影響。",
+      "chunk_ids": [
+        "I11-ASSET-003",
+        "I11-ASSET-001"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7",
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832"
+    },
+    "reviewed_at": "2026-10-02T00:21:14+00:00",
+    "note": ""
+  },
+  {
+    "kind": "card",
+    "asset_id": "I11-ASSET-F010",
+    "decision": "accept",
+    "content_sha256": "438078e38b9674b52fdbd71e1b672c308b08823eb4725e6beaa2123ee2bb29b7",
+    "reviewed_content": {
+      "card_id": "I11-ASSET-F010",
+      "front": "為何不能只靠級別字母判斷資產分類？",
+      "back": "第 80 頁每級同時給出分類內容與潛在影響，應核對完整條件。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-004",
+        "I11-ASSET-005",
+        "I11-ASSET-006",
+        "I11-ASSET-007"
+      ],
+      "content_origin": "generated_teaching"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b",
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:21:15+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q001",
+    "decision": "accept",
+    "content_sha256": "9014a9bed5f5bb81b7f678c688f7c7de0d12c719bca8161662847c379205b1ab",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q001",
+      "cognitive_level": "recall",
+      "question": "來源第 77 頁把哪一項列為資訊資產類別？",
+      "options": {
+        "A": "人員",
+        "B": "僅伺服器",
+        "C": "僅加密金鑰",
+        "D": "僅紙本檔案"
+      },
+      "correct_answer": "A",
+      "explanation": "第 77 頁的人員是六類資產之一。",
+      "chunk_ids": [
+        "I11-ASSET-001"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832"
+    },
+    "reviewed_at": "2026-10-02T00:22:03+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q002",
+    "decision": "accept",
+    "content_sha256": "4d3296abc55b6b6cf14821ef3652ef9327ca8c2ec72209145cc4408e61a8baac",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q002",
+      "cognitive_level": "distinction",
+      "question": "清冊範例表中的「權責單位」屬於哪一類資訊？",
+      "options": {
+        "A": "資產責任歸屬",
+        "B": "A–D 影響等級",
+        "C": "一週停損門檻",
+        "D": "風險發生可能性"
+      },
+      "correct_answer": "A",
+      "explanation": "第 79 頁清冊欄位記錄權責單位；第 80 頁才是價值級別表。",
+      "chunk_ids": [
+        "I11-ASSET-003"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7"
+    },
+    "reviewed_at": "2026-10-02T00:22:03+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q003",
+    "decision": "accept",
+    "content_sha256": "b233d25e775ef58879a877a059aeb6d3ec524f4e0eff148836cf25a9b30a3895",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q003",
+      "cognitive_level": "comparison",
+      "question": "第 80 頁哪一級對應「極高度」潛在影響？",
+      "options": {
+        "A": "A 級",
+        "B": "B 級",
+        "C": "C 級",
+        "D": "D 級"
+      },
+      "correct_answer": "A",
+      "explanation": "A 級表列極高度；其餘依序為高度、中度、低度。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-004"
+      ],
+      "question_type": "single_choice_generated",
+      "comparison_chunk_id": "I11-ASSET-001"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f"
+    },
+    "reviewed_at": "2026-10-02T00:22:03+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q004",
+    "decision": "accept",
+    "content_sha256": "d64dc08655f951bd50a43e931d06e68beb81ab1fa8c8e4b70558f2605ae9a1f5",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q004",
+      "cognitive_level": "comparison",
+      "question": "哪一組「級別—業務損害條件」符合第 80 頁？",
+      "options": {
+        "A": "B—持續一星期（含）以上",
+        "B": "A—持續一天（含）以上",
+        "C": "C—持續一個月（含）以上",
+        "D": "D—持續一星期（含）以上"
+      },
+      "correct_answer": "A",
+      "explanation": "表格的 A、B、C 列分別是一個月、一星期、一天（含）以上；D 未列時間門檻。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-004",
+        "I11-ASSET-005",
+        "I11-ASSET-006",
+        "I11-ASSET-007"
+      ],
+      "question_type": "single_choice_generated",
+      "comparison_chunk_id": "I11-ASSET-001"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-004": "1d8ab87072552a88bdec58b80b4cda7d40fd9c2bc0d2c1206b27493b0079fa3f",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b",
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:22:04+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q005",
+    "decision": "accept",
+    "content_sha256": "5cdd07d091320001c727a7aad10612754c5e53ed063539f35b72d0b3537e9900",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q005",
+      "cognitive_level": "distinction",
+      "question": "對 D 級的描述何者最符合來源？",
+      "options": {
+        "A": "意外事件不影響業務工作或營運，潛在影響低度",
+        "B": "一定停工少於一天",
+        "C": "涉及國家安全，影響極高度",
+        "D": "一定停工滿一星期"
+      },
+      "correct_answer": "A",
+      "explanation": "第 80 頁以不影響業務工作或營運描述 D，未設天數門檻。",
+      "chunk_ids": [
+        "I11-ASSET-007"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-007": "c0e28fc3cd4d2d1af81a1decc58f406da485a636586b25a6f19881c66a1eab7f"
+    },
+    "reviewed_at": "2026-10-02T00:22:04+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q006",
+    "decision": "accept",
+    "content_sha256": "f5a170853eb39c433e300598efa26c017daef0d6fde77955abf48fbcacd28ede",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q006",
+      "cognitive_level": "scenario",
+      "question": "某來源示例中的資訊或系統符合地方縣市級社會秩序範圍，且業務推動損害達一天（含）以上；應先對照哪一列？",
+      "options": {
+        "A": "A 級",
+        "B": "B 級",
+        "C": "C 級",
+        "D": "D 級"
+      },
+      "correct_answer": "C",
+      "explanation": "這是依第 80 頁 C 級整列條件編寫的原創情境。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-006"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b"
+    },
+    "reviewed_at": "2026-10-02T00:23:08+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q007",
+    "decision": "accept",
+    "content_sha256": "fde723e52301a57501aae3e23e5f046677aebeb01da231dce7a8cefa3f4ab0ea",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q007",
+      "cognitive_level": "scenario",
+      "question": "團隊已有資產清冊，下一步想依資產特性套用不同管控，應先做什麼？",
+      "options": {
+        "A": "分類群組",
+        "B": "直接刪除清冊",
+        "C": "把所有資產固定列 A 級",
+        "D": "略過更新流程"
+      },
+      "correct_answer": "A",
+      "explanation": "第 78 頁圖示將分類群組放在差異化管控之前。",
+      "chunk_ids": [
+        "I11-ASSET-002"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-002": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7"
+    },
+    "reviewed_at": "2026-10-02T00:23:08+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q008",
+    "decision": "accept",
+    "content_sha256": "4a4f14eb35c5abfb635c53a3d185b2aaf4789bdda3e6227cc8f95c7512b5a8a6",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q008",
+      "cognitive_level": "comparison",
+      "question": "來源表中 B 級與 C 級的潛在影響標籤分別為何？",
+      "options": {
+        "A": "高度、中度",
+        "B": "極高度、高度",
+        "C": "中度、低度",
+        "D": "低度、極高度"
+      },
+      "correct_answer": "A",
+      "explanation": "第 80 頁 B 為高度、C 為中度。",
+      "chunk_ids": [
+        "I11-ASSET-001",
+        "I11-ASSET-005",
+        "I11-ASSET-006"
+      ],
+      "question_type": "single_choice_generated",
+      "comparison_chunk_id": "I11-ASSET-001"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832",
+      "I11-ASSET-005": "cdfdb90a3b09526dbf79afe899203106ee127b52935e9757f0cd00e6be89756a",
+      "I11-ASSET-006": "126e1ad1308ad44d99319710b79255d356e65f1bd87ff0b016d41e9e47e3880b"
+    },
+    "reviewed_at": "2026-10-02T00:23:09+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q009",
+    "decision": "accept",
+    "content_sha256": "6bc181c8638069220bd5643e4b96cfb0f242e33f2ee80a100ffeb00d3a06fd6f",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q009",
+      "cognitive_level": "distinction",
+      "question": "以下何者是第 79 頁清冊範例的欄位，而非第 80 頁的影響等級？",
+      "options": {
+        "A": "保管單位",
+        "B": "極高度",
+        "C": "高度",
+        "D": "中度"
+      },
+      "correct_answer": "A",
+      "explanation": "保管單位是清冊欄位，其他三項是分類表的潛在影響標籤。",
+      "chunk_ids": [
+        "I11-ASSET-003",
+        "I11-ASSET-001"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-003": "183fc7a7463a6e8493f8b91c35a9526eefa8e7910e4a05b295f4231264c2e4d7",
+      "I11-ASSET-001": "c710c0926adffc73ea3c9a758d545cf53392c08c13ddeffc6592cf0836557832"
+    },
+    "reviewed_at": "2026-10-02T00:23:09+00:00",
+    "note": ""
+  },
+  {
+    "kind": "question",
+    "asset_id": "I11-ASSET-Q010",
+    "decision": "accept",
+    "content_sha256": "f2ad988d2ba5b173320d6b16f4cd14453d2cf210da7e0d3b1e3ab0dfdf653c74",
+    "reviewed_content": {
+      "question_id": "I11-ASSET-Q010",
+      "cognitive_level": "scenario",
+      "question": "清冊一直未更新，導致新設備沒有被分類。依第 78 頁圖示，最直接缺少哪個管理要求？",
+      "options": {
+        "A": "維持清冊正確性並設計更新流程",
+        "B": "直接把設備視為 D 級",
+        "C": "停止資產控管",
+        "D": "把清冊當作考古題"
+      },
+      "correct_answer": "A",
+      "explanation": "第 78 頁明列清冊正確性與更新流程；情境為原創。",
+      "chunk_ids": [
+        "I11-ASSET-002"
+      ],
+      "question_type": "single_choice_generated"
+    },
+    "dependency_hashes": {
+      "I11-ASSET-002": "1b759c1527aa4a2d9b1351d8364386e784751f998cb59faa3f07045f792401e7"
+    },
+    "reviewed_at": "2026-10-02T00:23:09+00:00",
+    "note": ""
+  }
+]

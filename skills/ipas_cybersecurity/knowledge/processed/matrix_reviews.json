@@ -1,0 +1,101 @@
+[
+  {
+    "chunk_id": "I11-ASSET-001",
+    "decision": "verified",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_sha256": "5088642e71ae02d30e6c89cc80de17f94240b117b819cd810a05ab9cec8a7872",
+    "source_pages": [
+      80
+    ],
+    "comparison_sha256": "681a95baace8579b1228983e0a487c0fe0b78134147bea02f97d38b59507a33c",
+    "comparison_snapshot": {
+      "members": [
+        "I11-ASSET-004",
+        "I11-ASSET-005",
+        "I11-ASSET-006",
+        "I11-ASSET-007"
+      ],
+      "dimensions": [
+        {
+          "key": "affected_scope",
+          "label": "分類內容所述影響範圍",
+          "values": [
+            {
+              "member_chunk_id": "I11-ASSET-004",
+              "value": "國家安全的重要機敏資訊或系統",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-005",
+              "value": "社會秩序、民生體系運作及民眾隱私之機敏資訊或系統",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-006",
+              "value": "地方縣市級社會秩序、人民生命財產之重要資訊或系統",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-007",
+              "value": "未列具體範圍；以不影響業務工作或營運描述",
+              "source_page": 80
+            }
+          ]
+        },
+        {
+          "key": "business_effect",
+          "label": "業務推動損害條件",
+          "values": [
+            {
+              "member_chunk_id": "I11-ASSET-004",
+              "value": "持續一個月（含）以上",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-005",
+              "value": "持續一星期（含）以上",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-006",
+              "value": "持續一天（含）以上",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-007",
+              "value": "意外事件不影響業務工作或營運；未列時間門檻",
+              "source_page": 80
+            }
+          ]
+        },
+        {
+          "key": "potential_impact",
+          "label": "潛在影響等級",
+          "values": [
+            {
+              "member_chunk_id": "I11-ASSET-004",
+              "value": "極高度",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-005",
+              "value": "高度",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-006",
+              "value": "中度",
+              "source_page": 80
+            },
+            {
+              "member_chunk_id": "I11-ASSET-007",
+              "value": "低度",
+              "source_page": 80
+            }
+          ]
+        }
+      ]
+    },
+    "reviewed_at": "2026-10-01T01:55:38+00:00"
+  }
+]
