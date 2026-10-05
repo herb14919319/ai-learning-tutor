@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import logging
+import os
 import re
 from dataclasses import dataclass
+
+
+logger = logging.getLogger(__name__)
 
 
 LEARNING = "learning"
@@ -26,6 +31,13 @@ CLARIFICATION_MESSAGE = (
     "2. 初學者要怎麼學 LLM？\n"
     "3. RAG 適合解決什麼問題？"
 )
+
+
+# Enabled chat skills widen the learning scope with their own manifest terms, so
+# the guard does not keep a second, hand-maintained copy of each pack's vocabulary.
+# Set GUARD_USE_MANIFEST_TERMS=false (or 0/no/off) to roll back to the static list only.
+GUARD_MANIFEST_TERMS_FLAG = "GUARD_USE_MANIFEST_TERMS"
+MIN_MANIFEST_TERM_LENGTH = 2
 
 
 @dataclass(frozen=True)
@@ -174,7 +186,44 @@ def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
     return False
 
 
-def classify_intent(user_text: str) -> str:
+def manifest_terms_enabled() -> bool:
+    return os.getenv(GUARD_MANIFEST_TERMS_FLAG, "").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def manifest_scope_terms(discovery=None) -> tuple[str, ...]:
+    """Domain and keyword terms of skills that chat can actually route to.
+
+    A skill contributes only if discovery validated its manifest, it is active,
+    runtime-typed, enabled and its entrypoint loaded. Web-only, disabled,
+    legacy, invalid or unloadable skills and stray directories contribute
+    nothing. Any doubt about the metadata fails closed to the static terms.
+    """
+    try:
+        if discovery is None:
+            from skills.registry import DISCOVERY_RESULT as discovery
+        terms: dict[str, None] = {}
+        for manifest in discovery.manifests:
+            if not (
+                manifest.enabled
+                and manifest.status == "active"
+                and manifest.skill_type == "runtime"
+                and manifest.name in discovery.loaded_skills
+                and manifest.name not in discovery.unavailable
+            ):
+                continue
+            for term in (*manifest.domains, *manifest.keywords):
+                normalized = term.strip().lower()
+                if len(normalized) >= MIN_MANIFEST_TERM_LENGTH:
+                    terms[normalized] = None
+        return tuple(terms)
+    except Exception:
+        logger.exception("Skill manifest terms unavailable; guard uses static learning terms only")
+        return ()
+
+
+def classify_intent(user_text: str, *, scope_terms: tuple[str, ...] | None = None) -> str:
+    if scope_terms is None:
+        scope_terms = manifest_scope_terms() if manifest_terms_enabled() else ()
     text = (user_text or "").strip().lower()
     if not text:
         return UNKNOWN
@@ -183,7 +232,7 @@ def classify_intent(user_text: str) -> str:
     if "\ufffd" in text:
         return LEARNING
 
-    has_learning = _contains_any(text, LEARNING_TERMS)
+    has_learning = _contains_any(text, LEARNING_TERMS) or _contains_any(text, scope_terms)
     has_guidance = _contains_any(text, GUIDANCE_TERMS)
 
     if _contains_any(text, TOOL_MISUSE_TERMS):

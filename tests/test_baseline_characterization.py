@@ -38,14 +38,15 @@ class TelemetryIsolationTest(unittest.TestCase):
         self.assertEqual(Path(os.environ["RUNTIME_TELEMETRY_PATH"]).resolve(), active)
 
 
-class GuardRouterBoundaryCharacterizationTest(unittest.TestCase):
-    """CHARACTERIZATION: the guard runs before skill routing (main._generate_tutor_answer).
+class GuardRouterBoundaryTest(unittest.TestCase):
+    """The guard runs before skill routing (main._generate_tutor_answer).
 
-    Today it rejects iPAS questions that the skill router would accept. The owner
-    classified this as a bug; R3 makes enabled manifests part of the guard's scope.
+    Before R3 it rejected iPAS questions the skill router would accept (an owner-confirmed
+    bug). R3 lets enabled chat skills' manifest terms widen the guard scope;
+    GUARD_USE_MANIFEST_TERMS=false restores the old static-only guard for rollback.
     """
 
-    BLOCKED_BUT_ROUTABLE = {
+    IPAS_CYBERSECURITY_QUESTIONS = {
         "CIA Triad 是什麼": "ipas_cybersecurity",
         "資訊安全三目標": "ipas_cybersecurity",
         "風險評鑑流程": "ipas_cybersecurity",
@@ -58,13 +59,21 @@ class GuardRouterBoundaryCharacterizationTest(unittest.TestCase):
     def route(self, text):
         return self.runtime.route(self.runtime.normalize_request(text))["skill"]
 
-    def test_ipas_cybersecurity_questions_are_routable_but_guard_rejected(self):
-        for text, skill in self.BLOCKED_BUT_ROUTABLE.items():
+    def test_ipas_cybersecurity_questions_pass_guard_and_route_to_skill(self):
+        for text, skill in self.IPAS_CYBERSECURITY_QUESTIONS.items():
             with self.subTest(text=text):
                 self.assertEqual(self.route(text), skill)
                 guard = route_learning_boundary(text)
-                self.assertFalse(guard.allowed)
-                self.assertEqual(guard.intent, "unknown")
+                self.assertTrue(guard.allowed)
+                self.assertEqual(guard.intent, "learning")
+
+    def test_flag_off_restores_static_guard(self):
+        for value in ("false", "0", "no", "OFF"):
+            with self.subTest(value=value), patch.dict(os.environ, {"GUARD_USE_MANIFEST_TERMS": value}):
+                for text in self.IPAS_CYBERSECURITY_QUESTIONS:
+                    guard = route_learning_boundary(text)
+                    self.assertFalse(guard.allowed)
+                    self.assertEqual(guard.intent, "unknown")
 
     def test_ai_terms_pass_guard_and_reach_skills(self):
         self.assertTrue(route_learning_boundary("iPAS AI 弱AI 是什麼").allowed)
@@ -78,9 +87,9 @@ class GuardRouterBoundaryCharacterizationTest(unittest.TestCase):
 
     def test_guard_rejection_never_invokes_tutor_agent(self):
         with patch.object(main.tutor_agent, "answer") as tutor_answer:
-            reply = main.generate_tutor_answer("CIA Triad 是什麼", user_id="characterization-user")
+            reply = main.generate_tutor_answer("今天晚餐吃什麼", user_id="characterization-user")
         tutor_answer.assert_not_called()
-        self.assertEqual(reply, route_learning_boundary("CIA Triad 是什麼").response)
+        self.assertEqual(reply, route_learning_boundary("今天晚餐吃什麼").response)
 
 
 class IpasKnowledgePackContractTest(unittest.TestCase):

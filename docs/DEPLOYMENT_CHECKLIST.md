@@ -83,6 +83,7 @@ Render Web Service 建議設定：
 | `PROCESSED_EVENT_TTL_SECONDS` | `600` | LINE webhook 重複事件防護 TTL |
 | `MESSENGER_ENABLED` | `false` | Facebook Messenger webhook 開關 |
 | `MESSENGER_VERIFY_TOKEN` | 空字串 | Messenger webhook verify token |
+| `GUARD_USE_MANIFEST_TERMS` | 開啟（未設定即開啟） | 讓已啟用的聊天 Skill（runtime、active、成功載入）的 manifest 詞彙放寬學習範圍判斷；設為 `false`／`0`／`no`／`off` 可回復為只用內建詞彙的舊 guard |
 
 部署後請確認 Render logs 中沒有環境變數缺漏、import error 或 worker boot failure。
 

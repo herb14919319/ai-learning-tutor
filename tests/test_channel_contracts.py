@@ -403,11 +403,26 @@ class WebChatChannelTest(unittest.TestCase):
         self.assertEqual([e["error_category"] for e in limited[1:]], ["rate_limit_error", "rate_limit_error"])
 
 
-class GuardCharacterizationStillHoldsTest(unittest.TestCase):
-    def test_ipas_question_over_web_chat_is_still_guard_rejected(self):
-        with patch.object(main.tutor_agent, "answer") as answer:
-            response = main.app.test_client().post("/web-chat", json={"message": "CIA Triad 是什麼"},
-                                                   headers={"X-Forwarded-For": "192.0.2.10"})
+class IpasWebChatGuardTest(unittest.TestCase):
+    """R3: a supported iPAS question reaches the tutor over Web Chat; the flag rolls it back."""
+
+    def ask(self):
+        return main.app.test_client().post("/web-chat", json={"message": "CIA Triad 是什麼"},
+                                           headers={"X-Forwarded-For": "192.0.2.10"})
+
+    def setUp(self):
+        WEB_CH.web_chat_rate_limits.clear()
+        self.addCleanup(WEB_CH.web_chat_rate_limits.clear)
+
+    def test_ipas_question_over_web_chat_reaches_the_tutor(self):
+        with patch.object(main.tutor_agent, "answer", return_value="CIA answer") as answer:
+            response = self.ask()
+        self.assertEqual((response.status_code, response.json), (200, {"reply": "CIA answer"}))
+        answer.assert_called_once_with("CIA Triad 是什麼", user_id=None)
+
+    def test_flag_off_keeps_pre_r3_rejection(self):
+        with patch.dict(os.environ, {"GUARD_USE_MANIFEST_TERMS": "false"}),              patch.object(main.tutor_agent, "answer") as answer:
+            response = self.ask()
         self.assertEqual(response.status_code, 200)
         answer.assert_not_called()
 
