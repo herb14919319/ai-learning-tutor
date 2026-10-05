@@ -12,7 +12,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, Protocol, runtime_checkable
 
 
 logger = logging.getLogger(__name__)
@@ -206,20 +206,64 @@ def record_request_terminal(
     )
 
 
-def write_runtime_telemetry(record: dict[str, Any], path: Path | None = None) -> None:
-    target = path or TELEMETRY_PATH
-    safe_record = {field: record.get(field) for field in TELEMETRY_FIELDS}
-    if safe_record["timestamp"] is None:
-        safe_record["timestamp"] = utc_timestamp()
-    line = json.dumps(safe_record, ensure_ascii=False, separators=(",", ":")) + "\n"
+@runtime_checkable
+class TelemetrySink(Protocol):
+    """Destination for telemetry records. Writes must never raise into the request path."""
 
-    try:
-        with _telemetry_write_lock:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with target.open("a", encoding="utf-8") as file:
-                file.write(line)
-    except Exception:
-        logger.exception("Runtime telemetry write failed")
+    def write(self, record: dict[str, Any]) -> None: ...
+
+
+class JsonlTelemetrySink:
+    """Appends one JSON object per line, projected onto TELEMETRY_FIELDS (the default sink).
+
+    Without an explicit path the file is TELEMETRY_PATH, resolved at write time,
+    so RUNTIME_TELEMETRY_PATH and test isolation apply. Text mode is kept, so
+    lines end with the platform separator, as before.
+    """
+
+    def __init__(self, path: Path | None = None):
+        self._path = path
+
+    @property
+    def path(self) -> Path:
+        return self._path or TELEMETRY_PATH
+
+    def write(self, record: dict[str, Any]) -> None:
+        target = self.path
+        safe_record = {field: record.get(field) for field in TELEMETRY_FIELDS}
+        if safe_record["timestamp"] is None:
+            safe_record["timestamp"] = utc_timestamp()
+        line = json.dumps(safe_record, ensure_ascii=False, separators=(",", ":")) + "\n"
+
+        try:
+            with _telemetry_write_lock:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open("a", encoding="utf-8") as file:
+                    file.write(line)
+        except Exception:
+            logger.exception("Runtime telemetry write failed")
+
+    def read_records(self) -> list[dict[str, Any]]:
+        return read_runtime_telemetry_records(self.path)
+
+
+_telemetry_sink: TelemetrySink = JsonlTelemetrySink()
+
+
+def get_telemetry_sink() -> TelemetrySink:
+    return _telemetry_sink
+
+
+def set_telemetry_sink(sink: TelemetrySink) -> TelemetrySink:
+    """Replace the process-wide sink and return the previous one."""
+    global _telemetry_sink
+    previous, _telemetry_sink = _telemetry_sink, sink
+    return previous
+
+
+def write_runtime_telemetry(record: dict[str, Any], path: Path | None = None) -> None:
+    sink = JsonlTelemetrySink(path) if path else get_telemetry_sink()
+    sink.write(record)
 
 
 def empty_runtime_telemetry_summary(month: str) -> dict[str, Any]:
@@ -239,6 +283,7 @@ def empty_runtime_telemetry_summary(month: str) -> dict[str, Any]:
 
 
 def aggregate_runtime_telemetry(month: str, path: Path | None = None) -> dict[str, Any]:
+    # The dashboard reads the JSONL file directly (compatibility path), whatever sink is active.
     target = path or TELEMETRY_PATH
     summary = empty_runtime_telemetry_summary(month)
     if not target.exists():

@@ -8,7 +8,7 @@ from typing import Callable
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from memory.conversation_context import add_turn
 from memory.conversation_context import build_contextual_prompt
-from memory.conversation_context import get_active_skill
+from memory.learner_state import LearnerStateStore, get_learner_state_store
 from runtime_telemetry import emit_runtime_event
 from skills.registry import configure as configure_skills
 from skills.registry import get_skill
@@ -23,7 +23,13 @@ LITTLE_TREE_ACTIVE_SKILL = "little_tree_companion"
 
 
 class TutorAgent:
-    def __init__(self, ask_gpt: Callable[[str, str], str], skill_runtime: SkillRuntime | None = None):
+    def __init__(
+        self,
+        ask_gpt: Callable[[str, str], str],
+        skill_runtime: SkillRuntime | None = None,
+        learner_state: LearnerStateStore | None = None,
+    ):
+        self.learner_state = learner_state or get_learner_state_store()
         self._ask_gpt = ask_gpt
         self.ask_gpt = self._ask_gpt_with_context
         self.skill_runtime = skill_runtime or get_runtime()
@@ -38,14 +44,14 @@ class TutorAgent:
             system_prompt = f"{system_prompt}\n\n{acronym_hint}"
         return self._ask_gpt(
             system_prompt,
-            build_contextual_prompt(user_prompt, _active_user_id.get()),
+            build_contextual_prompt(user_prompt, _active_user_id.get(), store=self.learner_state),
         )
 
     def answer(self, user_message: str, user_id: str | None = None) -> str:
         _active_user_id.set(user_id)
         _active_user_message.set(user_message)
         request = self.skill_runtime.normalize_request(user_message)
-        active_skill = get_active_skill(user_id)
+        active_skill = self.learner_state.get_active_skill(user_id)
         if active_skill == LITTLE_TREE_ACTIVE_SKILL:
             active_skill = None
         decision = (
@@ -64,7 +70,7 @@ class TutorAgent:
 
         if skill_name == "general":
             answer = self._general_teaching_answer(user_message, reason="router_general")
-            add_turn(user_id, user_message, answer)
+            add_turn(user_id, user_message, answer, store=self.learner_state)
             return answer
 
         try:
@@ -77,14 +83,14 @@ class TutorAgent:
             logger.exception("Skill failed: %s", skill_name)
             self._record_skill_fallback(skill_name, "skill_exception")
             answer = self._general_teaching_answer(user_message, reason="skill_exception")
-            add_turn(user_id, user_message, answer)
+            add_turn(user_id, user_message, answer, store=self.learner_state)
             return answer
 
         if not skill:
             logger.warning("Router selected unknown skill: %s", skill_name)
             self._record_skill_fallback(skill_name, "unknown_skill")
             answer = self._general_teaching_answer(user_message, reason="unknown_skill")
-            add_turn(user_id, user_message, answer)
+            add_turn(user_id, user_message, answer, store=self.learner_state)
             return answer
 
         try:
@@ -93,17 +99,17 @@ class TutorAgent:
             logger.exception("Skill failed: %s", skill_name)
             self._record_skill_fallback(skill_name, "skill_exception")
             answer = self._general_teaching_answer(user_message, reason="skill_exception")
-            add_turn(user_id, user_message, answer)
+            add_turn(user_id, user_message, answer, store=self.learner_state)
             return answer
 
         if not skill_answer:
             logger.warning("Skill returned empty answer: %s", skill_name)
             self._record_skill_fallback(skill_name, "empty_skill_answer")
             answer = self._general_teaching_answer(user_message, reason="empty_skill_answer")
-            add_turn(user_id, user_message, answer)
+            add_turn(user_id, user_message, answer, store=self.learner_state)
             return answer
 
-        add_turn(user_id, user_message, skill_answer)
+        add_turn(user_id, user_message, skill_answer, store=self.learner_state)
         return skill_answer
 
     @staticmethod

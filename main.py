@@ -10,7 +10,7 @@ from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
 from automation.facebook_content_job import JobStatus, ProductionConfigError, run_publish_once
-from memory.conversation_context import clear_active_skill
+from memory.learner_state import get_learner_state_store
 from router_guard import route_learning_boundary
 try:
     from dotenv import load_dotenv
@@ -174,7 +174,7 @@ def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str
             route_reason="active_skill_exit",
         )
         emit_runtime_event("skill_selected", status="success", skill_id=LEGACY_EXIT_ROUTE)
-        clear_active_skill(user_id)
+        get_learner_state_store().clear_active_skill(user_id)
         return LEGACY_EXIT_MESSAGE
 
     guard_result = route_learning_boundary(user_text)

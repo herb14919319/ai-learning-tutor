@@ -1,76 +1,58 @@
 from __future__ import annotations
 
-import threading
+from memory.learner_state import MAX_CONTEXT_TURNS, LearnerStateStore, get_learner_state_store
 
 
-MAX_CONTEXT_TURNS = 6
-
-_conversation_context: dict[str, list[dict[str, str]]] = {}
-_active_skills: dict[str, str] = {}
-_context_lock = threading.Lock()
+# Compatibility API over the learner-state store (memory/learner_state.py). This
+# module holds no state of its own; it also formats the short-term context prompt.
+__all__ = [
+    "MAX_CONTEXT_TURNS",
+    "add_message",
+    "add_turn",
+    "build_contextual_prompt",
+    "build_user_prompt",
+    "clear_active_skill",
+    "clear_context",
+    "format_recent_context",
+    "get_active_skill",
+    "get_recent_context",
+    "set_active_skill",
+]
 
 
 def get_recent_context(user_id: str | None) -> list[dict[str, str]]:
-    if not user_id:
-        return []
-
-    with _context_lock:
-        return [message.copy() for message in _conversation_context.get(user_id, [])]
+    return get_learner_state_store().get_recent_messages(user_id)
 
 
 def add_message(user_id: str | None, role: str, content: str) -> None:
-    if not user_id or role not in {"user", "assistant"}:
-        return
-
-    text = (content or "").strip()
-    if not text:
-        return
-
-    with _context_lock:
-        messages = _conversation_context.setdefault(user_id, [])
-        messages.append({"role": role, "content": text})
-        max_messages = MAX_CONTEXT_TURNS * 2
-        if len(messages) > max_messages:
-            del messages[:-max_messages]
+    get_learner_state_store().append_message(user_id, role, content)
 
 
-def add_turn(user_id: str | None, user_message: str, assistant_message: str) -> None:
-    add_message(user_id, "user", user_message)
-    add_message(user_id, "assistant", assistant_message)
+def add_turn(
+    user_id: str | None,
+    user_message: str,
+    assistant_message: str,
+    store: LearnerStateStore | None = None,
+) -> None:
+    store = store or get_learner_state_store()
+    store.append_message(user_id, "user", user_message)
+    store.append_message(user_id, "assistant", assistant_message)
 
 
 def clear_context(user_id: str | None = None) -> None:
-    with _context_lock:
-        if user_id is None:
-            _conversation_context.clear()
-            _active_skills.clear()
-        else:
-            _conversation_context.pop(user_id, None)
-            _active_skills.pop(user_id, None)
+    get_learner_state_store().clear(user_id)
 
 
 def get_active_skill(user_id: str | None) -> str | None:
-    if not user_id:
-        return None
-
-    with _context_lock:
-        return _active_skills.get(user_id)
+    return get_learner_state_store().get_active_skill(user_id)
 
 
 def set_active_skill(user_id: str | None, skill_name: str) -> None:
-    if not user_id or not skill_name:
-        return
-
-    with _context_lock:
-        _active_skills[user_id] = skill_name
+    get_learner_state_store().set_active_skill(user_id, skill_name)
 
 
 def clear_active_skill(user_id: str | None) -> None:
-    if not user_id:
-        return
-
-    with _context_lock:
-        _active_skills.pop(user_id, None)
+    get_learner_state_store().clear_active_skill(user_id)
 
 
 def format_recent_context(messages: list[dict[str, str]]) -> str:
@@ -89,8 +71,12 @@ def format_recent_context(messages: list[dict[str, str]]) -> str:
     return "\n".join(lines).strip()
 
 
-def build_contextual_prompt(user_prompt: str, user_id: str | None = None) -> str:
-    context_text = format_recent_context(get_recent_context(user_id))
+def build_contextual_prompt(
+    user_prompt: str,
+    user_id: str | None = None,
+    store: LearnerStateStore | None = None,
+) -> str:
+    context_text = format_recent_context((store or get_learner_state_store()).get_recent_messages(user_id))
     if not context_text:
         return user_prompt
 

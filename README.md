@@ -109,7 +109,7 @@ curl http://localhost:8080/
 python -m unittest discover -s tests -t .
 ```
 
-`-t .` 會先載入 `tests/__init__.py`，把 runtime telemetry 導向暫存檔，避免測試寫入受版本控制的 `data/runtime_telemetry.jsonl`。若漏掉 `-t .`，`test_baseline_characterization` 會失敗提醒。正式環境可用 `RUNTIME_TELEMETRY_PATH` 指定 telemetry 檔案位置，未設定時維持 `data/runtime_telemetry.jsonl`。
+`-t .` 會先載入 `tests/__init__.py`，把 runtime telemetry 導向暫存檔，避免測試寫入受版本控制的 `data/runtime_telemetry.jsonl`。若漏掉 `-t .`，`test_baseline_characterization` 會失敗提醒。正式環境可用 `RUNTIME_TELEMETRY_PATH` 指定 telemetry 檔案位置，未設定時維持 `data/runtime_telemetry.jsonl`。注意：此值在 `runtime_telemetry` 匯入時讀取，早於 `main.py` 載入 `.env`，因此必須設為真正的環境變數（例如 Render 環境變數），寫在 `.env` 不會生效。Telemetry 透過 `runtime_telemetry.get_telemetry_sink()`（預設 `JsonlTelemetrySink`）寫入；學習者短期狀態透過 `memory/learner_state.py` 的 `LearnerStateStore`（預設記憶體內、單一行程）。
 
 ## Render 部署（正式環境）
 
