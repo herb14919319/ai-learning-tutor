@@ -8,7 +8,7 @@ import os
 import random
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from pathlib import Path
 from typing import Callable, Sequence
@@ -23,6 +23,13 @@ from automation.content_review import (
     ContentReviewDecision,
     ContentReviewResult,
     ReviewIssue,
+)
+from automation.approval_store import (
+    STORE_PATH_ENV,
+    ApprovalStore,
+    ApprovalStoreError,
+    ContentRecord,
+    store_from_env,
 )
 from automation.facebook_publisher import PublishResult, publish_page_post
 from automation.source_review import review_content_with_sources
@@ -58,11 +65,13 @@ EXIT_CODES = {
     JobStatus.PUBLISHED: 0,
     JobStatus.REVIEW_REJECTED: 1,
     JobStatus.REVIEW_UNCERTAIN: 1,
-    JobStatus.APPROVAL_REQUIRED: 1,
+    # Waiting for human approval is a normal business outcome, not a failed run.
+    JobStatus.APPROVAL_REQUIRED: 0,
     JobStatus.VALIDATION_FAILED: 3,
     JobStatus.PUBLISH_FAILED: 4,
 }
 CONFIG_ERROR_EXIT_CODE = 2
+APPROVAL_STORE_ERROR_EXIT_CODE = 5
 
 
 class ProductionConfigError(Exception):
@@ -79,6 +88,7 @@ def production_config_errors(environment: dict[str, str] | None = None) -> tuple
         "MESSENGER_PAGE_ID",
         "MESSENGER_API_VERSION",
         "MODEL_PROVIDER",
+        STORE_PATH_ENV,
     )
     errors = [f"{name} is not configured" for name in required if not env.get(name, "").strip()]
     provider = env.get("MODEL_PROVIDER", "").strip().lower()
@@ -98,6 +108,7 @@ class ApprovalState(str, Enum):
     DRAFT = "draft"
     REVIEWED = "reviewed"
     APPROVED = "approved"
+    PUBLISHED = "published"
 
 
 @dataclass(frozen=True)
@@ -146,6 +157,8 @@ class ContentJobResult:
     validation: ValidationResult | None = None
     review: ContentReviewResult | None = None
     approved: bool = False
+    content_id: str | None = None
+    approval_state: str | None = None
 
     @property
     def publish_allowed(self) -> bool:
@@ -379,12 +392,96 @@ def run_job(
     )
 
 
+def store_approval_lookup(store: ApprovalStore) -> Callable[[str], ApprovalRecord | None]:
+    """Approval gate backed by the persistent store: the record for the exact post text, if any."""
+
+    def lookup(post: str) -> ApprovalRecord | None:
+        record = next((item for item in store.list_records() if item.post == post), None)
+        if record is None or not record.content_intact:
+            return None
+        return ApprovalRecord(ApprovalState(record.state), record.post_sha256)
+
+    return lookup
+
+
+def _publish_approved(
+    store: ApprovalStore,
+    record: ContentRecord,
+    publisher: Callable[[str], PublishResult],
+) -> ContentJobResult:
+    common = {"topic": record.topic, "post": record.post, "content_id": record.content_id}
+    validation = validate_post(record.topic, record.post, record.post)
+    if not validation.valid:
+        return ContentJobResult(JobStatus.VALIDATION_FAILED, errors=validation.errors, validation=validation,
+                                approval_state=record.state, **common)
+    if not is_publish_approved(record.post, store_approval_lookup(store)(record.post)):
+        return ContentJobResult(JobStatus.APPROVAL_REQUIRED, errors=("approved content no longer matches its hash",),
+                                validation=validation, approval_state=record.state, **common)
+    try:
+        published = publisher(record.post)
+    except Exception:
+        published = PublishResult(False, error="Facebook Page publication failed")
+    if not published.success:
+        return ContentJobResult(JobStatus.PUBLISH_FAILED, errors=(published.error or "Facebook Page publication failed",),
+                                validation=validation, approved=True, approval_state=record.state, **common)
+    record = store.mark_published(record.content_id, published.post_id)
+    return ContentJobResult(JobStatus.PUBLISHED, post_id=published.post_id, validation=validation, approved=True,
+                            approval_state=record.state, **common)
+
+
+def run_governed_publish(
+    store: ApprovalStore,
+    *,
+    topics_path: Path = DEFAULT_TOPICS_PATH,
+    topic_selector: Callable[[Sequence[str]], str] = random.choice,
+    skill_answerer: Callable[[str], str] = answer_with_hungyi_skill,
+    reviewer: Callable[[str, str], ContentReviewResult] = review_content_with_sources,
+    publisher: Callable[[str], PublishResult] = publish_page_post,
+) -> ContentJobResult:
+    """One scheduled run: publish the oldest approved post, otherwise create a reviewed draft.
+
+    A run publishes at most once and only content a human approved by exact
+    hash; a newly generated post is never published in the run that made it.
+    """
+    approved = store.next_approved()
+    if approved is not None:
+        return _publish_approved(store, approved, publisher)
+
+    generated = run_job(
+        publish=False,
+        topics_path=topics_path,
+        topic_selector=topic_selector,
+        skill_answerer=skill_answerer,
+        reviewer=reviewer,
+        publisher=publisher,
+    )
+    if generated.status not in (JobStatus.GENERATED, JobStatus.REVIEW_REJECTED, JobStatus.REVIEW_UNCERTAIN):
+        return generated
+
+    decision = generated.review.decision.value if generated.review else "uncertain"
+    record = store.record_draft(generated.topic or "", generated.post or "", decision)
+    if generated.status is not JobStatus.GENERATED:
+        return replace(generated, content_id=record.content_id, approval_state=record.state)
+    if record.state == "draft":
+        record = store.mark_reviewed(record.content_id, note="automated content review: pass")
+    return replace(
+        generated,
+        status=JobStatus.APPROVAL_REQUIRED,
+        errors=("explicit human approval is required before publishing",),
+        content_id=record.content_id,
+        approval_state=record.state,
+    )
+
+
 def run_publish_once() -> ContentJobResult:
     """Canonical production entry point for the CLI and authenticated HTTP trigger."""
     errors = production_config_errors()
     if errors:
         raise ProductionConfigError(errors)
-    return run_job(publish=True)
+    store = store_from_env()
+    if store is None:
+        raise ProductionConfigError((f"{STORE_PATH_ENV} is not configured",))
+    return run_governed_publish(store)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -416,6 +513,9 @@ def main() -> int:
             for error in exc.errors:
                 print(f"configuration_error: {error}")
             return CONFIG_ERROR_EXIT_CODE
+        except ApprovalStoreError as exc:
+            print(f"approval_store_error: {exc}")
+            return APPROVAL_STORE_ERROR_EXIT_CODE
     else:
         result = run_job(publish=False)
     print(f"status: {result.status.value}")
@@ -443,6 +543,9 @@ def main() -> int:
             if evidence.excerpt:
                 print(f"evidence_excerpt: {evidence.excerpt}")
     print(f"human_approval: {'approved' if result.approved else 'missing'}")
+    if result.content_id:
+        print(f"content_id: {result.content_id}")
+        print(f"approval_state: {result.approval_state}")
     print(f"publish_allowed: {'YES' if result.publish_allowed else 'NO'}")
     if result.post_id:
         print(f"\npost_id: {result.post_id}")

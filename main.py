@@ -308,7 +308,13 @@ def trigger_facebook_publish():
 
     if result.status is JobStatus.PUBLISHED:
         return jsonify({"ok": True, "state": "published", "published": True, "post_id": result.post_id})
-    if result.status in (JobStatus.REVIEW_REJECTED, JobStatus.REVIEW_UNCERTAIN, JobStatus.APPROVAL_REQUIRED):
+    if result.status is JobStatus.APPROVAL_REQUIRED:
+        # Waiting for human approval is a normal outcome; state is the stored approval state.
+        body = {"ok": True, "state": result.approval_state or result.status.value, "published": False}
+        if result.content_id:
+            body["content_id"] = result.content_id
+        return jsonify(body)
+    if result.status in (JobStatus.REVIEW_REJECTED, JobStatus.REVIEW_UNCERTAIN):
         return jsonify({"ok": True, "state": result.status.value, "published": False})
     status_code = 502 if result.status is JobStatus.PUBLISH_FAILED else 500
     return jsonify({"ok": False, "state": result.status.value, "published": False}), status_code

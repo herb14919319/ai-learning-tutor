@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import tempfile
 import unittest
 import urllib.error
@@ -160,14 +161,17 @@ class FacebookContentJobTest(unittest.TestCase):
         self.assertEqual(result.post_id, "page_123")
         publisher.assert_called_once()
 
-    def test_canonical_publish_entry_calls_existing_job_once(self):
-        with patch("automation.facebook_content_job.production_config_errors", return_value=()), patch(
-            "automation.facebook_content_job.run_job",
+    def test_canonical_publish_entry_runs_the_governed_job_once_with_the_env_store(self):
+        with patch("automation.facebook_content_job.production_config_errors", return_value=()), patch.dict(
+            os.environ, {"CONTENT_APPROVAL_STORE_PATH": str(Path(self.temp_dir.name) / "approvals.json")}
+        ), patch(
+            "automation.facebook_content_job.run_governed_publish",
             return_value=ContentJobResult(JobStatus.REVIEW_REJECTED),
         ) as job:
             result = run_publish_once()
         self.assertEqual(result.status, JobStatus.REVIEW_REJECTED)
-        job.assert_called_once_with(publish=True)
+        job.assert_called_once()
+        self.assertEqual(job.call_args.args[0].path, Path(self.temp_dir.name) / "approvals.json")
 
     def test_cli_publish_delegates_to_canonical_entry(self):
         with patch("automation.facebook_content_job.load_dotenv"), patch(
@@ -187,9 +191,14 @@ class FacebookContentJobTest(unittest.TestCase):
         }
         self.assertEqual(
             production_config_errors(env),
-            ("MESSENGER_PAGE_ACCESS_TOKEN is not configured", "GEMINI_API_KEY is not configured"),
+            (
+                "MESSENGER_PAGE_ACCESS_TOKEN is not configured",
+                "CONTENT_APPROVAL_STORE_PATH is not configured",
+                "GEMINI_API_KEY is not configured",
+            ),
         )
-        env.update(MESSENGER_PAGE_ACCESS_TOKEN="secret", GEMINI_API_KEY="model-secret")
+        env.update(MESSENGER_PAGE_ACCESS_TOKEN="secret", GEMINI_API_KEY="model-secret",
+                   CONTENT_APPROVAL_STORE_PATH="/var/data/approvals.json")
         self.assertEqual(production_config_errors(env), ())
 
     def test_cli_config_check_and_publish_preflight_do_not_run_job(self):
@@ -215,6 +224,7 @@ class FacebookContentJobTest(unittest.TestCase):
         self.assertEqual(EXIT_CODES[JobStatus.PUBLISHED], 0)
         self.assertEqual(EXIT_CODES[JobStatus.REVIEW_REJECTED], 1)
         self.assertEqual(EXIT_CODES[JobStatus.REVIEW_UNCERTAIN], 1)
+        self.assertEqual(EXIT_CODES[JobStatus.APPROVAL_REQUIRED], 0)
         self.assertEqual(EXIT_CODES[JobStatus.VALIDATION_FAILED], 3)
         self.assertEqual(EXIT_CODES[JobStatus.PUBLISH_FAILED], 4)
 

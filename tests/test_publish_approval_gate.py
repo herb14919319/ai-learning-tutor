@@ -146,20 +146,24 @@ class PublishApprovalGateTest(unittest.TestCase):
         self.publisher.assert_not_called()
 
     def test_production_entry_is_fail_closed_by_default(self):
+        defaults = {
+            "topics_path": self.topics_path,
+            "skill_answerer": lambda topic: "generated article",
+            "reviewer": lambda topic, post: PASS_REVIEW,
+            "publisher": self.publisher,
+        }
         with patch.object(facebook_content_job, "production_config_errors", return_value=()), patch.dict(
-            run_job.__kwdefaults__,
-            {
-                "topics_path": self.topics_path,
-                "skill_answerer": lambda topic: "generated article",
-                "reviewer": lambda topic, post: PASS_REVIEW,
-                "publisher": self.publisher,
-            },
+            facebook_content_job.run_governed_publish.__kwdefaults__, defaults
         ):
-            result = run_publish_once()
+            with patch.dict(os.environ, {"CONTENT_APPROVAL_STORE_PATH": ""}),                  self.assertRaises(facebook_content_job.ProductionConfigError):
+                run_publish_once()  # no store, no publishing
+            with patch.dict(os.environ, {"CONTENT_APPROVAL_STORE_PATH": str(Path(self.temp_dir.name) / "store.json")}):
+                result = run_publish_once()
         self.assert_blocked(result)
+        self.assertEqual(result.approval_state, "reviewed")
 
-    def test_approval_required_exit_code_is_a_safe_block(self):
-        self.assertEqual(EXIT_CODES[JobStatus.APPROVAL_REQUIRED], 1)
+    def test_approval_required_is_a_successful_business_outcome(self):
+        self.assertEqual(EXIT_CODES[JobStatus.APPROVAL_REQUIRED], 0)
 
 
 class PublishEndpointApprovalTest(unittest.TestCase):
