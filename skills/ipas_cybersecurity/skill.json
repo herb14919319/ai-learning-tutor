@@ -9,7 +9,7 @@
   "priority": 190,
   "aliases": ["iPAS Cybersecurity Beginner", "iPAS 資訊安全工程師"],
   "domains": ["資訊安全工程師", "資安工程師"],
-  "keywords": ["CIA Triad", "資訊安全三目標", "CIA 三目標", "I11-CIA", "I11-RISK", "I11-ASSESS", "資訊安全風險", "資安風險", "風險評鑑流程"],
+  "keywords": ["CIA Triad", "資訊安全三目標", "CIA 三目標", "I11-CIA", "I11-RISK", "I11-ASSESS", "資訊安全風險", "資安風險", "風險評鑑流程", "I11-ASSET", "資訊資產", "I11-PHYS", "實體安全", "周邊安全", "安全區域設計", "fail secure"],
   "capabilities": ["concept_review", "flashcards", "quiz", "source_traceability"],
   "content_root": "knowledge/processed",
   "chapter_index": "chapter_index.json"
