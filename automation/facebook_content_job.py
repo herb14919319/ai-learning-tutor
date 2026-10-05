@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import hmac
 import json
 import os
 import random
@@ -46,6 +48,7 @@ class JobStatus(str, Enum):
     VALIDATION_FAILED = "validation_failed"
     REVIEW_REJECTED = "review_rejected"
     REVIEW_UNCERTAIN = "review_uncertain"
+    APPROVAL_REQUIRED = "approval_required"
     PUBLISH_FAILED = "publish_failed"
     PUBLISHED = "published"
 
@@ -55,6 +58,7 @@ EXIT_CODES = {
     JobStatus.PUBLISHED: 0,
     JobStatus.REVIEW_REJECTED: 1,
     JobStatus.REVIEW_UNCERTAIN: 1,
+    JobStatus.APPROVAL_REQUIRED: 1,
     JobStatus.VALIDATION_FAILED: 3,
     JobStatus.PUBLISH_FAILED: 4,
 }
@@ -90,6 +94,42 @@ def production_config_errors(environment: dict[str, str] | None = None) -> tuple
     return tuple(errors)
 
 
+class ApprovalState(str, Enum):
+    DRAFT = "draft"
+    REVIEWED = "reviewed"
+    APPROVED = "approved"
+
+
+@dataclass(frozen=True)
+class ApprovalRecord:
+    """A human decision about one exact post body, bound by its SHA-256."""
+
+    state: ApprovalState
+    post_sha256: str
+
+
+def post_digest(post: str) -> str:
+    return hashlib.sha256(post.encode("utf-8")).hexdigest()
+
+
+def no_approval_store(post: str) -> ApprovalRecord | None:
+    """No human approval store exists yet, so every post is unapproved (fail closed)."""
+    return None
+
+
+def is_publish_approved(post: str, record: object) -> bool:
+    if not (
+        isinstance(record, ApprovalRecord)
+        and record.state is ApprovalState.APPROVED
+        and isinstance(record.post_sha256, str)
+    ):
+        return False
+    try:
+        return hmac.compare_digest(record.post_sha256, post_digest(post))
+    except TypeError:
+        return False
+
+
 @dataclass(frozen=True)
 class ValidationResult:
     valid: bool
@@ -105,6 +145,7 @@ class ContentJobResult:
     errors: tuple[str, ...] = ()
     validation: ValidationResult | None = None
     review: ContentReviewResult | None = None
+    approved: bool = False
 
     @property
     def publish_allowed(self) -> bool:
@@ -113,6 +154,7 @@ class ContentJobResult:
             and self.validation.valid
             and self.review
             and self.review.decision is ContentReviewDecision.PASS
+            and self.approved
         )
 
 
@@ -246,6 +288,7 @@ def run_job(
     skill_answerer: Callable[[str], str] = answer_with_hungyi_skill,
     reviewer: Callable[[str, str], ContentReviewResult] = review_content_with_sources,
     publisher: Callable[[str], PublishResult] = publish_page_post,
+    approval_lookup: Callable[[str], ApprovalRecord | None] = no_approval_store,
 ) -> ContentJobResult:
     generated = generate_post(
         topics_path=topics_path,
@@ -296,6 +339,21 @@ def run_job(
             review=review,
         )
 
+    # Human approval gate: a passing automated review is not permission to publish.
+    try:
+        approval = approval_lookup(generated.post or "")
+    except Exception:
+        approval = None
+    if not is_publish_approved(generated.post or "", approval):
+        return ContentJobResult(
+            JobStatus.APPROVAL_REQUIRED,
+            topic=generated.topic,
+            post=generated.post,
+            errors=("explicit human approval is required before publishing",),
+            validation=generated.validation,
+            review=review,
+        )
+
     try:
         published = publisher(generated.post or "")
     except Exception:
@@ -308,6 +366,7 @@ def run_job(
             errors=(published.error or "Facebook Page publication failed",),
             validation=generated.validation,
             review=review,
+            approved=True,
         )
     return ContentJobResult(
         JobStatus.PUBLISHED,
@@ -316,6 +375,7 @@ def run_job(
         post_id=published.post_id,
         validation=generated.validation,
         review=review,
+        approved=True,
     )
 
 
@@ -382,6 +442,7 @@ def main() -> int:
             )
             if evidence.excerpt:
                 print(f"evidence_excerpt: {evidence.excerpt}")
+    print(f"human_approval: {'approved' if result.approved else 'missing'}")
     print(f"publish_allowed: {'YES' if result.publish_allowed else 'NO'}")
     if result.post_id:
         print(f"\npost_id: {result.post_id}")

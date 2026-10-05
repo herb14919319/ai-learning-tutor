@@ -1,6 +1,12 @@
 # Weekly Facebook publishing
 
-The one-shot job is `python -m automation.facebook_content_job --publish`. It selects a topic from `config/content_topics.json`, gets one Hung-yi Lee Skill answer, formats and validates the post, runs semantic and registered-source review, and calls the Facebook publisher at most once only after a final PASS. REJECT and UNCERTAIN stop before Facebook. There is no automatic rewriting or retry loop.
+The one-shot job is `python -m automation.facebook_content_job --publish`. It selects a topic from `config/content_topics.json`, gets one Hung-yi Lee Skill answer, formats and validates the post, runs semantic and registered-source review, and calls the Facebook publisher at most once only after a final PASS **and** an explicit human approval of that exact post. REJECT and UNCERTAIN stop before Facebook. There is no automatic rewriting or retry loop.
+
+## Human approval gate (fail closed)
+
+An automated PASS is not permission to publish. Before the publisher is called, `run_job` looks up an approval record for the post. It publishes only when the record's state is `approved` and its `post_sha256` matches the SHA-256 of the exact post body. Draft or reviewed records, a missing record, a mismatched hash, or a failing lookup all stop with `approval_required` (exit 1, HTTP 200 `"published": false`).
+
+No approval store exists yet. The production default (`no_approval_store`) always returns no record, so `--publish`, the Render Cron Job, and `POST /internal/jobs/facebook-publish` currently generate and review a draft but **never publish**. The target lifecycle is draft → reviewed → approved → published; a persistent approval workflow is planned separately. `--dry-run` is unchanged: it never consults approval and never calls Facebook.
 
 ## Configuration
 
@@ -32,8 +38,8 @@ Run `python -m automation.facebook_content_job --check-config` in the Cron envir
 
 | Exit | Meaning |
 | --- | --- |
-| 0 | Published, approved dry-run, or successful config check |
-| 1 | Review REJECT or UNCERTAIN; article blocked safely |
+| 0 | Published, review-passing dry-run, or successful config check |
+| 1 | Review REJECT or UNCERTAIN, or human approval missing; article blocked safely |
 | 2 | Required production configuration absent or invalid |
 | 3 | Topic, generation, or deterministic validation failed |
 | 4 | Facebook publication failed |
@@ -44,7 +50,7 @@ The job reads repository configuration and does not need files saved by earlier 
 
 ## External Linux cron trigger
 
-The existing Flask service also exposes `POST /internal/jobs/facebook-publish`. Set `AI_TUTOR_CRON_SECRET` to a strong shared value in the Render web service and in the Linux cron host's environment. The request body is ignored; the server selects the topic and invokes the same one-shot publish function used by the CLI. The endpoint returns HTTP 200 for publication or a safe review block, 401 for invalid authorization, 409 for an overlapping job in the same web process, 503 for missing configuration, and 500/502 for runtime or publishing failures. It does not return article text or secret values. The lock is process-local; multiple Render processes or instances are not coordinated.
+The existing Flask service also exposes `POST /internal/jobs/facebook-publish`. Set `AI_TUTOR_CRON_SECRET` to a strong shared value in the Render web service and in the Linux cron host's environment. The request body is ignored; the server selects the topic and invokes the same one-shot publish function used by the CLI. The endpoint returns HTTP 200 for publication or a safe review or approval block, 401 for invalid authorization, 409 for an overlapping job in the same web process, 503 for missing configuration, and 500/502 for runtime or publishing failures. It does not return article text or secret values. The lock is process-local; multiple Render processes or instances are not coordinated.
 
 Example command for the eventual external cron entry (do not run until ready to permit a real post):
 

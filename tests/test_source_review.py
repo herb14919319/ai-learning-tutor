@@ -14,7 +14,7 @@ from automation.content_review import (
     SourceEvidence,
     VerificationClaim,
 )
-from automation.facebook_content_job import JobStatus, run_job
+from automation.facebook_content_job import ApprovalRecord, ApprovalState, JobStatus, post_digest, run_job
 from automation.facebook_publisher import PublishResult
 from automation.source_review import (
     ClaimExtractionResult,
@@ -359,15 +359,17 @@ class SourceBackedPublishingGateTest(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def run_with_decision(self, decision, *, publish):
+    def run_with_decision(self, decision, *, publish, approval_lookup=None):
         reviewer = Mock(return_value=ContentReviewResult(decision, (), "reviewed"))
         publisher = Mock(return_value=PublishResult(True, post_id="page_1"))
+        kwargs = {"approval_lookup": approval_lookup} if approval_lookup else {}
         result = run_job(
             publish=publish,
             topics_path=self.topics_path,
             skill_answerer=lambda topic: "generated article",
             reviewer=reviewer,
             publisher=publisher,
+            **kwargs,
         )
         return result, reviewer, publisher
 
@@ -385,8 +387,17 @@ class SourceBackedPublishingGateTest(unittest.TestCase):
         reviewer.assert_called_once()
         publisher.assert_not_called()
 
-    def test_pass_publish_mode_invokes_facebook_once(self):
+    def test_pass_without_human_approval_invokes_facebook_zero_times(self):
         result, _, publisher = self.run_with_decision(ContentReviewDecision.PASS, publish=True)
+        self.assertEqual(result.status, JobStatus.APPROVAL_REQUIRED)
+        publisher.assert_not_called()
+
+    def test_pass_with_human_approval_invokes_facebook_once(self):
+        result, _, publisher = self.run_with_decision(
+            ContentReviewDecision.PASS,
+            publish=True,
+            approval_lookup=lambda post: ApprovalRecord(ApprovalState.APPROVED, post_digest(post)),
+        )
         self.assertEqual(result.status, JobStatus.PUBLISHED)
         publisher.assert_called_once()
 

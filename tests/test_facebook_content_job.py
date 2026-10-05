@@ -16,12 +16,15 @@ from automation.content_review import (
 from automation.facebook_content_job import (
     CONFIG_ERROR_EXIT_CODE,
     EXIT_CODES,
+    ApprovalRecord,
+    ApprovalState,
     ContentJobResult,
     JobStatus,
     answer_with_hungyi_skill,
     format_facebook_post,
     generate_post,
     main,
+    post_digest,
     production_config_errors,
     run_publish_once,
     run_job,
@@ -29,6 +32,10 @@ from automation.facebook_content_job import (
     validate_post,
 )
 from automation.facebook_publisher import PublishResult, publish_page_post
+
+
+def approve_exact_post(post):
+    return ApprovalRecord(ApprovalState.APPROVED, post_digest(post))
 
 
 PASS_REVIEW = ContentReviewResult(
@@ -133,11 +140,11 @@ class FacebookContentJobTest(unittest.TestCase):
 
         self.assertEqual(result.status, JobStatus.GENERATED)
         self.assertEqual(result.review.decision, ContentReviewDecision.PASS)
-        self.assertTrue(result.publish_allowed)
+        self.assertFalse(result.publish_allowed)
         reviewer.assert_called_once()
         publisher.assert_not_called()
 
-    def test_publish_mode_calls_facebook_once(self):
+    def test_approved_publish_mode_calls_facebook_once(self):
         publisher = Mock(return_value=PublishResult(True, post_id="page_123"))
         result = run_job(
             publish=True,
@@ -146,6 +153,7 @@ class FacebookContentJobTest(unittest.TestCase):
             skill_answerer=lambda topic: "answer",
             reviewer=lambda topic, post: PASS_REVIEW,
             publisher=publisher,
+            approval_lookup=approve_exact_post,
         )
 
         self.assertEqual(result.status, JobStatus.PUBLISHED)
@@ -491,6 +499,7 @@ class FacebookPublisherTest(unittest.TestCase):
                 skill_answerer=lambda topic: "answer",
                 reviewer=lambda topic, post: PASS_REVIEW,
                 publisher=publisher,
+                approval_lookup=approve_exact_post,
             )
 
         self.assertEqual(result.status, JobStatus.PUBLISH_FAILED)
