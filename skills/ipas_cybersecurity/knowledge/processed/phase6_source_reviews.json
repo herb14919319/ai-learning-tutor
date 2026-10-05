@@ -1,0 +1,55 @@
+[
+  {
+    "review_id": "I11-PHYS-SRC-P085",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_sha256": "5088642e71ae02d30e6c89cc80de17f94240b117b819cd810a05ab9cec8a7872",
+    "source_pages": [85],
+    "source_title": "周邊安全(perimeter security)",
+    "decision": "verified",
+    "observation_snapshot": "頁面四欄依序為設施門禁、人員進出控管、周邊保護機制、入侵偵測；下方分別說明監控記錄、辨識驗證、多元防護及偵測改變。",
+    "visual_transcription_snapshot": {
+      "column_titles": ["設施門禁", "人員進出控管", "周邊保護機制", "入侵偵測"],
+      "column_3": {
+        "subtitle": "多元化的堅固防禦",
+        "body": "盡量避免或是拖延非法的入侵，除了傳統的圍牆之外，監視系統與感測裝置都有可能派上用場"
+      },
+      "column_4": {
+        "subtitle": "偵測改變",
+        "body": "透過自動感測改變能及早發現入侵的事件。實體安全的入侵偵測須部署適當的裝置"
+      }
+    },
+    "verification_note": "Owner reviewed the full page and enlarged columns 3–4, then explicitly replied 'source verified'. The distinction is avoid/delay intrusion versus detect change early; monitoring and sensing devices are not mutually exclusive categories.",
+    "reviewed_at": "2026-10-02T09:06:29Z"
+  },
+  {
+    "review_id": "I11-PHYS-SRC-P088",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_sha256": "5088642e71ae02d30e6c89cc80de17f94240b117b819cd810a05ab9cec8a7872",
+    "source_pages": [88],
+    "source_title": "門窗的安全",
+    "decision": "verified",
+    "observation_snapshot": "投影片說門依疏散方向向外順向開啟；fail safe 例子平時上鎖、火災時保持開啟，適用有人員作業的區域；fail secure 例子平時上鎖、火災時保持關閉，適用無人的倉庫區域。",
+    "visual_transcription_snapshot": {
+      "fail_safe": "門應依照疏散方向向外順向開啟。門的設定在 fail safe 的情況下，平時上鎖，火災時應保持開啟，適用於有人員作業的區域。",
+      "fail_secure": "門的設定在 fail secure 的情況下，平時應上鎖，火災時保持關閉狀態，確保物品安全，適用於無人的倉庫區域。"
+    },
+    "verification_note": "Owner saw the rendered canonical page and the stored observation, then explicitly replied 'source verified'. The stored paraphrase compresses the slide's distinction between 平時上鎖 and 平時應上鎖.",
+    "reviewed_at": "2026-10-02T09:08:54Z"
+  },
+  {
+    "review_id": "I11-PHYS-SRC-P090",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_sha256": "5088642e71ae02d30e6c89cc80de17f94240b117b819cd810a05ab9cec8a7872",
+    "source_pages": [90],
+    "source_title": "空調系統",
+    "decision": "verified",
+    "observation_snapshot": "頁面要求空調規劃、正壓、開門時氣流往外吹送、濕度一般控制在 40%–60%、換氣與進氣口保護、煙霧自動偵測、獨立電力供應路線及維修保養紀錄。",
+    "visual_transcription_snapshot": {
+      "humidity_qualifier": "一般會控制在 40%~60%",
+      "airflow": "安全區域應保持正風壓，開門的時候風要往外吹送",
+      "power_and_maintenance": "應採用獨立的電力供應線路；清楚地記載維修紀錄，確認設施有定期保養，並應描述維護的程序"
+    },
+    "verification_note": "Owner saw the rendered canonical page and the stored observation, including the general (not universal) humidity wording, then explicitly replied 'source verified'.",
+    "reviewed_at": "2026-10-02T09:13:17Z"
+  }
+]

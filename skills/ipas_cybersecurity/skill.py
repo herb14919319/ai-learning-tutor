@@ -369,6 +369,10 @@ class IpasCybersecuritySkill:
             (("b 級資產", "b級資產"), "I11-ASSET-005"),
             (("c 級資產", "c級資產"), "I11-ASSET-006"),
             (("d 級資產", "d級資產"), "I11-ASSET-007"),
+            (("fail safe", "fail secure", "門窗的安全"), "I11-PHYS-008"),
+            (("空調", "濕度", "正壓"), "I11-PHYS-010"),
+            (("周邊安全", "門禁", "入侵偵測"), "I11-PHYS-004"),
+            (("實體安全", "安全區域", "機房"), "I11-PHYS-001"),
             (("風險", "risk"), "I11-RISK-005"),
             (("資產", "asset"), "I11-RISK-001"),
             (("cia", "三目標", "資訊安全工程師"), "I11-CIA-001"),
@@ -387,9 +391,9 @@ class IpasCybersecuritySkill:
     def answer(self, question: str) -> str:
         text = (question or "").strip()
         if not text:
-            return "目前支援 CIA、威脅與風險、風險評鑑、資訊資產分類四個小主題。"
+            return "目前支援 CIA、威脅與風險、風險評鑑、資訊資產分類與實體安全五個小主題。"
         try:
-            match = re.search(r"(I11-(?:CIA|RISK|ASSESS|ASSET)-Q\d{3}).*?(?:答案|選|答)\s*[:：]?\s*([A-D])", text, re.I)
+            match = re.search(r"(I11-(?:CIA|RISK|ASSESS|ASSET|PHYS)-Q\d{3}).*?(?:答案|選|答)\s*[:：]?\s*([A-D])", text, re.I)
             if match:
                 result = self.submit_answer(match.group(1), match.group(2))
                 refs = result["source_references"]
@@ -397,7 +401,8 @@ class IpasCybersecuritySkill:
                 return f"{'答對' if result['correct'] else '答錯'}；正確答案 {result['correct_answer']}。{result['explanation']} 來源：{SOURCE_FILE} PDF 第 {', '.join(map(str, pages))} 頁。審核狀態：{result['review_status']}。"
             if any(term in text for term in ("測驗", "出題", "練習題")):
                 chapter = (
-                    "I11-ASSET" if any(term in text.casefold() for term in ("清冊", "分類", "asset"))
+                    "I11-PHYS" if any(term in text.casefold() for term in ("實體安全", "周邊安全", "機房", "空調", "門禁", "physical"))
+                    else "I11-ASSET" if any(term in text.casefold() for term in ("清冊", "分類", "asset"))
                     else "I11-ASSESS" if any(term in text.casefold() for term in ("評鑑", "識別", "分析", "assessment"))
                     else "I11-RISK" if any(term in text.casefold() for term in ("風險", "risk", "威脅", "脆弱"))
                     else DEFAULT_CHAPTER
@@ -406,7 +411,7 @@ class IpasCybersecuritySkill:
                 return f"{item['question_id']} {item['question']}\n" + "\n".join(f"{key}. {value}" for key, value in item["options"].items()) + f"\n審核狀態：{item['review_status']}"
             chunk = self.query_concept(text)
             if chunk is None:
-                return "目前只支援 CIA、威脅與風險、風險評鑑、資訊資產分類四個小主題。"
+                return "目前支援 CIA、威脅與風險、風險評鑑、資訊資產分類與實體安全五個小主題。"
             teaching = chunk["teaching_interpretation"]
             evidence = chunk["source_evidence"]
             return f"{chunk['title']}：{teaching['core_concept']}\n{teaching['explanation']}\n考點：{teaching['exam_focus']}\n來源：{evidence['source_file']} PDF 第 {', '.join(map(str, evidence['source_pages']))} 頁。審核狀態：{teaching['review_status']}。"

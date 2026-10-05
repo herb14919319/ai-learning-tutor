@@ -24,7 +24,7 @@
       {% if error_message %}
       <section role="alert"><h1>課程暫時無法載入</h1><p>{{ error_message }}</p></section>
       {% else %}
-      <header><p>iPAS 資訊安全工程師初級 · 四個小主題</p><h1>{{ course_info.title }}</h1><p>包含 CIA、風險概念、風險評鑑與資訊資產分類。生成教材均顯示審核狀態。</p></header>
+      <header><p>iPAS 資訊安全工程師初級 · {{ course_info.chapter_count }} 個小主題</p><h1>{{ course_info.title }}</h1><p>包含 CIA、風險概念、風險評鑑、資訊資產分類與實體安全。生成教材均顯示審核狀態。</p></header>
       <nav aria-label="主題導航">
         {% for topic in topics %}<a href="#{{ topic.chapter.chapter_id }}">{{ topic.chapter.title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
       </nav>

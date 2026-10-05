@@ -683,5 +683,78 @@
     },
     "reviewed_at": "2026-10-02T00:23:09+00:00",
     "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-PHYS-001",
+    "decision": "accept",
+    "content_sha256": "e453320f6af73be6013b475a808bd3ff114cfc1a2c6a12075f67becce4a0d822",
+    "reviewed_content": {
+      "core_concept": "實體安全也依賴維持機房運作的支持系統。",
+      "explanation": "牆與門之外，停電、漏水或空調失效也可能使系統無法服務。",
+      "exam_focus": "把電力、環境監測、空調與火災防護歸入支持系統；不能只想到門禁。",
+      "related_concepts": [
+        "I11-PHYS-002",
+        "I11-PHYS-003",
+        "I11-PHYS-010"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-02T09:18:34+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-PHYS-002",
+    "decision": "accept",
+    "content_sha256": "0ab411b366d79eb8cce6be72fe8d20541cec70b9349fc0a86822b8031d4b3505",
+    "reviewed_content": {
+      "core_concept": "次要電力是主要供電中斷時的替代來源。",
+      "explanation": "這是供電連續性的安排；來源舉發電機，但未規定切換時間或容量。",
+      "exam_focus": "區分主要與次要來源，不把發電機說成唯一選項。",
+      "related_concepts": [
+        "I11-PHYS-001"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-02T09:25:56+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-PHYS-003",
+    "decision": "accept",
+    "content_sha256": "d8d9fbf483b38e59d713bc24c823bf6505eceda42e4b09af328a41ceaddd4414",
+    "reviewed_content": {
+      "core_concept": "環境控制要能發現異常，也要知道如何處置。",
+      "explanation": "警訊、緊急開關及火災設備在來源中分別承擔告警與處置用途。",
+      "exam_focus": "告警不等於滅火；緊急開關與自動偵測也不是同一功能。",
+      "related_concepts": [
+        "I11-PHYS-001",
+        "I11-PHYS-010"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-02T09:27:25+00:00",
+    "note": ""
+  },
+  {
+    "kind": "chunk",
+    "asset_id": "I11-PHYS-004",
+    "decision": "revise",
+    "content_sha256": "772735c15986b30e3693b28fd3d61f3e2aeea8b7ec61b5276933724a1c152022",
+    "reviewed_content": {
+      "core_concept": "周邊安全從進出限制延伸到辨識、防護與偵測。",
+      "explanation": "四欄是並列的控制面向；監控記錄、身份辨識、圍牆等屏障與感測告警各有角色。",
+      "exam_focus": "不要把入侵偵測誤當作門禁授權，也不要認為只有圍牆即可。",
+      "related_concepts": [
+        "I11-PHYS-006",
+        "I11-PHYS-008",
+        "I11-PHYS-009"
+      ]
+    },
+    "dependency_hashes": {},
+    "reviewed_at": "2026-10-02T09:47:11+00:00",
+    "note": "請在生成解釋中明確區分第三欄「周邊保護機制」著重避免或拖延非法入侵，第四欄「入侵偵測」著重透過自動感測及早發現入侵。監視系統與感測裝置可同時參與不同防護目的，不應描述成互斥設備。其餘內容維持不變。"
   }
 ]

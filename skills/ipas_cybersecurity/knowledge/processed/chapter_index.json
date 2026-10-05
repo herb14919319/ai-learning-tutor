@@ -50,5 +50,18 @@
     "card_file": "cards/asset_flashcards.json",
     "question_file": "asset_questions.json",
     "schema_file": "learning_chunk_schema_v0_4.json"
+  },
+  {
+    "chapter_id": "I11-PHYS",
+    "title": "資訊安全管理概論：實體安全控制",
+    "order": 5,
+    "status": "phase6_controlled_pilot",
+    "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+    "source_pages": [84, 85, 86, 87, 88, 89, 90],
+    "teaching_file": "physical_security_teaching.md",
+    "chunk_file": "physical_security_chunks.json",
+    "card_file": "cards/physical_security_flashcards.json",
+    "question_file": "physical_security_questions.json",
+    "schema_file": "learning_chunk_schema_v0_4.json"
   }
 ]

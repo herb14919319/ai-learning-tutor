@@ -23,14 +23,17 @@ class ReviewPilotWorkflowTest(unittest.TestCase):
         processed = SKILL / "knowledge/processed"
         verify_source(processed)
         records = load_ledger(processed / "review_decisions.json")
-        latest = {(record["kind"], record["asset_id"]): record for record in records}
+        # Phase 5 froze the asset-management slice; later phases append their own records.
+        latest = {(record["kind"], record["asset_id"]): record for record in records
+                  if record["asset_id"].startswith("I11-ASSET")}
         expected = ({("chunk", f"I11-ASSET-{number:03}") for number in range(1, 8)}
                     | {("teaching", "I11-ASSET")}
                     | {("card", f"I11-ASSET-F{number:03}") for number in range(1, 11)}
                     | {("question", f"I11-ASSET-Q{number:03}") for number in range(1, 11)})
         self.assertEqual(set(latest), expected)
         self.assertTrue(all(latest[key]["decision"] == "accept" for key in expected))
-        teaching_history = [record for record in records if record["kind"] == "teaching"]
+        teaching_history = [record for record in records
+                            if record["kind"] == "teaching" and record["asset_id"] == "I11-ASSET"]
         self.assertEqual([record["decision"] for record in teaching_history], ["revise", "accept"])
         self.assertNotEqual(teaching_history[0]["content_sha256"], teaching_history[1]["content_sha256"])
 

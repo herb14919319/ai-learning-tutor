@@ -1,0 +1,124 @@
+[
+  {
+    "card_id": "I11-PHYS-F001",
+    "front": "實體安全的內部支持系統包含哪些面向？",
+    "back": "第 84 頁列電力、環境控制、空調及火災防護。",
+    "chunk_ids": [
+      "I11-PHYS-001"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F002",
+    "front": "主要電力中斷時，來源要求什麼？",
+    "back": "由次要電力來源供電；投影片舉發電機為例。",
+    "chunk_ids": [
+      "I11-PHYS-002"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F003",
+    "front": "環境控制的告警與火災設備有何不同？",
+    "back": "環控通知異常；火災防護另考量自動偵測及滅火設備。",
+    "chunk_ids": [
+      "I11-PHYS-003"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F004",
+    "front": "第 85 頁周邊安全的四個面向是什麼？",
+    "back": "設施門禁、人員進出控管、周邊保護機制、入侵偵測。",
+    "chunk_ids": [
+      "I11-PHYS-004"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F005",
+    "front": "機房的天花板與地板應注意什麼？",
+    "back": "第 86 頁要求考量承重與防火；不能只檢查門鎖。",
+    "chunk_ids": [
+      "I11-PHYS-005"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F006",
+    "front": "安全區域設計為何要分級？",
+    "back": "依不同安全要求劃分空間，標示要求並規劃相稱控制。",
+    "chunk_ids": [
+      "I11-PHYS-006"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F007",
+    "front": "安全區域除門之外還要檢查哪些穿越路徑？",
+    "back": "第 87 頁提牆面連接、通風口及偵測器配置。",
+    "chunk_ids": [
+      "I11-PHYS-007"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F008",
+    "front": "第 88 頁 fail safe 與 fail secure 的火災時狀態？",
+    "back": "例子中前者保持開啟，後者保持關閉；兩者平時都上鎖。",
+    "chunk_ids": [
+      "I11-PHYS-008"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F009",
+    "front": "出入口控管為何不能只靠攝影機？",
+    "back": "來源還要求辨識進出、注意尾隨；錄影是輔助且資料須保存。",
+    "chunk_ids": [
+      "I11-PHYS-009",
+      "I11-PHYS-004"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F010",
+    "front": "空調系統除溫度外還涉及什麼？",
+    "back": "濕度、正壓與氣流、換氣、進氣保護、供電及維修紀錄。",
+    "chunk_ids": [
+      "I11-PHYS-010"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F011",
+    "front": "來源對濕度的措辭是什麼？",
+    "back": "第 90 頁說一般控制在 40%–60%；不應當成所有設備的絕對規範。",
+    "chunk_ids": [
+      "I11-PHYS-010"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  },
+  {
+    "card_id": "I11-PHYS-F012",
+    "front": "周邊防護與入侵偵測的作用如何區分？",
+    "back": "前者以屏障等方式阻擋或延遲侵入；後者感測改變、提早發現事件。",
+    "chunk_ids": [
+      "I11-PHYS-004",
+      "I11-PHYS-007"
+    ],
+    "content_origin": "generated_teaching",
+    "review_status": "pending_review"
+  }
+]

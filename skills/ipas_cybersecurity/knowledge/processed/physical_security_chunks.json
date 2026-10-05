@@ -1,0 +1,294 @@
+[
+  {
+    "chunk_id": "I11-PHYS-001",
+    "title": "支持系統與實體安全",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        84
+      ],
+      "source_title": [
+        "內部的支持系統"
+      ],
+      "observations": [
+        "投影片說實體環境保護之外，電力、水與空調等日常設施正常運作也是安全條件；並列電力、環境控制、空調、火災四項。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "實體安全也依賴維持機房運作的支持系統。",
+      "explanation": "牆與門之外，停電、漏水或空調失效也可能使系統無法服務。",
+      "exam_focus": "把電力、環境監測、空調與火災防護歸入支持系統；不能只想到門禁。",
+      "related_concepts": [
+        "I11-PHYS-002",
+        "I11-PHYS-003",
+        "I11-PHYS-010"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-002",
+    "title": "主要與次要電力來源",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        84
+      ],
+      "source_title": [
+        "內部的支持系統"
+      ],
+      "observations": [
+        "電力項把來源分為主要及次要；主要來源中斷時由次要來源供電，例子為發電機。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "次要電力是主要供電中斷時的替代來源。",
+      "explanation": "這是供電連續性的安排；來源舉發電機，但未規定切換時間或容量。",
+      "exam_focus": "區分主要與次要來源，不把發電機說成唯一選項。",
+      "related_concepts": [
+        "I11-PHYS-001"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-003",
+    "title": "環境控制與火災防護",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        84
+      ],
+      "source_title": [
+        "內部的支持系統"
+      ],
+      "observations": [
+        "環境控制項要求水、電、瓦斯與空調熟悉緊急開關，環控系統發出通知警訊；火災項提及滅火方式、自動偵測與滅火設備。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "環境控制要能發現異常，也要知道如何處置。",
+      "explanation": "警訊、緊急開關及火災設備在來源中分別承擔告警與處置用途。",
+      "exam_focus": "告警不等於滅火；緊急開關與自動偵測也不是同一功能。",
+      "related_concepts": [
+        "I11-PHYS-001",
+        "I11-PHYS-010"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-004",
+    "title": "周邊安全的四類控制",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "comparison",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        85
+      ],
+      "source_title": [
+        "周邊安全(perimeter security)"
+      ],
+      "observations": [
+        "頁面四欄依序為設施門禁、人員進出控管、周邊保護機制、入侵偵測；下方分別說明監控記錄、辨識驗證、多元防護及偵測改變。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "周邊安全從進出限制延伸到辨識、防護與偵測。",
+      "explanation": "四欄是並列的控制面向：第三欄「周邊保護機制」著重避免或拖延非法入侵；第四欄「入侵偵測」著重透過自動感測及早發現入侵。監視系統與感測裝置可同時參與不同防護目的，並非互斥設備。",
+      "exam_focus": "不要把入侵偵測誤當作門禁授權，也不要認為只有圍牆即可。",
+      "related_concepts": [
+        "I11-PHYS-006",
+        "I11-PHYS-008",
+        "I11-PHYS-009"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-005",
+    "title": "安全空間的結構設計",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        86
+      ],
+      "source_title": [
+        "建立實體安全環境"
+      ],
+      "observations": [
+        "安全實體空間須評估各組成項目；天花板與地板需考量承重及防火，牆面需考量防火與堅固，門窗需考量入侵可能性及緊急出口。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "安全空間要按其用途檢查結構與出入口。",
+      "explanation": "機房不是只裝門鎖；天花板、地板、牆、門窗各有不同設計條件。",
+      "exam_focus": "門的堅固性與緊急出口可用性需同時評估。",
+      "related_concepts": [
+        "I11-PHYS-006",
+        "I11-PHYS-008"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-006",
+    "title": "安全區域分級與標示",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        87
+      ],
+      "source_title": [
+        "安全區域設計"
+      ],
+      "observations": [
+        "頁面說按不同安全等級劃分實體區域，常見例子有控管、限制、公開、機敏；區域圖須標示安全要求等級，並舉電腦資訊設備機房與電力機房。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "區域分級使不同空間採用相稱的實體控制。",
+      "explanation": "先辨識區域安全要求，再規劃邊界與控制；來源的四個詞是常見分法，不是普遍強制級別。",
+      "exam_focus": "公開區與機敏區不應預設同一進出控制。",
+      "related_concepts": [
+        "I11-PHYS-004",
+        "I11-PHYS-005",
+        "I11-PHYS-007"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-007",
+    "title": "區域偵測與屏障",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        87
+      ],
+      "source_title": [
+        "安全區域設計"
+      ],
+      "observations": [
+        "頁面要求安全區域有適當偵測器；煙霧偵測器置於天花板下風處，通風口加裝鐵網；較高安全等級的區域採較強牆面並確認由樓地板連接至天花板。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "區域設計結合偵測與防穿越的實體屏障。",
+      "explanation": "偵測器提醒異常，牆面與通風口處理繞過邊界的可能路徑。",
+      "exam_focus": "不要只檢查門，忽略天花板、通風口與牆面連接。",
+      "related_concepts": [
+        "I11-PHYS-005",
+        "I11-PHYS-006"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-008",
+    "title": "門的 fail safe 與 fail secure",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "comparison",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        88
+      ],
+      "source_title": [
+        "門窗的安全"
+      ],
+      "observations": [
+        "投影片說門依疏散方向向外順向開啟；fail safe 例子平時上鎖、火災時保持開啟，適用有人員作業的區域；fail secure 例子平時上鎖、火災時保持關閉，適用無人的倉庫區域。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "門的火災狀態須與人員疏散及物品保護需求一起判斷。",
+      "explanation": "來源用有人作業區與無人倉庫對照兩種狀態；它未給出所有建築或法規情境的通則。",
+      "exam_focus": "兩者平時都上鎖；本頁的考點是火災時開啟或關閉的差別。",
+      "related_concepts": [
+        "I11-PHYS-005",
+        "I11-PHYS-009"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-009",
+    "title": "進出口與監視錄影",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        89
+      ],
+      "source_title": [
+        "實體設施的控管"
+      ],
+      "observations": [
+        "頁面列大門、側門、緊急出口、車輛貨物進出等需辨識與控管，留意尾隨；監視錄影可協助動作偵測與身份識別，並需確保監視系統安全及妥善保存錄影資料。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "出入口管制與錄影紀錄要一起規劃。",
+      "explanation": "辨識進出者與避免尾隨屬入口控制；錄影可輔助追查，但監視系統及紀錄本身也要保護。",
+      "exam_focus": "攝影機不能替代進出辨識；緊急出口也在管制視野內。",
+      "related_concepts": [
+        "I11-PHYS-004",
+        "I11-PHYS-008"
+      ],
+      "review_status": "pending_review"
+    }
+  },
+  {
+    "chunk_id": "I11-PHYS-010",
+    "title": "空調與通風維護",
+    "chapter": "I11 資訊安全管理概論",
+    "section": "實體安全：支持系統、周邊、區域與設施",
+    "chunk_type": "concept",
+    "source_evidence": {
+      "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+      "source_pages": [
+        90
+      ],
+      "source_title": [
+        "空調系統"
+      ],
+      "observations": [
+        "頁面要求空調規劃、正壓、開門時氣流往外吹送、濕度一般控制在 40%–60%、換氣與進氣口保護、煙霧自動偵測、獨立電力供應路線及維修保養紀錄。"
+      ]
+    },
+    "teaching_interpretation": {
+      "core_concept": "空調是機房可用性與環境保護的一部分。",
+      "explanation": "溫濕度、氣流、換氣、電力與維護都需考慮；40%–60% 是本投影片的一般說法，不應當成所有設備的絕對規範。",
+      "exam_focus": "空調不只降溫，還涉及正壓、濕度、進氣保護及維護紀錄。",
+      "related_concepts": [
+        "I11-PHYS-001",
+        "I11-PHYS-003"
+      ],
+      "review_status": "pending_review"
+    }
+  }
+]

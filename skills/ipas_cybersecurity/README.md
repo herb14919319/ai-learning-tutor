@@ -1,6 +1,6 @@
-# iPAS 資訊安全工程師初級 — four bounded validation slices
+# iPAS 資訊安全工程師初級 — bounded validation slices
 
-This skill is a peer of `ipas_ai_application_planner` and `ipas_net_zero_planner`. Phase 1 established CIA as parallel definitions; Phase 2 added a threat–vulnerability–risk relationship; Phase 3 added an ordered three-step risk-assessment process. Phase 4 pilots an asset-value comparison matrix and local review ledger. All four use the repository's skill discovery, module `answer(question)` interface, and Flask Web app. No new runtime, router, database, workflow engine, or standalone app was added.
+This skill is a peer of `ipas_ai_application_planner` and `ipas_net_zero_planner`. Phase 1 established CIA as parallel definitions; Phase 2 added a threat–vulnerability–risk relationship; Phase 3 added an ordered three-step risk-assessment process. Phase 4 piloted an asset-value comparison matrix and local review ledger; Phase 5 completed its owner review. Phase 6 adds a controlled physical-security content slice. All slices use the repository's skill discovery, module `answer(question)` interface, and Flask Web app. No new runtime, router, database, workflow engine, or standalone app was added.
 
 ## Source of truth and scope
 
@@ -39,10 +39,12 @@ Phase 3 adds `assessment_chunks.json` (overview and three independently cited st
 
 Phase 4 adds `asset_chunks.json` (seven chunks), `asset_teaching.md` (one concise section), `cards/asset_flashcards.json` (ten cards), and `asset_questions.json` (ten original questions). The index has four bounded slice entries, not a complete chapter. All new content starts `pending_review`. `REVIEW_GATE.md` documents the local accept/revise/reject command and runtime policy. Pending content remains visible with its status; revision-required and rejected content is hidden, including dependent cards/questions. Review decisions apply only to generated payload hashes, never canonical PDF evidence.
 
+Phase 5 recorded explicit owner acceptance of the seven asset chunks, one revised teaching section, ten cards and ten questions, plus separate verification of the page 80 source matrix. Phase 6 adds a controlled physical-security slice from Management I PDF pp. 84–90: ten chunks, one teaching section, twelve cards, and twelve original questions. It uses frozen v0.4 and the existing review gate; all new generated assets started pending, and owner review is in progress (see `PHASE6_PRODUCTION_REPORT.md`, section L). The index now has five bounded slices, not a full chapter. Exact new content and dependency-order review instructions are in `PHASE6_REVIEW_PACKET.md`.
+
 ## Consumption
 
 - Tutor Runtime: `skill.json` activates `skills.ipas_cybersecurity`. Explicit cybersecurity/CIA queries route through existing skill discovery to `answer(question)`. Public functions include `get_chapter`, `get_flashcards`, `get_questions`, `submit_answer`, `query_concept`, and `get_sources`.
-- Web: `GET /ipas/cybersecurity` shows all four slices, cards, quizzes and review labels; `POST /api/ipas/cybersecurity/answer` grades visible questions. The routes are unchanged from Phase 1. Existing iPAS routes and APIs are unchanged.
+- Web: `GET /ipas/cybersecurity` shows all five slices, cards, quizzes and review labels; `POST /api/ipas/cybersecurity/answer` grades visible questions. The routes are unchanged from Phase 1. Existing iPAS routes and APIs are unchanged.
 
 The current text cards and processed teaching Markdown validate content flow. A later iteration can improve presentation without changing canonical citations.
 
@@ -59,4 +61,4 @@ The tests check all four schemas, canonical page references, relation targets, s
 
 ## Architecture lock status
 
-v0.3 needed the additive v0.4 comparison matrix for page 80's multi-dimensional A–D table. Parallel concepts, typed relations, and ordered processes still load without migration. The local review gate can support a controlled manual pilot, but no actual generated assets have been human-approved yet. Chapter-scale generation is premature until visual transcription review, batch reviewer workflow, provenance for later exam material, and larger chapter navigation are addressed.
+v0.3 needed the additive v0.4 comparison matrix for page 80's multi-dimensional A–D table. Parallel concepts, typed relations, and ordered processes still load without migration. Phase 5 owner-approved the bounded asset slice; Phase 6 physical-security content remains pending. Chapter-scale generation should follow source and educational review of this second pilot, with the review workload and question quality measured before expansion.
