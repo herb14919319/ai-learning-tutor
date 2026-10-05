@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 
 import main
+from llm import gateway as llm_gateway
 from menu_router import MENU_COMMANDS
 from router_guard import (
     BLOCKED_REDIRECT_MESSAGE,
@@ -17,7 +18,7 @@ from router_guard import (
 
 class RouterGuardTest(unittest.TestCase):
     def test_ai_learning_questions_enter_tutor_flow(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="tutor answer"
         ) as answer:
             reply = main.generate_ai_reply("What is Transformer attention?")
@@ -29,7 +30,7 @@ class RouterGuardTest(unittest.TestCase):
     def test_beginner_learning_guidance_enters_tutor_flow(self):
         text = "I'm a beginner. Where should I start learning LLMs?"
 
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="learning plan"
         ) as answer:
             reply = main.generate_ai_reply(text)

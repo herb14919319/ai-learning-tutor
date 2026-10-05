@@ -9,6 +9,7 @@ from urllib.error import HTTPError
 from unittest.mock import ANY, patch
 
 import main
+from llm import gateway as llm_gateway
 from menu_router import is_menu_command
 from memory.conversation_context import clear_context, get_active_skill, set_active_skill
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
@@ -346,11 +347,11 @@ class GeminiFallbackTest(unittest.TestCase):
         self_error = self.gemini_rate_limit_error()
         token = main._active_model_provider.set("gemini")
         try:
-            with patch.object(main, "model_clients", {"gemini": RateLimitedGemini()}), patch.object(
-                main,
+            with patch.object(llm_gateway, "model_clients", {"gemini": RateLimitedGemini()}), patch.object(
+                llm_gateway,
                 "openai_client",
                 AvailableOpenAI(),
-            ), patch.object(main, "write_runtime_telemetry"), self.assertLogs("main", level="WARNING") as logs:
+            ), patch.object(llm_gateway, "write_runtime_telemetry"), self.assertLogs("main", level="WARNING") as logs:
                 reply = main.ask_gpt("system", "user")
         finally:
             main._active_model_provider.reset(token)
@@ -375,11 +376,11 @@ class GeminiFallbackTest(unittest.TestCase):
         token = main._active_model_provider.set("gemini")
         try:
             with patch.dict(os.environ, {"OPENAI_API_KEY": ""}), patch.object(
-                main,
+                llm_gateway,
                 "model_clients",
                 {"gemini": RateLimitedGemini()},
-            ), patch.object(main, "openai_client", None), patch.object(
-                main,
+            ), patch.object(llm_gateway, "openai_client", None), patch.object(
+                llm_gateway,
                 "write_runtime_telemetry",
             ), self.assertLogs("main", level="WARNING") as logs:
                 reply = main.ask_gpt("system", "user")
@@ -427,11 +428,11 @@ class ProviderFallbackPolicyTest(unittest.TestCase):
         server_error = self.http_error(503)
         token = main._active_model_provider.set("deepseek")
         try:
-            with patch.object(main, "model_clients", {"deepseek": FailingDeepSeek()}), patch.object(
-                main,
+            with patch.object(llm_gateway, "model_clients", {"deepseek": FailingDeepSeek()}), patch.object(
+                llm_gateway,
                 "openai_client",
                 AvailableOpenAI(),
-            ), patch.object(main, "write_runtime_telemetry"):
+            ), patch.object(llm_gateway, "write_runtime_telemetry"):
                 reply = main.ask_gpt("system", "user")
         finally:
             main._active_model_provider.reset(token)
@@ -449,10 +450,10 @@ class ProviderFallbackPolicyTest(unittest.TestCase):
         auth_error = self.http_error(401)
         token = main._active_model_provider.set("deepseek")
         try:
-            with patch.object(main, "model_clients", {"deepseek": UnauthorizedDeepSeek()}), patch.object(
-                main,
+            with patch.object(llm_gateway, "model_clients", {"deepseek": UnauthorizedDeepSeek()}), patch.object(
+                llm_gateway,
                 "openai_client",
-            ) as openai, patch.object(main, "write_runtime_telemetry"):
+            ) as openai, patch.object(llm_gateway, "write_runtime_telemetry"):
                 with self.assertRaises(HTTPError):
                     main.ask_gpt("system", "user")
         finally:
@@ -708,7 +709,7 @@ class LittleTreeCommandTest(unittest.TestCase):
                 answer.assert_not_called()
 
     def test_normal_questions_without_little_tree_keep_existing_behavior(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="tutor answer"
         ) as answer:
             reply = main.generate_ai_reply("What is Transformer attention?", user_id="user-1")
@@ -896,7 +897,7 @@ class LineWebhookFlowTest(unittest.TestCase):
     def test_empty_ai_answer_pushes_fallback_message(self):
         calls = []
 
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value=""
         ), patch.object(
             main, "push_text", side_effect=lambda to, text: calls.append((to, text))
@@ -917,7 +918,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         )
 
     def test_none_ai_answer_uses_default_fallback_response(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value=None
         ):
             reply = main.generate_ai_reply("AI助理有沒有流量限制？")
@@ -925,7 +926,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         self.assertEqual(reply, main.DEFAULT_FALLBACK_RESPONSE)
 
     def test_empty_ai_answer_uses_default_fallback_response(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="   "
         ):
             reply = main.generate_ai_reply("AI助理有沒有流量限制？")
@@ -933,7 +934,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         self.assertEqual(reply, main.DEFAULT_FALLBACK_RESPONSE)
 
     def test_normal_ai_answer_is_preserved(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="正常答案"
         ):
             reply = main.generate_ai_reply("AI助理有沒有流量限制？")
@@ -955,7 +956,7 @@ class LineWebhookFlowTest(unittest.TestCase):
     def test_ai_exception_pushes_fallback_message(self):
         calls = []
 
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", side_effect=RuntimeError("boom")
         ), patch.object(
             main, "push_text", side_effect=lambda to, text: calls.append((to, text))
@@ -971,7 +972,7 @@ class LineWebhookFlowTest(unittest.TestCase):
         self.assertEqual(reply, main.TIMEOUT_FALLBACK_RESPONSE)
 
     def test_ai_assistant_rate_limit_question_does_not_hang(self):
-        with patch.object(main, "openai_client", object()), patch.object(
+        with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="目前沒有已知的固定流量限制。"
         ):
             reply = main.generate_ai_reply("AI助理有沒有流量限制？")

@@ -23,7 +23,7 @@ from automation.content_review import (
     VerificationClaim,
     review_content,
 )
-from models import create_model_client
+from llm import create_default_client
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -105,7 +105,7 @@ class _TextExtractor(HTMLParser):
 
 
 def _model_call(system_prompt: str, user_prompt: str) -> str:
-    client = create_model_client()
+    client = create_default_client()
     if client is None:
         raise RuntimeError("Review model is not configured")
     return client.complete(system_prompt, user_prompt)

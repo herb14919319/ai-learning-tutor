@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable
 
-from models import create_model_client
+from llm import create_default_client
 
 
 class ContentReviewDecision(str, Enum):
@@ -119,7 +119,7 @@ def _uncertain(summary: str, reason: str) -> ContentReviewResult:
 
 
 def _existing_model_call(system_prompt: str, user_prompt: str) -> str:
-    client = create_model_client()
+    client = create_default_client()
     if client is None:
         raise RuntimeError("Review model is not configured")
     return client.complete(system_prompt, user_prompt)

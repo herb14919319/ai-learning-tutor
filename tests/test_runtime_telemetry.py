@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import main
+from llm import gateway as llm_gateway
 import runtime_telemetry
 
 
@@ -27,7 +28,7 @@ class RuntimeTelemetryTest(unittest.TestCase):
             entrypoint_token = main._active_entrypoint.set(main.ENTRYPOINT_WEB_CHAT)
             try:
                 with patch.object(runtime_telemetry, "TELEMETRY_PATH", telemetry_path), patch.object(
-                    main,
+                    llm_gateway,
                     "openai_client",
                     FakeOpenAI(),
                 ):
@@ -81,7 +82,7 @@ class RuntimeTelemetryTest(unittest.TestCase):
             provider_token = main._active_model_provider.set("openai")
             try:
                 with patch.object(runtime_telemetry, "TELEMETRY_PATH", blocked_path), patch.object(
-                    main,
+                    llm_gateway,
                     "openai_client",
                     FakeOpenAI(),
                 ):

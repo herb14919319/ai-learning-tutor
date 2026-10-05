@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from models import create_model_client
+from llm import create_default_client
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def ask_gpt(system_prompt: str, user_prompt: str) -> str:
     if _ask_gpt:
         return _ask_gpt(system_prompt, user_prompt)
 
-    client = create_model_client()
+    client = create_default_client()
     if not client:
         provider = os.getenv("MODEL_PROVIDER", "openai").strip().lower()
         raise RuntimeError(f"{provider} model API is not configured")

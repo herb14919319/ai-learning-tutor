@@ -9,6 +9,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 
 import main
+from llm import gateway as llm_gateway
 import runtime_telemetry
 from agents.tutor_agent import TutorAgent
 
@@ -125,8 +126,8 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
                 main.tutor_agent,
                 "answer",
                 side_effect=lambda message, user_id=None: main.ask_gpt("system", message),
-            ), patch.object(main, "model_clients", {"deepseek": FailingDeepSeek()}), patch.object(
-                main, "openai_client", AvailableOpenAI()
+            ), patch.object(llm_gateway, "model_clients", {"deepseek": FailingDeepSeek()}), patch.object(
+                llm_gateway, "openai_client", AvailableOpenAI()
             ):
                 reply = main.generate_tutor_answer(
                     "What is RAG?",
@@ -177,8 +178,8 @@ class RequestCorrelationTelemetryTest(unittest.TestCase):
                 main.tutor_agent,
                 "answer",
                 side_effect=lambda message, user_id=None: main.ask_gpt("system", message),
-            ), patch.object(main, "model_clients", {"deepseek": UnauthorizedDeepSeek()}), patch.object(
-                main, "openai_client"
+            ), patch.object(llm_gateway, "model_clients", {"deepseek": UnauthorizedDeepSeek()}), patch.object(
+                llm_gateway, "openai_client"
             ) as openai:
                 with self.assertRaises(HTTPError):
                     main.generate_tutor_answer(
