@@ -1,6 +1,6 @@
 # AI Learning Tutor Deployment Checklist
 
-這份文件整理 AI Learning Tutor 上線前後的檢查項目。目標是協助部署與排錯，不變更主要程式邏輯、router、OpenAI API 呼叫、LINE webhook 或 skill runtime。
+這份文件整理 AI Learning Tutor 上線前後的檢查項目。正式環境部署目標為 **Render**；README 中的 Cloud Run 段落僅為歷史紀錄。目標是協助部署與排錯，不變更主要程式邏輯、router、OpenAI API 呼叫、LINE webhook 或 skill runtime。
 
 ## 1. 本機啟動流程
 

@@ -394,8 +394,7 @@ class ExistingSkillMigrationTest(unittest.TestCase):
 
         self.assertEqual(manifests["ipas_net_zero_planner"].skill_type, "web")
         self.assertEqual(manifests["little_tree"].skill_type, "web")
-        self.assertEqual(manifests["little_tree_companion"].skill_type, "legacy")
-        self.assertFalse(manifests["little_tree_companion"].enabled)
+        self.assertNotIn("little_tree_companion", manifests)  # retired chat companion
         self.assertNotIn("ipas_net_zero_planner", [metadata.name for metadata in list_skills()])
         self.assertNotIn("little_tree", [metadata.name for metadata in list_skills()])
 

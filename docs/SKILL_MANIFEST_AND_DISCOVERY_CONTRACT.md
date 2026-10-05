@@ -33,7 +33,7 @@ Current classifications:
 - `hungyi_lee`: active Runtime Skill with a local wiki content root.
 - `ipas_ai_application_planner`: active Runtime Skill that also has explicitly wired course pages.
 - `ipas_net_zero_planner`: dedicated Web package with deterministic tools.
-- `little_tree_companion`: disabled legacy package; its active-state compatibility path remains unchanged.
+- `little_tree_companion`: removed. The retired chat companion's legacy manifest and runtime no longer exist.
 
 ## 4. Manifest Schema
 
@@ -205,7 +205,7 @@ Existing active Runtime Skills now carry manifests:
 
 Non-runtime packages also carry classification manifests so they cannot be mistaken for Tutor Runtime Skills.
 
-Little Tree uses a disabled `legacy` manifest under `skills/legacy_little_tree/`. Discovery records it but never imports or activates it. Existing legacy imports and active-state behavior remain unchanged pending a separate removal decision.
+The retired Little Tree chat companion, its disabled `legacy` manifest (`skills/legacy_little_tree/`) and its active-state path have been removed. The `legacy` skill type remains supported by discovery. The Little Tree web tool keeps its `web` manifest under `skills/little_tree/`.
 
 No hard-coded Runtime fallback remains. A Runtime directory without a manifest is diagnosed and ignored, leaving one metadata source of truth.
 
@@ -230,7 +230,6 @@ Contract tests cover validation, path security, content isolation, deterministic
 - Generic Flask route and UI navigation registration.
 - Deterministic tool registration.
 - Cross-course chapter/content schemas.
-- Little Tree code removal.
 - Hot reload and filesystem watching.
 - Remote registries or package installation.
 - Cross-process lifecycle management.

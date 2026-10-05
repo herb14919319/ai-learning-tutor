@@ -1,6 +1,6 @@
 # Agent Card
 
-> **Retirement note:** Little Tree Companion is retired from all AI Tutor user entry points. References below document retained legacy code and are not an available product mode.
+> **Retirement note:** The Little Tree Companion chat runtime is retired and its code has been removed (`agents/little_tree/`, `agents/little_tree_agent.py`, `skills/little_tree_companion.py`, `skills/legacy_little_tree/`, and their tests). Little Tree Companion references below are historical and are not an available product mode. Only the chat exit commands `/離開` and `/李教授` remain; `main.py` answers them with the original fixed reply. The Little Tree web prompt navigator (`/little-tree`) and Office AI (`/office-ai`) are separate, active web tools.
 
 ## 1. Agent Name
 
@@ -9,7 +9,7 @@
 | Formal name | AI Learning Tutor |
 | Source agent identifier | `ai_learning_tutor` |
 | External tutor API source | `ai-learning-tutor` |
-| Specialized mode | Little Tree Companion (`little_tree_companion`) |
+| Specialized mode | None (Little Tree Companion retired and removed) |
 
 ## 2. Version
 
@@ -76,7 +76,7 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 | General teaching fallback | Implemented | `TutorAgent._general_teaching_answer()` uses an LLM teaching prompt |
 | Short conversation memory | Implemented | Process-local in-memory context, six turns per user |
 | Active skill state | Implemented | Process-local active skill map by `user_id` |
-| Little Tree companion mode | Implemented | Command activation, intent classification, policy decision, deterministic starters, LLM fallback |
+| Little Tree companion mode | Removed | Retired; only the `/離開` and `/李教授` fixed exit reply remains in `main.py` |
 | Runtime observability | Implemented, gated | `/dashboard`, `/observability`, and `/api/runtime/telemetry` require `DASHBOARD_API_KEY` or `OBSERVABILITY_API_KEY` with `X-Dashboard-Key` |
 | LINE channel | Implemented | `/callback`, signature validation, reply-then-push async flow, Rich Menu commands |
 | Web Chat | Implemented | `GET /` and `POST /web-chat` |
@@ -90,8 +90,8 @@ The architecture indicates a reusable assistant shell: channel adapters, determi
 flowchart TD
     U["User / channel / external caller"] --> E["Entry point"]
     E --> N["Normalize text and user_id"]
-    N --> LT{"Little Tree command or active mode?"}
-    LT -- "yes" --> LTR["LittleTreeAgent / LittleTreeRuntime"]
+    N --> LT{"Legacy exit command /離開 or /李教授?"}
+    LT -- "yes" --> LTR["Fixed exit reply (Little Tree runtime removed)"]
     LT -- "no" --> G["Router Guard"]
     G --> A{"Learning or guidance?"}
     A -- "no" --> R1["Deterministic redirect or clarification"]
@@ -111,7 +111,7 @@ flowchart TD
 Operational summary:
 
 1. Channel or API code validates and normalizes the incoming request.
-2. `generate_tutor_answer()` checks Little Tree activation or active Little Tree mode first.
+2. `generate_tutor_answer()` answers the legacy exit commands `/離開` and `/李教授` with a fixed reply first.
 3. Normal tutor flow passes through `route_learning_boundary()`.
 4. Allowed messages enter `TutorAgent.answer()`.
 5. The tutor injects recent per-user context and acronym hints into prompts.
@@ -138,7 +138,6 @@ Operational summary:
 | Skill | Entry point | Capability |
 |---|---|---|
 | `hungyi_lee` | `skills.hungyi_lee_skill` | `answer_ai_learning_question`, `grounded_tutoring` |
-| `little_tree_companion` | `skills.little_tree_companion` | `child_friendly_learning_companion` |
 
 ## 12. Memory Policy
 
@@ -196,7 +195,7 @@ The implemented memory does not provide:
 This project uses delegation primarily to internal skills, not other agents.
 
 - AI/ML grounded tutoring delegates to `hungyi_lee`.
-- Child-friendly AI literacy delegates to `little_tree_companion` or `LittleTreeAgent`.
+- Child-friendly AI literacy chat is not available (Little Tree Companion removed).
 - General fallback delegates only to the configured LLM caller.
 
 TODO
@@ -260,7 +259,7 @@ The repository does not include formal release notes. The following milestones a
 | Shared tutor runtime | `generate_tutor_answer()`, `TutorAgent`, `SkillRuntime`, architecture document |
 | Router Guard boundary | `router_guard.py`, `tests/test_router_guard.py` |
 | In-memory conversation context | `memory/conversation_context.py`, `tests/test_conversation_context.py` |
-| Little Tree mode | `agents/little_tree/*`, `skills/little_tree_companion.py`, Little Tree tests |
+| Little Tree web tools | `skills/little_tree/`, `templates/little_tree.html`, `assets/little_tree.*`, `tests/test_little_tree_web.py` |
 | Messenger integration | `messenger_webhook.py`, `messenger_client.py`, Messenger tests |
 | Architecture extraction | `docs/architecture/AI_TUTOR_ARCHITECTURE.md` |
 

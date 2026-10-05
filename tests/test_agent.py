@@ -12,16 +12,15 @@ import main
 from menu_router import is_menu_command
 from memory.conversation_context import clear_context, get_active_skill, set_active_skill
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
-from agents.little_tree_agent import LittleTreeAgent
 from agents.router import route
 from agents.tutor_agent import TutorAgent
-from skills.little_tree_companion import (
-    LITTLE_TREE_SKILL_NAME,
-    build_system_prompt as build_little_tree_system_prompt,
-)
 from models.clients import DEFAULT_GEMINI_MODEL, DeepSeekModelClient, GeminiModelClient, create_model_client
 from skills.registry import get_skill_metadata, list_skills
 from skills.runtime import SkillCatalog, SkillManifest, SkillRuntime
+
+
+# Retired Little Tree chat companion; only its id and exit commands remain observable.
+LITTLE_TREE_SKILL_NAME = "little_tree_companion"
 
 
 class FakeHttpResponse:
@@ -509,15 +508,8 @@ class TutorAgentTest(unittest.TestCase):
         self.assertIn("answer_ai_learning_question", metadata.capabilities)
         self.assertEqual(metadata.entrypoint, "skills.hungyi_lee_skill")
 
-    def test_little_tree_metadata_can_be_read(self):
-        metadata = get_skill_metadata(LITTLE_TREE_SKILL_NAME)
-
-        self.assertIsNotNone(metadata)
-        self.assertEqual(metadata.name, LITTLE_TREE_SKILL_NAME)
-        self.assertFalse(metadata.enabled)
-        self.assertIn("/小樹", metadata.keywords)
-        self.assertIn("child_friendly_learning_companion", metadata.capabilities)
-        self.assertEqual(metadata.entrypoint, "skills.little_tree_companion")
+    def test_retired_little_tree_companion_has_no_manifest(self):
+        self.assertIsNone(get_skill_metadata(LITTLE_TREE_SKILL_NAME))
 
     def test_ai_question_routes_to_hungyi_lee(self):
         self.assertEqual(route("什麼是 Transformer？")["skill"], "hungyi_lee")
@@ -635,30 +627,6 @@ class LittleTreeCommandTest(unittest.TestCase):
         self.assertIsNone(get_active_skill("child-1"))
         answer.assert_not_called()
 
-    def test_retained_little_tree_active_skill_persists_for_legacy_user(self):
-        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
-
-        with patch.object(main, "openai_client", object()), patch.object(
-            main.little_tree_agent, "answer", return_value="小樹回答"
-        ) as answer:
-            reply = main.generate_tutor_answer("AI 會不會犯錯？", user_id="child-1")
-
-        self.assertEqual(reply, "小樹回答")
-        answer.assert_called_once_with("AI 會不會犯錯？", user_id="child-1")
-        self.assertEqual(get_active_skill("child-1"), LITTLE_TREE_SKILL_NAME)
-
-    def test_retained_little_tree_active_skill_routes_to_little_tree_agent(self):
-        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
-
-        with patch.object(main, "openai_client", object()), patch.object(
-            main.little_tree_agent, "answer", return_value="小樹：慢慢來，我們一起想。"
-        ) as little_tree_answer, patch.object(main.tutor_agent, "answer") as tutor_answer:
-            reply = main.generate_tutor_answer("我想知道 AI 會不會犯錯", user_id="child-1")
-
-        self.assertEqual(reply, "小樹：慢慢來，我們一起想。")
-        little_tree_answer.assert_called_once_with("我想知道 AI 會不會犯錯", user_id="child-1")
-        tutor_answer.assert_not_called()
-
     def test_tutor_agent_does_not_use_active_little_tree_skill(self):
         prompts = []
         runtime = SkillRuntime(
@@ -691,47 +659,23 @@ class LittleTreeCommandTest(unittest.TestCase):
         self.assertEqual(reply, "小樹：慢慢來，我們一起想。")
         self.assertNotIn("小樹 AI 陪伴模式", prompts[0][0])
 
-    def test_little_tree_prompt_centers_ai_literacy_and_homework_boundary(self):
-        prompt = build_little_tree_system_prompt()
-
-        self.assertIn("AI literacy instead of AI dependence", prompt)
-        self.assertIn("Think together before answering", prompt)
-        self.assertIn("Encourage verification", prompt)
-        self.assertIn("自己的話", prompt)
-        self.assertIn("不要完成整份作業", prompt)
-    def test_little_tree_agent_has_ai_literacy_family_and_child_boundary(self):
-        agent = LittleTreeAgent(lambda system, user: "ok")
-
-        self.assertTrue(agent.can_handle("想和孩子親子共學 AI 素養"))
-        self.assertTrue(agent.can_handle("老師如何引導兒童安全使用 AI？"))
-        self.assertTrue(agent.can_handle("志工可以怎麼陪小朋友問 AI？"))
-
-    def test_little_tree_agent_prompt_does_not_allow_homework_ghostwriting(self):
-        prompts = []
-
-        def fake_ask_gpt(system_prompt: str, user_prompt: str) -> str:
-            prompts.append((system_prompt, user_prompt))
-            return "unused"
-
-        agent = LittleTreeAgent(fake_ask_gpt)
-        reply = agent.answer("幫我直接寫完整作文作業")
-
-        self.assertIn("我不會直接給你最後答案", reply)
-        self.assertIn("1. 先說說你目前想到哪裡", reply)
-        self.assertIn("2. 我可以給你提示", reply)
-        self.assertIn("3. 我們一起檢查你的想法", reply)
-        self.assertEqual(prompts, [])
     def test_little_tree_is_per_user(self):
         set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
 
-        with patch.object(main.little_tree_agent, "answer") as little_tree_answer, patch.object(
-            main.tutor_agent, "answer"
-        ) as answer:
+        with patch.object(main.tutor_agent, "answer") as answer:
             reply = main.generate_tutor_answer("Hi, how are you?", user_id="child-2")
 
         self.assertEqual(get_active_skill("child-2"), None)
         self.assertNotEqual(reply, "小樹回答")
-        little_tree_answer.assert_not_called()
+        answer.assert_not_called()
+
+    def test_stale_little_tree_active_skill_no_longer_bypasses_guard(self):
+        set_active_skill("child-1", LITTLE_TREE_SKILL_NAME)
+
+        with patch.object(main.tutor_agent, "answer") as answer:
+            reply = main.generate_tutor_answer("Hi, how are you?", user_id="child-1")
+
+        self.assertNotEqual(reply, "小樹回答")
         answer.assert_not_called()
 
     def test_little_tree_exit_restores_normal_guard_behavior(self):
@@ -756,15 +700,21 @@ class LittleTreeCommandTest(unittest.TestCase):
         self.assertIn("李教授", reply)
         self.assertIsNone(get_active_skill("child-1"))
 
+    def test_exit_command_reply_is_preserved_after_runtime_retirement(self):
+        expected = "已回到一般 AI Tutor（李教授）模式。你可以繼續問 AI、機器學習或生成式 AI 的問題。"
+        for command in ("/離開", "/李教授"):
+            with self.subTest(command=command), patch.object(main.tutor_agent, "answer") as answer:
+                self.assertEqual(main.generate_tutor_answer(command, user_id="user-1"), expected)
+                answer.assert_not_called()
+
     def test_normal_questions_without_little_tree_keep_existing_behavior(self):
         with patch.object(main, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value="tutor answer"
-        ) as answer, patch.object(main.little_tree_agent, "answer") as little_tree_answer:
+        ) as answer:
             reply = main.generate_ai_reply("What is Transformer attention?", user_id="user-1")
 
         self.assertEqual(reply, "tutor answer")
         answer.assert_called_once_with("What is Transformer attention?", user_id="user-1")
-        little_tree_answer.assert_not_called()
 
 
 class WebChatTest(unittest.TestCase):

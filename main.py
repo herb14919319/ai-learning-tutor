@@ -10,16 +10,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
-from agents.little_tree_agent import (
-    EXIT_MESSAGE as LITTLE_TREE_EXIT_MESSAGE,
-    LITTLE_TREE_EXIT_COMMANDS,
-    LITTLE_TREE_SKILL_NAME,
-    LittleTreeAgent,
-)
 from agents.tutor_agent import TutorAgent
 from automation.facebook_content_job import JobStatus, ProductionConfigError, run_publish_once
 from menu_router import handle_menu_command, is_menu_command
-from memory.conversation_context import clear_active_skill, get_active_skill
+from memory.conversation_context import clear_active_skill
 import messenger_webhook
 from router_guard import route_learning_boundary
 try:
@@ -86,6 +80,11 @@ ERROR_FALLBACK_RESPONSE = "抱歉，目前系統發生異常，請稍後再試�
 TIMEOUT_FALLBACK_RESPONSE = "抱歉，目前查詢時間較長，請稍後再試。"
 FALLBACK_MESSAGE = DEFAULT_FALLBACK_RESPONSE
 MODEL_RATE_LIMIT_FALLBACK_RESPONSE = "The model is temporarily busy. Please try again later."
+# The Little Tree chat runtime is retired, but its exit commands are still reachable
+# from chat. Keep their reply and telemetry identity unchanged without that runtime.
+LEGACY_EXIT_COMMANDS = frozenset({"/離開", "/李教授"})
+LEGACY_EXIT_MESSAGE = "已回到一般 AI Tutor（李教授）模式。你可以繼續問 AI、機器學習或生成式 AI 的問題。"
+LEGACY_EXIT_ROUTE = "little_tree_companion"
 AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
 PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
 BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
@@ -351,7 +350,6 @@ def fallback_from_gemini_rate_limit(system_prompt: str, user_prompt: str, error:
 
 
 tutor_agent = TutorAgent(ask_gpt)
-little_tree_agent = LittleTreeAgent(ask_gpt)
 TUTOR_API_MAX_QUESTION_LENGTH = 3000
 TUTOR_API_RATE_LIMIT_WINDOW_SECONDS = 60
 TUTOR_API_RATE_LIMIT_REQUESTS = 20
@@ -460,28 +458,17 @@ def generate_tutor_answer(
 
 def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str:
     normalized_text = (user_text or "").strip()
-    if normalized_text in LITTLE_TREE_EXIT_COMMANDS:
+    if normalized_text in LEGACY_EXIT_COMMANDS:
         emit_runtime_event("guard_evaluated", status="skipped", guard_reason="active_skill_exit")
         emit_runtime_event(
             "route_selected",
             status="success",
-            route=LITTLE_TREE_SKILL_NAME,
+            route=LEGACY_EXIT_ROUTE,
             route_reason="active_skill_exit",
         )
-        emit_runtime_event("skill_selected", status="success", skill_id=LITTLE_TREE_SKILL_NAME)
+        emit_runtime_event("skill_selected", status="success", skill_id=LEGACY_EXIT_ROUTE)
         clear_active_skill(user_id)
-        return LITTLE_TREE_EXIT_MESSAGE
-
-    if get_active_skill(user_id) == LITTLE_TREE_SKILL_NAME:
-        emit_runtime_event("guard_evaluated", status="skipped", guard_reason="active_skill")
-        emit_runtime_event(
-            "route_selected",
-            status="success",
-            route=LITTLE_TREE_SKILL_NAME,
-            route_reason="active_skill",
-        )
-        emit_runtime_event("skill_selected", status="success", skill_id=LITTLE_TREE_SKILL_NAME)
-        return normalize_response(little_tree_agent.answer(user_text, user_id=user_id))
+        return LEGACY_EXIT_MESSAGE
 
     guard_result = route_learning_boundary(user_text)
     emit_runtime_event(

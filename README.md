@@ -1,8 +1,8 @@
 # AI Learning 助教 LINE Bot MVP
 
-> **Tree／小樹狀態：已退休（Retired）。** AI Tutor 不再提供 Tree 模式、Skill Selector 或快捷入口；相關程式碼、prompt、測試與資料暫時保留，供歷史相容與後續評估使用。
+> **Tree／小樹聊天模式狀態：已退休並移除（Retired）。** AI Tutor 不再提供 Tree 聊天模式、Skill Selector 或快捷入口，聊天 runtime 程式碼與測試已移除；`/離開`、`/李教授` 仍回覆原本的「回到一般 AI Tutor」訊息以維持相容。Little Tree 網頁提示詞導覽（`/little-tree`）與 Office AI（`/office-ai`）維持不變。
 
-這是一個可部署到 Google Cloud Run 的 Python Flask LINE Bot MVP。
+這是一個 Python Flask LINE Bot MVP，正式環境部署目標為 **Render**（見下方「Render 部署（正式環境）」）。
 
 使用者傳 LINE 訊息給 Bot 後，Flask webhook 會接收訊息，讀取本地 `skills/hung-yi-lee-skill/SKILL.md` 作為 system context，呼叫 OpenAI Responses API，最後將 GPT 回覆傳回 LINE。
 
@@ -36,7 +36,7 @@ PUBLIC_BASE_URL="https://your-public-service-url"
 ```
 
 `OPENAI_MODEL` 可省略，預設使用 `gpt-4.1-mini`。
-`PUBLIC_BASE_URL` 用於產生 LINE Rich Menu 圖片網址，例如 `https://your-service.onrender.com/assets/ai_map.png`。若未設定，服務會用目前 request 的 host 自動產生；部署到 Render 或 Cloud Run 時建議明確設定為服務公開 HTTPS URL。
+`PUBLIC_BASE_URL` 用於產生 LINE Rich Menu 圖片網址，例如 `https://your-service.onrender.com/assets/ai_map.png`。若未設定，服務會用目前 request 的 host 自動產生；部署到 Render 時建議明確設定為服務公開 HTTPS URL。
 
 ## 本機 .env
 
@@ -51,7 +51,7 @@ PORT=8080
 PUBLIC_BASE_URL=https://your-public-service-url
 ```
 
-`main.py` 啟動時會透過 `python-dotenv` 自動載入 `.env`。如果同一個變數已經存在於系統環境變數中，系統環境變數會保留原值，不會被 `.env` 覆蓋。這讓本機 `.env` 與 Cloud Run 的環境變數設定可以相容。
+`main.py` 啟動時會透過 `python-dotenv` 自動載入 `.env`。如果同一個變數已經存在於系統環境變數中，系統環境變數會保留原值，不會被 `.env` 覆蓋。這讓本機 `.env` 與 Render 的環境變數設定可以相容。
 
 `.env` 已列在 `.gitignore`，請不要將 API key 或 LINE secret commit 到版本庫。
 
@@ -111,7 +111,19 @@ python -m unittest discover -s tests -t .
 
 `-t .` 會先載入 `tests/__init__.py`，把 runtime telemetry 導向暫存檔，避免測試寫入受版本控制的 `data/runtime_telemetry.jsonl`。若漏掉 `-t .`，`test_baseline_characterization` 會失敗提醒。正式環境可用 `RUNTIME_TELEMETRY_PATH` 指定 telemetry 檔案位置，未設定時維持 `data/runtime_telemetry.jsonl`。
 
-## Cloud Run 部署
+## Render 部署（正式環境）
+
+Render 是本專案唯一的正式部署目標。Web Service 的 Build／Start Command、必要環境變數與上線檢查請見 [docs/DEPLOYMENT_CHECKLIST.md](docs/DEPLOYMENT_CHECKLIST.md)；每週 Facebook 發文的 Cron 設定與人工核准閘門請見 [docs/FACEBOOK_WEEKLY_PUBLISHING.md](docs/FACEBOOK_WEEKLY_PUBLISHING.md)。
+
+LINE webhook URL 請設定為：
+
+```text
+https://your-service.onrender.com/callback
+```
+
+## Cloud Run 部署（Legacy／歷史紀錄）
+
+> **Legacy：** 以下為早期 Google Cloud Run 部署方式，僅保留作為歷史紀錄，已不是正式部署目標，也不再維護。正式環境請使用上方的 Render 部署。`.gcloudignore` 亦屬此歷史設定。
 
 請先確認已安裝並登入 Google Cloud CLI，並已設定專案：
 
@@ -150,7 +162,7 @@ https://你的-cloud-run-url/callback
 1. 到 LINE Developers Console 建立或開啟 Messaging API channel。
 2. 在 Messaging API 頁面取得 `Channel access token`，設定為 `LINE_CHANNEL_ACCESS_TOKEN`。
 3. 在 Basic settings 頁面取得 `Channel secret`，設定為 `LINE_CHANNEL_SECRET`。
-4. 將 Webhook URL 設為 Cloud Run URL 加上 `/callback`。
+4. 將 Webhook URL 設為 Render 服務 URL 加上 `/callback`，例如 `https://your-service.onrender.com/callback`。
 5. 啟用 `Use webhook`。
 6. 關閉或依需求調整 LINE 官方的 Auto-reply messages，避免與 Bot 回覆重複。
 7. 使用 LINE Developers Console 的 Verify 按鈕測試 webhook。

@@ -1,6 +1,6 @@
 # AI Tutor Architecture
 
-> **Retirement note:** Little Tree is retired from all user entry points. Its runtime, prompt, tests, and data remain in the repository as legacy implementation details.
+> **Retirement note:** The Little Tree chat runtime is retired and removed (`agents/little_tree/`, `agents/little_tree_agent.py`, `skills/little_tree_companion.py`, `skills/legacy_little_tree/`, and their tests). Remaining Little Tree chat references below are historical. `generate_tutor_answer()` still answers the legacy exit commands `/離開` and `/李教授` with the original fixed reply. The Little Tree web prompt navigator (`/little-tree`) is a separate, active web tool.
 
 This document describes the AI Learning Tutor architecture as it is implemented today. It is an extraction of the current codebase, not a proposal for an ideal future design.
 
@@ -37,14 +37,14 @@ The product is centered on teaching and learning support, not open-ended general
 
 ### Shared Tutor Lifecycle
 
-Most entry points eventually call `generate_tutor_answer()` in `main.py`. That function handles Little Tree activation first, then applies the learning-boundary guard, then calls the tutor agent.
+Most entry points eventually call `generate_tutor_answer()` in `main.py`. That function answers the legacy exit commands `/離開` and `/李教授` with a fixed reply first, then applies the learning-boundary guard, then calls the tutor agent.
 
 ```mermaid
 flowchart TD
     U["User or calling system"] --> E["Entry point"]
     E --> N["Normalize message and user_id"]
-    N --> LT{"Little Tree command or active skill?"}
-    LT -- "activate/exit/active" --> LTA["LittleTreeAgent"]
+    N --> LT{"Legacy exit command?"}
+    LT -- "/離開 or /李教授" --> LTA["Fixed exit reply"]
     LT -- "normal tutor flow" --> G["Router Guard"]
     G --> GA{"Allowed learning intent?"}
     GA -- "No: casual, tool misuse, unknown" --> GR["Deterministic redirect or clarification"]
@@ -117,7 +117,7 @@ Messenger user IDs are namespaced as `messenger:<sender_id>` before entering the
 - OpenAI client setup.
 - Thread pools for webhook and AI work.
 - Shared `ask_gpt()` wrapper around OpenAI Responses API.
-- Construction of `TutorAgent` and `LittleTreeAgent`.
+- Construction of `TutorAgent`.
 - Cross-channel answer functions: `generate_tutor_answer()`, `generate_ai_reply()`, and timeout wrappers.
 - LINE duplicate-event protection.
 
@@ -152,7 +152,7 @@ Only `learning` and `learning_guidance` are allowed into the tutor runtime. Casu
 
 The OpenAI client is created in `main.py` from `OPENAI_API_KEY`. `ask_gpt(system_prompt, user_prompt)` calls `openai_client.responses.create()` with `OPENAI_MODEL`, defaulting to `gpt-4.1-mini`.
 
-The LLM caller is injected into `TutorAgent`, `LittleTreeAgent`, and skill runtime configuration. This keeps runtime orchestration separate from the concrete OpenAI API call.
+The LLM caller is injected into `TutorAgent` and skill runtime configuration. This keeps runtime orchestration separate from the concrete OpenAI API call.
 
 ### Conversation Context: `memory/conversation_context.py`
 
@@ -186,7 +186,6 @@ Routing currently returns the first enabled skill whose domains or keywords matc
 
 The registry defines two enabled manifests:
 
-- `little_tree_companion`, priority 200, command/keyword based.
 - `hungyi_lee`, priority 100, for AI/ML/LLM/deep learning/generative AI tutoring.
 
 The registry exposes the default catalog/runtime and helper functions for configuring, listing, and retrieving skills.
@@ -254,7 +253,6 @@ Retrieved context is truncated to `MAX_CONTEXT_CHARS = 12000` before it is inser
 Skills are Python modules behind metadata manifests. Today the runtime includes:
 
 - `hungyi_lee`: grounded AI/ML tutoring.
-- `little_tree_companion`: child-friendly AI literacy mode, invoked explicitly through a command and active-skill state.
 
 The skill contract is intentionally small: configure the LLM caller, receive a request or question, and return a string answer.
 
