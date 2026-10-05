@@ -1,0 +1,95 @@
+/* iPAS Cybersecurity page: additions to the shared ipas.css design system.
+   Layout, typography and cards come from ipas.css; this file only covers what the
+   server-rendered cybersecurity page has that the other iPAS pages do not
+   (anchor navigation, review-state badges, citations, Learning Chunks, inline quiz). */
+
+/* Links that use the shared control styles. */
+.cyber-page a.hero-cta,
+.cyber-page a.action-card,
+.cyber-page a.lesson-row,
+.cyber-page a.button { text-decoration: none; }
+.cyber-page a.action-card,
+.cyber-page a.lesson-row { color: var(--ink); }
+.cyber-page a.button { display: inline-flex; align-items: center; justify-content: center; }
+.cyber-page a.button-primary { color: white; }
+
+.cyber-page h1 { max-width: 14ch; }
+.cyber-section,
+.cyber-topic { margin-top: var(--section-space); scroll-margin-top: var(--space-6); }
+.cyber-topic h2 { font-size: clamp(1.6rem, 3.2vw, 2.3rem); }
+.cyber-topic .detail-block:first-of-type { border-top: 0; padding-top: 0; }
+.cyber-topic .detail-block > h3 { margin-bottom: var(--space-4); font-size: var(--text-title); }
+.cyber-topic [id^="quiz-"] { scroll-margin-top: var(--space-6); }
+
+/* Review state: one badge style for teaching text, chunks, cards and questions. */
+.review-badge { display: inline-block; white-space: normal; }
+.review-badge.is-reviewed,
+.review-text.is-reviewed { border-color: var(--green-border); background: var(--green-soft); color: var(--green-dark); }
+.review-badge.is-pending { border-color: var(--coral-border); background: var(--coral-soft); color: var(--coral-border-strong); }
+.review-text { font-weight: 750; }
+.review-text.is-pending { color: var(--coral-border-strong); }
+
+.cyber-notice {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-control);
+  background: var(--coral-soft);
+  color: var(--ink);
+  font-size: var(--text-small);
+}
+.cyber-citation { margin: var(--space-3) 0 0; color: var(--muted); font-size: var(--text-caption); overflow-wrap: anywhere; }
+.cyber-teaching .source-list { margin-top: var(--space-4); overflow-wrap: anywhere; }
+
+/* Disclosures: full teaching text and flashcards. */
+.cyber-disclosure { padding: var(--space-3) 0; border-top: 1px solid var(--line); }
+.cyber-disclosure:first-child { border-top: 0; }
+.cyber-disclosure summary { cursor: pointer; font-weight: 750; }
+.cyber-disclosure summary:focus-visible { outline: 3px solid rgba(19, 138, 105, 0.3); outline-offset: 3px; border-radius: var(--radius-icon); }
+.cyber-disclosure p { margin: var(--space-2) 0 0; }
+.cyber-disclosure pre {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+  font: inherit;
+  font-size: var(--text-small);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.cyber-card-list { display: grid; }
+
+/* Learning Chunks reuse cheat-card; content here is prose, not a list. */
+.chunk-card { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.chunk-card header { width: 100%; margin-bottom: var(--space-3); }
+.chunk-card h4 { margin: var(--space-1) 0 0; font-size: var(--text-body); line-height: 1.4; }
+.chunk-card p { margin: 0 0 var(--space-3); font-size: var(--text-small); }
+
+/* Inline quiz: shared option-button / quiz-result look, native radio inputs. */
+.cyber-question { padding: var(--space-5) 0; border-top: 1px solid var(--line); }
+.cyber-question:first-of-type { border-top: 0; padding-top: 0; }
+.cyber-question fieldset { min-width: 0; margin: var(--space-3) 0 0; padding: 0; border: 0; }
+.cyber-question legend { margin-bottom: var(--space-3); line-height: 1.5; }
+.cyber-question .option-button { cursor: pointer; }
+.cyber-question .option-button input { flex: 0 0 auto; margin: 0; accent-color: var(--green); }
+.cyber-question .option-button:has(input:checked) { border-color: var(--green); background: var(--green-soft); }
+.cyber-question .option-button:has(input:focus-visible) { box-shadow: var(--focus-shadow); }
+.cyber-question .quiz-actions { margin-top: var(--space-4); }
+.cyber-question .result:empty { display: none; }
+.cyber-question .result {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--green-soft);
+  font-size: var(--text-small);
+}
+
+.course-error { margin-top: var(--section-space); }
+
+@media (max-width: 768px) {
+  .cyber-topic .lesson-topline { align-items: flex-start; flex-direction: column; gap: var(--space-2); }
+}
+
+@media (max-width: 480px) {
+  .cyber-page .lesson-nav .button { flex: 1 1 100%; }
+  .cyber-question .quiz-actions .button { width: 100%; }
+}

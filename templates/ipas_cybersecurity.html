@@ -3,80 +3,158 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7fbf8">
     <title>iPAS 資訊安全工程師初級｜學習切片</title>
     <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas.css') }}">
-    <style>
-      .cyber-shell { max-width: 960px; margin: 2rem auto; padding: 0 1rem 3rem; }
-      .cyber-shell section { background: white; border-radius: 16px; padding: 1.25rem; margin: 1rem 0; box-shadow: 0 2px 14px #102d4214; }
-      .cyber-shell h1, .cyber-shell h2, .cyber-shell h3 { color: #153851; }
-      .cyber-shell .source { font-size: .9rem; color: #425b69; }
-      .cyber-shell pre { white-space: pre-wrap; font: inherit; line-height: 1.7; }
-      .cyber-shell details { padding: .7rem 0; border-top: 1px solid #d8e5ec; }
-      .cyber-shell summary { cursor: pointer; font-weight: 700; }
-      .cyber-shell fieldset { border: 0; padding: 0; }
-      .cyber-shell label { display: block; margin: .35rem 0; }
-      .cyber-shell .result { margin-top: .6rem; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('asset_file', filename='ipas_cybersecurity.css') }}">
   </head>
-  <body>
-    <main class="cyber-shell">
-      <a href="/">首頁</a>
+  <body class="cyber-page">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="回到 AI Learning 首頁">
+        <span class="brand-mark" aria-hidden="true">iP</span>
+        <span>
+          <strong>{{ course_info.get('title', 'iPAS 資訊安全工程師初級') }}</strong>
+          <small>AI Learning Platform</small>
+        </span>
+      </a>
+      {% if not error_message %}<span class="course-pill">{{ course_info.chapter_count }} 個小主題 · 資訊安全管理概論</span>{% endif %}
+    </header>
+
+    <main class="app-shell">
       {% if error_message %}
-      <section role="alert"><h1>課程暫時無法載入</h1><p>{{ error_message }}</p></section>
+      <div class="empty-state course-error" role="alert">
+        <span aria-hidden="true">🔐</span>
+        <h1>課程暫時無法載入</h1>
+        <p>{{ error_message }}</p>
+      </div>
       {% else %}
-      <header><p>iPAS 資訊安全工程師初級 · {{ course_info.chapter_count }} 個小主題</p><h1>{{ course_info.title }}</h1><p>包含 CIA、風險概念、風險評鑑、資訊資產分類與實體安全。生成教材均顯示審核狀態。</p></header>
-      <nav aria-label="主題導航">
-        {% for topic in topics %}<a href="#{{ topic.chapter.chapter_id }}">{{ topic.chapter.title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
-      </nav>
+      {% set first_chapter_id = course_info.first_chapter_id %}
+      <section class="cyber-home" aria-labelledby="course-title">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <span class="eyebrow">iPAS 資訊安全工程師初級 · {{ course_info.chapter_count }} 個小主題</span>
+            <h1 id="course-title">{{ course_info.title }}</h1>
+            <p class="hero-lead">包含 CIA、風險概念、風險評鑑、資訊資產分類與實體安全。生成教材均顯示審核狀態。</p>
+            <div class="hero-action-row">
+              <a class="hero-cta" href="#{{ first_chapter_id }}">
+                <span><strong>開始學習</strong><small>從第一個小主題開始</small></span>
+                <span class="hero-cta-arrow" aria-hidden="true">→</span>
+              </a>
+              <span class="hero-meta">{{ course_info.chapter_count }} 個小主題 · {{ course_info.chunk_count }} 個 Learning Chunks · {{ course_info.card_count }} 張卡片 · {{ course_info.question_count }} 題練習</span>
+            </div>
+          </div>
+          <aside class="progress-card" aria-label="課程內容摘要">
+            <div class="progress-heading"><span>課程範圍</span><strong>{{ course_info.chapter_count }} 個小主題</strong></div>
+            <div class="progress-track" style="--progress: 100" aria-hidden="true"><span></span></div>
+            <div class="progress-course">
+              <span class="progress-course-code">I11</span>
+              <span><strong>資訊安全管理概論</strong><small>切片式學習：教學稿、Learning Chunks、卡片與練習題</small></span>
+            </div>
+            <p>原始 PDF 經 SHA-256 驗證後才載入；所有生成教材皆標示審核狀態，需修訂或已退回的內容不會顯示。</p>
+          </aside>
+        </div>
+
+        <div class="action-grid" aria-label="學習功能">
+          <a class="action-card" href="#topics">
+            <span class="action-icon" aria-hidden="true">📚</span><span><strong>瀏覽小主題</strong><small>依序閱讀教學稿與 Learning Chunks</small></span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="action-card coral" href="#quiz-{{ first_chapter_id }}">
+            <span class="action-icon" aria-hidden="true">📝</span><span><strong>原創練習題</strong><small>由後端批改並附原始教材頁碼</small></span><span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="cyber-section" id="topics" aria-labelledby="topics-title">
+        <div class="page-heading">
+          <span class="eyebrow">I11 · 學習切片</span>
+          <h2 id="topics-title">主題地圖</h2>
+          <p>每個小主題都對應原始教材頁碼；點選即可跳到該主題的教學稿、Learning Chunks、卡片與練習題。</p>
+        </div>
+        <nav class="lesson-list" aria-label="主題導航">
+          {% for topic in topics %}
+          <a class="lesson-row" href="#{{ topic.chapter.chapter_id }}">
+            <span class="lesson-number">{{ loop.index }}</span>
+            <span><strong>{{ topic.chapter.title }}</strong><small>{{ topic.chapter.chapter_id }} · PDF 第 {{ topic.chapter.source_pages | join('、') }} 頁 · {{ topic.chapter.chunks | length }} 個 Learning Chunks · {{ topic.questions | length }} 題</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          {% endfor %}
+        </nav>
+      </section>
+
       {% for topic in topics %}
       {% set chapter = topic.chapter %}
       {% set cards = topic.cards %}
       {% set questions = topic.questions %}
-      <article id="{{ chapter.chapter_id }}">
-      <section aria-labelledby="teaching-{{ chapter.chapter_id }}">
-        <h2 id="teaching-{{ chapter.chapter_id }}">{{ chapter.title }}</h2>
-        <p class="source">教學稿審核狀態：{{ chapter.teaching_review_status }}</p>
-        {% if chapter.teaching_blocked_by %}<p class="source">教學稿因引用需修訂或已退回的 Learning Chunk 暫停顯示：{{ chapter.teaching_blocked_by | join('、') }}</p>{% endif %}
-        {% if chapter.markdown %}<details><summary>閱讀完整教學稿</summary><pre>{{ chapter.markdown }}</pre></details>{% endif %}
-        <p class="source">原始教材：{{ chapter.source_file }}，PDF 第 {{ chapter.source_pages | join('、') }} 頁。教學稿是衍生內容。</p>
-      </section>
-      <section aria-labelledby="concepts-{{ chapter.chapter_id }}">
-        <h2 id="concepts-{{ chapter.chapter_id }}">Learning Chunks</h2>
-        {% for chunk in chapter.chunks %}
-        <article>
-          <h3>{{ chunk.title }}</h3>
-          <p>{{ chunk.teaching_interpretation.core_concept }}</p>
-          <p>{{ chunk.teaching_interpretation.explanation }}</p>
-          <p><strong>考點：</strong>{{ chunk.teaching_interpretation.exam_focus }}</p>
-          <p class="source">審核狀態：{{ chunk.teaching_interpretation.review_status }}</p>
-          <p class="source">{{ chunk.chunk_id }} · {{ chunk.source_evidence.source_file }} · PDF 第 {{ chunk.source_evidence.source_pages | join('、') }} 頁</p>
-        </article>
-        {% endfor %}
-      </section>
-      <section aria-labelledby="cards-{{ chapter.chapter_id }}">
-        <h2 id="cards-{{ chapter.chapter_id }}">複習卡片</h2>
-        {% for card in cards %}
-        <details><summary>{{ card.front }}</summary><p>{{ card.back }}</p><p class="source">對應 {{ card.chunk_ids | join('、') }} · {{ card.review_status }}</p></details>
-        {% endfor %}
-      </section>
-      <section aria-labelledby="quiz-{{ chapter.chapter_id }}" data-answer-url="{{ url_for('ipas_cybersecurity_answer') }}">
-        <h2 id="quiz-{{ chapter.chapter_id }}">原創練習題</h2>
-        {% for question in questions %}
-        <form class="cia-question" data-question-id="{{ question.question_id }}">
-          <p class="source">審核狀態：{{ question.review_status }}</p>
-          <fieldset><legend><strong>{{ loop.index }}. {{ question.question }}</strong></legend>
-            {% for letter, option in question.options.items() %}
-            <label><input type="radio" name="answer" value="{{ letter }}" required> {{ letter }}. {{ option }}</label>
+      <article class="lesson-card cyber-topic" id="{{ chapter.chapter_id }}">
+        <div class="lesson-topline">
+          <span class="lesson-counter">第 {{ loop.index }} / {{ loop.length }} 個小主題 · {{ chapter.chapter_id }}</span>
+          <span class="status-badge review-badge {{ 'is-reviewed' if chapter.teaching_review_status == 'reviewed' else 'is-pending' }}">教學稿審核狀態：{{ chapter.teaching_review_status }}</span>
+        </div>
+        <section class="detail-block cyber-teaching" aria-labelledby="teaching-{{ chapter.chapter_id }}">
+          <h2 id="teaching-{{ chapter.chapter_id }}">{{ chapter.title }}</h2>
+          {% if chapter.teaching_blocked_by %}<p class="cyber-notice">教學稿因引用需修訂或已退回的 Learning Chunk 暫停顯示：{{ chapter.teaching_blocked_by | join('、') }}</p>{% endif %}
+          {% if chapter.markdown %}<details class="cyber-disclosure"><summary>閱讀完整教學稿</summary><pre>{{ chapter.markdown }}</pre></details>{% endif %}
+          <div class="source-list"><span>原始教材：{{ chapter.source_file }}，PDF 第 {{ chapter.source_pages | join('、') }} 頁。教學稿是衍生內容。</span></div>
+        </section>
+
+        <section class="detail-block" aria-labelledby="concepts-{{ chapter.chapter_id }}">
+          <h3 id="concepts-{{ chapter.chapter_id }}">Learning Chunks</h3>
+          <div class="cheatsheet-grid">
+            {% for chunk in chapter.chunks %}
+            <article class="cheat-card chunk-card">
+              <header>
+                <span class="lesson-number">{{ loop.index }}</span>
+                <h4>{{ chunk.title }}</h4>
+              </header>
+              <p>{{ chunk.teaching_interpretation.core_concept }}</p>
+              <p>{{ chunk.teaching_interpretation.explanation }}</p>
+              <p><strong>考點：</strong>{{ chunk.teaching_interpretation.exam_focus }}</p>
+              <span class="status-badge review-badge {{ 'is-reviewed' if chunk.teaching_interpretation.review_status == 'reviewed' else 'is-pending' }}">審核狀態：{{ chunk.teaching_interpretation.review_status }}</span>
+              <p class="cyber-citation">{{ chunk.chunk_id }} · {{ chunk.source_evidence.source_file }} · PDF 第 {{ chunk.source_evidence.source_pages | join('、') }} 頁</p>
+            </article>
             {% endfor %}
-          </fieldset>
-          <button type="submit">批改</button><p class="result" role="status"></p>
-        </form>
-        {% endfor %}
-      </section>
+          </div>
+        </section>
+
+        <section class="detail-block" aria-labelledby="cards-{{ chapter.chapter_id }}">
+          <h3 id="cards-{{ chapter.chapter_id }}">複習卡片</h3>
+          <div class="cyber-card-list">
+            {% for card in cards %}
+            <details class="cyber-disclosure"><summary>{{ card.front }}</summary><p>{{ card.back }}</p><p class="cyber-citation">對應 {{ card.chunk_ids | join('、') }} · <span class="review-text {{ 'is-reviewed' if card.review_status == 'reviewed' else 'is-pending' }}">{{ card.review_status }}</span></p></details>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="detail-block" id="quiz-{{ chapter.chapter_id }}" aria-labelledby="quiz-title-{{ chapter.chapter_id }}" data-answer-url="{{ url_for('ipas_cybersecurity_answer') }}">
+          <h3 id="quiz-title-{{ chapter.chapter_id }}">原創練習題</h3>
+          {% for question in questions %}
+          <form class="cia-question cyber-question" data-question-id="{{ question.question_id }}">
+            <span class="status-badge review-badge {{ 'is-reviewed' if question.review_status == 'reviewed' else 'is-pending' }}">審核狀態：{{ question.review_status }}</span>
+            <fieldset><legend><strong>{{ loop.index }}. {{ question.question }}</strong></legend>
+              <div class="option-list">
+                {% for letter, option in question.options.items() %}
+                <label class="option-button"><input type="radio" name="answer" value="{{ letter }}" required> <span class="option-key">{{ letter }}</span> <span>{{ option }}</span></label>
+                {% endfor %}
+              </div>
+            </fieldset>
+            <div class="quiz-actions"><button class="button button-primary" type="submit">批改</button></div>
+            <p class="result" role="status"></p>
+          </form>
+          {% endfor %}
+        </section>
+
+        <nav class="lesson-nav" aria-label="{{ chapter.title }} 導覽">
+          {% if not loop.first %}<a class="button" href="#{{ loop.previtem.chapter.chapter_id }}">← 上一個小主題</a>{% endif %}
+          <a class="button" href="#topics">回到主題地圖</a>
+          {% if not loop.last %}<a class="button button-primary" href="#{{ loop.nextitem.chapter.chapter_id }}">下一個小主題 →</a>{% endif %}
+        </nav>
       </article>
       {% endfor %}
       {% endif %}
     </main>
+
+    <footer>iPAS 資訊安全工程師初級學習平台 · 資訊安全管理概論</footer>
+
     <script>
       for (const form of document.querySelectorAll('.cia-question')) {
         form.addEventListener('submit', async (event) => {
