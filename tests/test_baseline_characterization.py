@@ -16,7 +16,7 @@ from unittest.mock import Mock, patch
 from linebot.v3.exceptions import InvalidSignatureError
 
 import main
-import messenger_client
+from app.channels import messenger_client
 import runtime_telemetry
 from router_guard import classify_intent, route_learning_boundary
 from skills import ipas_ai_application_planner, ipas_cybersecurity, ipas_net_zero_planner
@@ -164,7 +164,7 @@ class FakeGraphResponse:
 class MessengerClientTest(unittest.TestCase):
     def test_missing_page_token_sends_nothing(self):
         with patch.dict(os.environ, {"MESSENGER_PAGE_ACCESS_TOKEN": ""}), patch(
-            "messenger_client.urllib.request.urlopen"
+            "app.channels.messenger_client.urllib.request.urlopen"
         ) as urlopen:
             self.assertFalse(messenger_client.send_text_message("psid-1", "hello"))
         urlopen.assert_not_called()
@@ -173,7 +173,7 @@ class MessengerClientTest(unittest.TestCase):
         opener = Mock(return_value=FakeGraphResponse(200))
         with patch.dict(
             os.environ, {"MESSENGER_PAGE_ACCESS_TOKEN": "page-token", "MESSENGER_API_VERSION": "v20.0"}
-        ), patch("messenger_client.urllib.request.urlopen", opener):
+        ), patch("app.channels.messenger_client.urllib.request.urlopen", opener):
             self.assertTrue(messenger_client.send_text_message("psid-1", "哈囉"))
         request = opener.call_args.args[0]
         self.assertTrue(request.full_url.startswith("https://graph.facebook.com/v20.0/me/messages?"))
@@ -194,7 +194,7 @@ class MessengerClientTest(unittest.TestCase):
             with self.subTest(failure=type(failure).__name__), patch.dict(
                 os.environ, {"MESSENGER_PAGE_ACCESS_TOKEN": "secret-page-token"}
             ), patch(
-                "messenger_client.urllib.request.urlopen",
+                "app.channels.messenger_client.urllib.request.urlopen",
                 Mock(side_effect=failure) if isinstance(failure, Exception) else Mock(return_value=failure),
             ), self.assertLogs("messenger_client", level="ERROR") as logs:
                 self.assertFalse(messenger_client.send_text_message("psid-1", "hello"))

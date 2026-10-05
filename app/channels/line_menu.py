@@ -5,7 +5,8 @@ from pathlib import Path
 from linebot.v3.messaging import ImageMessage, ReplyMessageRequest, TextMessage
 
 
-logger = logging.getLogger(__name__)
+# Logger name kept from the pre-R2 module (menu_router.py) so log identity is unchanged.
+logger = logging.getLogger("menu_router")
 
 
 @dataclass(frozen=True)

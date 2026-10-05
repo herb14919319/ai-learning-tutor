@@ -10,7 +10,10 @@ from unittest.mock import ANY, patch
 
 import main
 from llm import gateway as llm_gateway
-from menu_router import is_menu_command
+from app.channels import line as line_channel
+from app.channels import messenger as messenger_channel
+from app.channels import web_chat as web_chat_channel
+from app.channels.line_menu import is_menu_command
 from memory.conversation_context import clear_context, get_active_skill, set_active_skill
 from agents.ai_acronyms import build_ai_acronym_disambiguation_prompt
 from agents.router import route
@@ -720,10 +723,10 @@ class LittleTreeCommandTest(unittest.TestCase):
 
 class WebChatTest(unittest.TestCase):
     def setUp(self):
-        main.web_chat_rate_limits.clear()
+        web_chat_channel.web_chat_rate_limits.clear()
 
     def tearDown(self):
-        main.web_chat_rate_limits.clear()
+        web_chat_channel.web_chat_rate_limits.clear()
 
     def test_health_check_returns_liveness_without_dependencies(self):
         dependency_names = (
@@ -757,7 +760,7 @@ class WebChatTest(unittest.TestCase):
         self.assertIn("/web-chat", body)
 
     def test_web_chat_ignores_untrusted_user_id(self):
-        with patch.object(main, "generate_ai_reply", return_value="RAG 會先檢索再生成。") as generate:
+        with patch.object(web_chat_channel, "generate_ai_reply", return_value="RAG 會先檢索再生成。") as generate:
             response = main.app.test_client().post(
                 "/web-chat",
                 json={"message": "什麼是 RAG？", "user_id": "web-demo"},
@@ -774,7 +777,7 @@ class WebChatTest(unittest.TestCase):
         )
 
     def test_web_chat_without_identity_is_stateless(self):
-        with patch.object(main, "generate_ai_reply", return_value="answer") as generate:
+        with patch.object(web_chat_channel, "generate_ai_reply", return_value="answer") as generate:
             response = main.app.test_client().post("/web-chat", json={"message": "What is MCP?"})
 
         self.assertEqual(response.status_code, 200)
@@ -788,7 +791,7 @@ class WebChatTest(unittest.TestCase):
 
     def test_web_chat_rejects_direct_skill_dispatch(self):
         for skill_id in ("fa", "unknown", ""):
-            with self.subTest(skill_id=skill_id), patch.object(main, "generate_ai_reply") as generate:
+            with self.subTest(skill_id=skill_id), patch.object(web_chat_channel, "generate_ai_reply") as generate:
                 response = main.app.test_client().post(
                     "/web-chat",
                     json={"message": "What is RAG?", "skill_id": skill_id},
@@ -804,7 +807,7 @@ class WebChatTest(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_web_chat_rejects_empty_message_without_calling_ai(self):
-        with patch.object(main, "generate_ai_reply") as generate:
+        with patch.object(web_chat_channel, "generate_ai_reply") as generate:
             response = main.app.test_client().post("/web-chat", json={"message": "   "})
 
         self.assertEqual(response.status_code, 400)
@@ -813,10 +816,10 @@ class WebChatTest(unittest.TestCase):
         generate.assert_not_called()
 
     def test_web_chat_rejects_overlong_message_without_calling_ai(self):
-        with patch.object(main, "generate_ai_reply") as generate:
+        with patch.object(web_chat_channel, "generate_ai_reply") as generate:
             response = main.app.test_client().post(
                 "/web-chat",
-                json={"message": "A" * (main.TUTOR_API_MAX_QUESTION_LENGTH + 1)},
+                json={"message": "A" * (web_chat_channel.TUTOR_API_MAX_QUESTION_LENGTH + 1)},
             )
 
         self.assertEqual(response.status_code, 400)
@@ -824,10 +827,10 @@ class WebChatTest(unittest.TestCase):
         generate.assert_not_called()
 
     def test_web_chat_rate_limit_blocks_runtime(self):
-        main.web_chat_rate_limits["127.0.0.1"] = [
+        web_chat_channel.web_chat_rate_limits["127.0.0.1"] = [
             main.time.monotonic()
-        ] * main.TUTOR_API_RATE_LIMIT_REQUESTS
-        with patch.object(main, "generate_ai_reply") as generate:
+        ] * web_chat_channel.TUTOR_API_RATE_LIMIT_REQUESTS
+        with patch.object(web_chat_channel, "generate_ai_reply") as generate:
             response = main.app.test_client().post(
                 "/web-chat",
                 json={"message": "What is RAG?"},
@@ -840,22 +843,22 @@ class WebChatTest(unittest.TestCase):
 
 class LineWebhookFlowTest(unittest.TestCase):
     def setUp(self):
-        main.processed_events.clear()
+        line_channel.processed_events.clear()
 
     def tearDown(self):
-        main.processed_events.clear()
+        line_channel.processed_events.clear()
 
     def test_message_replies_processing_first_then_pushes_ai_answer(self):
         calls = []
 
-        with patch.object(main, "webhook_executor", ImmediateExecutor()), patch.object(
-            main, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
+        with patch.object(line_channel, "webhook_executor", ImmediateExecutor()), patch.object(
+            line_channel, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
         ), patch.object(
-            main, "push_text", side_effect=lambda to, text: calls.append(("push", to, text))
+            line_channel, "push_text", side_effect=lambda to, text: calls.append(("push", to, text))
         ), patch.object(
             main, "generate_ai_reply_with_timeout", return_value="正式答案"
         ):
-            main.handle_text_message(fake_line_event())
+            line_channel.handle_text_message(fake_line_event())
 
         self.assertEqual(
             calls,
@@ -876,20 +879,20 @@ class LineWebhookFlowTest(unittest.TestCase):
 
         with main.app.test_request_context("/callback", base_url="https://example.com"):
             with patch.object(
-                main,
+                line_channel,
                 "handle_menu_command",
                 side_effect=lambda text, api, token, base_url, assets_dir: calls.append(
                     ("menu", text, token, base_url)
                 )
                 or True,
             ), patch.object(
-                main, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
+                line_channel, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
             ), patch.object(
-                main, "webhook_executor", ImmediateExecutor()
+                line_channel, "webhook_executor", ImmediateExecutor()
             ), patch.object(
                 main, "generate_ai_reply_with_timeout", return_value="正式答案"
             ) as generate_ai_reply:
-                main.handle_text_message(fake_line_event(text="AI地圖"))
+                line_channel.handle_text_message(fake_line_event(text="AI地圖"))
 
         self.assertEqual(calls, [("menu", "AI地圖", "reply-token-1", "https://example.com")])
         generate_ai_reply.assert_not_called()
@@ -900,9 +903,9 @@ class LineWebhookFlowTest(unittest.TestCase):
         with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", return_value=""
         ), patch.object(
-            main, "push_text", side_effect=lambda to, text: calls.append((to, text))
+            line_channel, "push_text", side_effect=lambda to, text: calls.append((to, text))
         ):
-            main.process_text_message_async("What is an LLM?", "user-1")
+            line_channel.process_text_message_async("What is an LLM?", "user-1")
 
         self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
 
@@ -947,9 +950,9 @@ class LineWebhookFlowTest(unittest.TestCase):
         with patch.object(
             main, "generate_ai_reply_with_timeout", return_value=""
         ), patch.object(
-            main, "push_text", side_effect=lambda to, text: calls.append((to, text))
+            line_channel, "push_text", side_effect=lambda to, text: calls.append((to, text))
         ):
-            main.process_text_message_async("AI助理有沒有流量限制？", "user-1")
+            line_channel.process_text_message_async("AI助理有沒有流量限制？", "user-1")
 
         self.assertEqual(calls, [("user-1", main.DEFAULT_FALLBACK_RESPONSE)])
 
@@ -959,9 +962,9 @@ class LineWebhookFlowTest(unittest.TestCase):
         with patch.object(llm_gateway, "openai_client", object()), patch.object(
             main.tutor_agent, "answer", side_effect=RuntimeError("boom")
         ), patch.object(
-            main, "push_text", side_effect=lambda to, text: calls.append((to, text))
+            line_channel, "push_text", side_effect=lambda to, text: calls.append((to, text))
         ):
-            main.process_text_message_async("What is an LLM?", "user-1")
+            line_channel.process_text_message_async("What is an LLM?", "user-1")
 
         self.assertEqual(calls, [("user-1", main.ERROR_FALLBACK_RESPONSE)])
 
@@ -983,15 +986,15 @@ class LineWebhookFlowTest(unittest.TestCase):
         calls = []
         event = fake_line_event(event_id="duplicate-event", message_id="duplicate-message")
 
-        with patch.object(main, "webhook_executor", ImmediateExecutor()), patch.object(
-            main, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
+        with patch.object(line_channel, "webhook_executor", ImmediateExecutor()), patch.object(
+            line_channel, "reply_text", side_effect=lambda token, text: calls.append(("reply", token, text))
         ), patch.object(
-            main, "push_text", side_effect=lambda to, text: calls.append(("push", to, text))
+            line_channel, "push_text", side_effect=lambda to, text: calls.append(("push", to, text))
         ), patch.object(
             main, "generate_ai_reply_with_timeout", return_value="正式答案"
         ):
-            main.handle_text_message(event)
-            main.handle_text_message(event)
+            line_channel.handle_text_message(event)
+            line_channel.handle_text_message(event)
 
         self.assertEqual(
             calls,
@@ -1004,16 +1007,16 @@ class LineWebhookFlowTest(unittest.TestCase):
 
 class MessengerWebhookFlowTest(unittest.TestCase):
     def setUp(self):
-        self.original_executor = main.messenger_webhook._background_executor
-        self.original_reply_generator = main.messenger_webhook._reply_generator
-        main.messenger_webhook._processed_message_ids.clear()
+        self.original_executor = messenger_channel._background_executor
+        self.original_reply_generator = messenger_channel._reply_generator
+        messenger_channel._processed_message_ids.clear()
 
     def tearDown(self):
-        main.messenger_webhook.configure_messenger_handler(
+        messenger_channel.configure_messenger_handler(
             reply_generator=self.original_reply_generator,
             executor=self.original_executor,
         )
-        main.messenger_webhook._processed_message_ids.clear()
+        messenger_channel._processed_message_ids.clear()
 
     def messenger_payload(self, messaging_event):
         return {
@@ -1046,7 +1049,7 @@ class MessengerWebhookFlowTest(unittest.TestCase):
 
     def test_post_text_message_returns_200_and_submits_background_work(self):
         executor = RecordingExecutor()
-        main.messenger_webhook.configure_messenger_handler(
+        messenger_channel.configure_messenger_handler(
             reply_generator=lambda user_id, text: "answer",
             executor=executor,
         )
@@ -1058,36 +1061,36 @@ class MessengerWebhookFlowTest(unittest.TestCase):
         )
 
         with patch.dict(os.environ, {"MESSENGER_ENABLED": "true"}), patch.object(
-            main.messenger_webhook,
+            messenger_channel,
             "verify_request_signature",
             return_value=True,
         ), patch.object(
-            main.messenger_webhook, "send_text_message", return_value=True
+            messenger_channel, "send_text_message", return_value=True
         ) as send_text:
             response = main.app.test_client().post("/webhook/messenger", json=payload)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_data(as_text=True), "OK")
-        send_text.assert_called_once_with("sender-1", main.messenger_webhook.MESSENGER_PROCESSING_MESSAGE)
+        send_text.assert_called_once_with("sender-1", messenger_channel.MESSENGER_PROCESSING_MESSAGE)
         self.assertEqual(len(executor.calls), 1)
         fn, args, kwargs = executor.calls[0]
-        self.assertIs(fn, main.messenger_webhook.process_messenger_text_async)
+        self.assertIs(fn, messenger_channel.process_messenger_text_async)
         self.assertEqual(args, ("sender-1", "What is RAG?"))
         self.assertEqual(kwargs, {})
 
     def test_background_messenger_text_uses_tutor_user_id_and_pushes_reply(self):
         calls = []
-        main.messenger_webhook.configure_messenger_handler(
+        messenger_channel.configure_messenger_handler(
             reply_generator=lambda user_id, text: calls.append((user_id, text)) or "answer",
             executor=ImmediateExecutor(),
         )
 
         with patch.object(
-            main.messenger_webhook,
+            messenger_channel,
             "send_text_message",
             side_effect=lambda recipient_id, text: calls.append((recipient_id, text)) or True,
         ):
-            main.messenger_webhook.process_messenger_text_async("sender-1", "What is MCP?")
+            messenger_channel.process_messenger_text_async("sender-1", "What is MCP?")
 
         self.assertEqual(calls, [("messenger:sender-1", "What is MCP?"), ("sender-1", "answer")])
 
@@ -1104,7 +1107,7 @@ class MessengerWebhookFlowTest(unittest.TestCase):
 
     def test_delivery_read_and_echo_events_do_not_submit_ai_flow(self):
         executor = RecordingExecutor()
-        main.messenger_webhook.configure_messenger_handler(
+        messenger_channel.configure_messenger_handler(
             reply_generator=lambda user_id, text: "answer",
             executor=executor,
         )
@@ -1121,8 +1124,8 @@ class MessengerWebhookFlowTest(unittest.TestCase):
             ],
         }
 
-        with patch.object(main.messenger_webhook, "send_text_message") as send_text:
-            submitted = main.messenger_webhook.handle_messenger_event(payload)
+        with patch.object(messenger_channel, "send_text_message") as send_text:
+            submitted = messenger_channel.handle_messenger_event(payload)
 
         self.assertFalse(submitted)
         self.assertEqual(executor.calls, [])
@@ -1130,7 +1133,7 @@ class MessengerWebhookFlowTest(unittest.TestCase):
 
     def test_duplicate_message_id_is_not_submitted_or_pushed_twice(self):
         executor = RecordingExecutor()
-        main.messenger_webhook.configure_messenger_handler(
+        messenger_channel.configure_messenger_handler(
             reply_generator=lambda user_id, text: "answer",
             executor=executor,
         )
@@ -1141,16 +1144,16 @@ class MessengerWebhookFlowTest(unittest.TestCase):
             }
         )
 
-        with patch.object(main.messenger_webhook, "send_text_message", return_value=True) as send_text:
-            first = main.messenger_webhook.handle_messenger_event(payload)
-            second = main.messenger_webhook.handle_messenger_event(payload)
+        with patch.object(messenger_channel, "send_text_message", return_value=True) as send_text:
+            first = messenger_channel.handle_messenger_event(payload)
+            second = messenger_channel.handle_messenger_event(payload)
 
         self.assertTrue(first)
         self.assertFalse(second)
         self.assertEqual(len(executor.calls), 1)
         send_text.assert_called_once_with(
             "sender-1",
-            main.messenger_webhook.MESSENGER_PROCESSING_MESSAGE,
+            messenger_channel.MESSENGER_PROCESSING_MESSAGE,
         )
 
 
@@ -1160,14 +1163,14 @@ class MessengerWebhookSecurityTest(unittest.TestCase):
         digest = hmac.new(b"app-secret", body, hashlib.sha256).hexdigest()
 
         self.assertTrue(
-            main.messenger_webhook.verify_request_signature(
+            messenger_channel.verify_request_signature(
                 body,
                 f"sha256={digest}",
                 "app-secret",
             )
         )
         self.assertFalse(
-            main.messenger_webhook.verify_request_signature(
+            messenger_channel.verify_request_signature(
                 body,
                 "sha256=wrong",
                 "app-secret",
@@ -1179,7 +1182,7 @@ class MessengerWebhookSecurityTest(unittest.TestCase):
             os.environ,
             {"MESSENGER_ENABLED": "true", "MESSENGER_APP_SECRET": "app-secret"},
             clear=True,
-        ), patch.object(main.messenger_webhook, "handle_messenger_event") as handle:
+        ), patch.object(messenger_channel, "handle_messenger_event") as handle:
             response = main.app.test_client().post(
                 "/webhook/messenger",
                 data=b'{"object":"page"}',

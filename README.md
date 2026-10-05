@@ -175,7 +175,7 @@ https://你的-cloud-run-url/callback
 
 ## Rich Menu MVP
 
-LINE Rich Menu 按鈕送出的固定文字會先被 `menu_router.py` 攔截，不會進入 LLM，也不會先回覆「助教正在努力思考中...」。
+LINE Rich Menu 按鈕送出的固定文字會先被 `app/channels/line_menu.py` 攔截，不會進入 LLM，也不會先回覆「助教正在努力思考中...」。
 
 目前支援：
 

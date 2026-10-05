@@ -9,6 +9,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 
 import main
+from app.channels import web_chat as web_chat_channel
 from llm import gateway as llm_gateway
 import runtime_telemetry
 from agents.tutor_agent import TutorAgent
@@ -24,10 +25,10 @@ def read_records(path: Path) -> list[dict]:
 
 class RequestCorrelationTelemetryTest(unittest.TestCase):
     def setUp(self):
-        main.web_chat_rate_limits.clear()
+        web_chat_channel.web_chat_rate_limits.clear()
 
     def tearDown(self):
-        main.web_chat_rate_limits.clear()
+        web_chat_channel.web_chat_rate_limits.clear()
 
     def test_each_request_has_one_unique_id_across_the_lifecycle(self):
         allowed = SimpleNamespace(allowed=True, intent="learning", response=None)

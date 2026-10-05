@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 import main
 from llm import gateway as llm_gateway
-from menu_router import MENU_COMMANDS
+from app.channels import line as line_channel
+from app.channels.line_menu import MENU_COMMANDS
 from router_guard import (
     BLOCKED_REDIRECT_MESSAGE,
     CASUAL_CHAT,
@@ -84,14 +85,14 @@ class RouterGuardTest(unittest.TestCase):
 
         with main.app.test_request_context("/callback", base_url="https://example.com"):
             with patch.object(
-                main,
+                line_channel,
                 "handle_menu_command",
                 side_effect=lambda text, api, token, base_url, assets_dir: calls.append(
                     ("menu", text, token, base_url)
                 )
                 or True,
             ), patch.object(main, "generate_ai_reply_with_timeout") as generate_ai_reply:
-                main.handle_text_message(
+                line_channel.handle_text_message(
                     type(
                         "FakeEvent",
                         (),

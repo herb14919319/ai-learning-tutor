@@ -1,14 +1,21 @@
+"""Facebook Messenger channel: webhook verification, signature check, event handling, Send API replies."""
+
 import hmac
 import hashlib
 import logging
+import os
 import threading
 import time
 from typing import Callable
 
-from messenger_client import send_text_message
+from flask import abort, request
+
+from app.channels.messenger_client import send_text_message
 
 
-logger = logging.getLogger(__name__)
+# Logger names kept from pre-R2: handler logic lived in messenger_webhook.py, the routes in main.py.
+logger = logging.getLogger("messenger_webhook")
+route_logger = logging.getLogger("main")
 
 MESSENGER_PROCESSING_MESSAGE = "\u52a9\u6559\u6b63\u5728\u52aa\u529b\u601d\u8003\u4e2d..."
 MESSENGER_ERROR_FALLBACK_RESPONSE = (
@@ -133,3 +140,43 @@ def handle_messenger_event(payload: dict) -> bool:
                 send_text_message(sender_id, MESSENGER_ERROR_FALLBACK_RESPONSE)
 
     return submitted
+
+
+def messenger_enabled() -> bool:
+    return os.getenv("MESSENGER_ENABLED", "").strip().lower() == "true"
+
+
+def messenger_verify():
+    if not messenger_enabled():
+        abort(404)
+    return handle_verify_request(request.args, os.getenv("MESSENGER_VERIFY_TOKEN", ""))
+
+
+def messenger_callback():
+    if not messenger_enabled():
+        abort(404)
+
+    raw_body = request.get_data(cache=True)
+    app_secret = os.getenv("MESSENGER_APP_SECRET", "")
+    signature = request.headers.get("X-Hub-Signature-256", "")
+    if not verify_request_signature(raw_body, signature, app_secret):
+        route_logger.warning("Invalid Messenger webhook signature")
+        abort(403)
+
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    try:
+        handle_messenger_event(payload)
+    except Exception:
+        route_logger.exception("Messenger webhook handler failed")
+
+    return "OK"
+
+
+def init_app(app, *, reply_generator: Callable[[str, str], str], executor) -> None:
+    """Wire the tutor reply bridge and executor, and register the webhook routes."""
+    configure_messenger_handler(reply_generator=reply_generator, executor=executor)
+    app.add_url_rule("/webhook/messenger", endpoint="messenger_verify", view_func=messenger_verify, methods=["GET"])
+    app.add_url_rule("/webhook/messenger", endpoint="messenger_callback", view_func=messenger_callback, methods=["POST"])

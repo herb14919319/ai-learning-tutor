@@ -101,7 +101,7 @@ sequenceDiagram
 
 ### Facebook / Messenger Flow
 
-Messenger support is implemented through `messenger_webhook.py` and `messenger_client.py`. When enabled, verification is handled by `GET /webhook/messenger`. Text messages received by `POST /webhook/messenger` are filtered to ignore echoes, attachments, delivery, and read events. Valid text messages receive a processing message, then background execution calls the configured reply generator.
+Messenger support is implemented through `app/channels/messenger.py` and `app/channels/messenger_client.py`. When enabled, verification is handled by `GET /webhook/messenger`. Text messages received by `POST /webhook/messenger` are filtered to ignore echoes, attachments, delivery, and read events. Valid text messages receive a processing message, then background execution calls the configured reply generator.
 
 Messenger user IDs are namespaced as `messenger:<sender_id>` before entering the shared tutor runtime.
 
@@ -336,7 +336,7 @@ LINE integration uses:
 - Reply API for the immediate processing message
 - Push API for final asynchronous answers
 
-LINE Rich Menu commands use `menu_router.py` and image assets under `assets/`.
+LINE Rich Menu commands use `app/channels/line_menu.py` and image assets under `assets/`.
 
 ### Web Chat
 
@@ -357,7 +357,7 @@ Facebook Page / Messenger integration uses:
 - `MESSENGER_API_VERSION`
 - `GET /webhook/messenger`
 - `POST /webhook/messenger`
-- Facebook Graph Send API via `messenger_client.py`
+- Facebook Graph Send API via `app/channels/messenger_client.py`
 
 Messenger is disabled unless `MESSENGER_ENABLED=true`.
 
@@ -469,7 +469,7 @@ The preferred AI/ML answer path is not a bare model response. The Hung-Yi skill 
 
 The codebase separates:
 
-- Channel handling in `main.py`, `messenger_webhook.py`, `messenger_client.py`, and `menu_router.py`.
+- Channel handling in `app/channels/` (`line.py`, `line_menu.py`, `messenger.py`, `messenger_client.py`, `web_chat.py`); `main.py` wires them to the tutor runtime.
 - Product boundary routing in `router_guard.py`.
 - Tutor orchestration in `agents/tutor_agent.py`.
 - Conversation state in `memory/conversation_context.py`.

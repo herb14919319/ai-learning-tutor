@@ -260,7 +260,7 @@ The repository does not include formal release notes. The following milestones a
 | Router Guard boundary | `router_guard.py`, `tests/test_router_guard.py` |
 | In-memory conversation context | `memory/conversation_context.py`, `tests/test_conversation_context.py` |
 | Little Tree web tools | `skills/little_tree/`, `templates/little_tree.html`, `assets/little_tree.*`, `tests/test_little_tree_web.py` |
-| Messenger integration | `messenger_webhook.py`, `messenger_client.py`, Messenger tests |
+| Messenger integration | `app/channels/messenger.py`, `app/channels/messenger_client.py`, Messenger tests |
 | Architecture extraction | `docs/architecture/AI_TUTOR_ARCHITECTURE.md` |
 
 ## Engineering Readiness Check

@@ -10,9 +10,7 @@ from pathlib import Path
 
 from agents.tutor_agent import TutorAgent
 from automation.facebook_content_job import JobStatus, ProductionConfigError, run_publish_once
-from menu_router import handle_menu_command, is_menu_command
 from memory.conversation_context import clear_active_skill
-import messenger_webhook
 from router_guard import route_learning_boundary
 try:
     from dotenv import load_dotenv
@@ -20,17 +18,6 @@ except ImportError:
     def load_dotenv() -> bool:
         return False
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
-from linebot.v3.exceptions import InvalidSignatureError
-from linebot.v3.messaging import (
-    ApiClient,
-    Configuration,
-    MessagingApi,
-    PushMessageRequest,
-    ReplyMessageRequest,
-    TextMessage,
-)
-from linebot.v3.webhook import WebhookHandler
-from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from models import (
     DEFAULT_MODEL_PROVIDER,
     ENTRYPOINT_API,
@@ -40,6 +27,17 @@ from models import (
     ENTRYPOINT_WEB_CHAT,
     normalize_model_provider,
     resolve_model_provider,
+)
+from app.channels import line as line_channel
+from app.channels import messenger as messenger_channel
+from app.channels import web_chat as web_chat_channel
+from app.channels.line import PROCESSING_MESSAGE, truncate_for_line
+from app.responses import (
+    APP_NAME,
+    DEFAULT_FALLBACK_RESPONSE,
+    ERROR_FALLBACK_RESPONSE,
+    TIMEOUT_FALLBACK_RESPONSE,
+    normalize_response,
 )
 from llm import gateway as llm_gateway
 from llm.gateway import (  # re-exported for compatibility; implementation lives in llm/
@@ -79,12 +77,6 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-APP_NAME = "AI Learning 助教"
-MAX_LINE_TEXT_LENGTH = 4500
-PROCESSING_MESSAGE = "助教正在努力思考中..."
-DEFAULT_FALLBACK_RESPONSE = "抱歉，這個問題我目前可能無法回覆。"
-ERROR_FALLBACK_RESPONSE = "抱歉，目前系統發生異常，請稍後再試。"
-TIMEOUT_FALLBACK_RESPONSE = "抱歉，目前查詢時間較長，請稍後再試。"
 FALLBACK_MESSAGE = DEFAULT_FALLBACK_RESPONSE
 # The Little Tree chat runtime is retired, but its exit commands are still reachable
 # from chat. Keep their reply and telemetry identity unchanged without that runtime.
@@ -92,7 +84,6 @@ LEGACY_EXIT_COMMANDS = frozenset({"/離開", "/李教授"})
 LEGACY_EXIT_MESSAGE = "已回到一般 AI Tutor（李教授）模式。你可以繼續問 AI、機器學習或生成式 AI 的問題。"
 LEGACY_EXIT_ROUTE = "little_tree_companion"
 AI_REPLY_TIMEOUT_SECONDS = int(os.getenv("AI_REPLY_TIMEOUT_SECONDS", "45"))
-PROCESSED_EVENT_TTL_SECONDS = int(os.getenv("PROCESSED_EVENT_TTL_SECONDS", "600"))
 BACKGROUND_WORKERS = int(os.getenv("BACKGROUND_WORKERS", "4"))
 
 # Provider clients live in llm/; build them after load_dotenv() exactly as before.
@@ -101,9 +92,6 @@ MODEL_CONFIG = llm_gateway.MODEL_CONFIG
 MODEL_PROVIDER = llm_gateway.MODEL_PROVIDER
 MODEL_NAME = llm_gateway.MODEL_NAME
 OPENAI_MODEL = llm_gateway.OPENAI_MODEL
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
-LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET", "")
-PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("BASE_URL", "")
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 IPAS_NET_ZERO_CARDS_DIR = (
     Path(__file__).resolve().parent
@@ -116,77 +104,11 @@ app = Flask(__name__)
 app.json.ensure_ascii = False
 facebook_publish_lock = threading.Lock()
 
-line_configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
 webhook_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
 ai_executor = ThreadPoolExecutor(max_workers=BACKGROUND_WORKERS)
 
-# In-memory duplicate guard for LINE webhook retries. This is intentionally
-# small and process-local; replace with Redis/DB when running multiple instances.
-processed_events: dict[str, float] = {}
-processed_events_lock = threading.Lock()
-
 
 tutor_agent = TutorAgent(ask_gpt)
-TUTOR_API_MAX_QUESTION_LENGTH = 3000
-TUTOR_API_RATE_LIMIT_WINDOW_SECONDS = 60
-TUTOR_API_RATE_LIMIT_REQUESTS = 20
-web_chat_rate_limits: dict[str, list[float]] = {}
-web_chat_rate_limits_lock = threading.Lock()
-
-
-def truncate_for_line(text: str) -> str:
-    if len(text) <= MAX_LINE_TEXT_LENGTH:
-        return text
-    return text[:MAX_LINE_TEXT_LENGTH].rstrip() + "\n\n（回覆已因 LINE 單則訊息長度限制截斷）"
-
-
-def help_text() -> str:
-    return (
-        f"你好，我是「{APP_NAME}」。\n\n"
-        "你可以直接問我 AI、機器學習、深度學習、Python、AI Agent、RAG、MCP 等問題。\n\n"
-        "範例：\n"
-        "1. 什麼是 Transformer？\n"
-        "2. RAG 跟微調有什麼差別？\n"
-        "3. 可以用生活化比喻解釋梯度下降嗎？\n\n"
-        "提醒：本服務是 AI 學習工具，非任何教師、學校或教育機構官方帳號。"
-    )
-
-
-def normalize_response(answer: str | None, fallback: str = DEFAULT_FALLBACK_RESPONSE) -> str:
-    if answer is None:
-        logger.warning("AI Tutor returned None response")
-        return fallback
-    if isinstance(answer, str) and not answer.strip():
-        logger.warning("AI Tutor returned empty response")
-        return fallback
-    return answer
-
-
-def begin_external_request(
-    entrypoint: str,
-    *,
-    question_length: int = 0,
-    request_id: str | None = None,
-    route: str | None = None,
-    user_scope: str = "authenticated",
-) -> RequestTelemetryContext:
-    context = create_request_context(
-        entrypoint,
-        user_scope=user_scope,
-        question_length=question_length,
-        request_id=request_id,
-    )
-    record_request_received(context, route=route)
-    return context
-
-
-def reject_external_request(
-    context: RequestTelemetryContext,
-    error_category: str,
-) -> None:
-    context = record_request_validation(context, status="error", error_category=error_category)
-    record_request_terminal(context, status="error", error_category=error_category)
 
 
 def generate_tutor_answer(
@@ -263,34 +185,6 @@ def _generate_tutor_answer(user_text: str, *, user_id: str | None = None) -> str
     return normalize_response(tutor_agent.answer(user_text, user_id=user_id))
 
 
-def tutor_api_client_ip() -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For", "")
-    if forwarded_for:
-        return forwarded_for.split(",", 1)[0].strip() or "unknown"
-    return request.remote_addr or "unknown"
-
-
-def web_chat_rate_limit_exceeded(client_ip: str) -> bool:
-    return rate_limit_exceeded(web_chat_rate_limits, web_chat_rate_limits_lock, client_ip)
-
-
-def rate_limit_exceeded(
-    rate_limits: dict[str, list[float]],
-    rate_limits_lock: threading.Lock,
-    client_id: str,
-) -> bool:
-    now = time.monotonic()
-    window_start = now - TUTOR_API_RATE_LIMIT_WINDOW_SECONDS
-    with rate_limits_lock:
-        timestamps = [ts for ts in rate_limits.get(client_id, []) if ts > window_start]
-        if len(timestamps) >= TUTOR_API_RATE_LIMIT_REQUESTS:
-            rate_limits[client_id] = timestamps
-            return True
-        timestamps.append(now)
-        rate_limits[client_id] = timestamps
-        return False
-
-
 def generate_ai_reply(
     user_text: str,
     *,
@@ -316,79 +210,6 @@ def generate_ai_reply(
     if truncate:
         return truncate_for_line(reply)
     return reply
-
-
-def reply_text(reply_token: str, text: str) -> None:
-    try:
-        with ApiClient(line_configuration) as api_client:
-            messaging_api = MessagingApi(api_client)
-            messaging_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=reply_token,
-                    messages=[TextMessage(text=truncate_for_line(text))],
-                )
-            )
-    except Exception:
-        logger.exception("LINE reply API failed")
-
-
-def push_text(to: str, text: str) -> None:
-    try:
-        with ApiClient(line_configuration) as api_client:
-            messaging_api = MessagingApi(api_client)
-            messaging_api.push_message(
-                PushMessageRequest(
-                    to=to,
-                    messages=[TextMessage(text=truncate_for_line(text))],
-                )
-            )
-    except Exception:
-        logger.exception("LINE push API failed")
-
-
-def public_base_url() -> str:
-    if PUBLIC_BASE_URL.strip():
-        return PUBLIC_BASE_URL.strip().rstrip("/")
-    return request.url_root.rstrip("/")
-
-
-def line_recipient_id(event: MessageEvent) -> str | None:
-    source = getattr(event, "source", None)
-    for attr in ("user_id", "group_id", "room_id"):
-        value = getattr(source, attr, None)
-        if value:
-            return value
-    return None
-
-
-def event_deduplication_key(event: MessageEvent) -> str:
-    event_id = getattr(event, "webhook_event_id", None)
-    message_id = getattr(getattr(event, "message", None), "id", None)
-    if event_id:
-        return f"event:{event_id}"
-    if message_id:
-        return f"message:{message_id}"
-    return f"reply:{event.reply_token}"
-
-
-def mark_event_if_new(event: MessageEvent) -> bool:
-    now = time.monotonic()
-    key = event_deduplication_key(event)
-    with processed_events_lock:
-        expired_keys = [
-            cached_key
-            for cached_key, cached_at in processed_events.items()
-            if now - cached_at > PROCESSED_EVENT_TTL_SECONDS
-        ]
-        for cached_key in expired_keys:
-            processed_events.pop(cached_key, None)
-
-        if key in processed_events:
-            logger.info("Skipping duplicate LINE event: %s", key)
-            return False
-
-        processed_events[key] = now
-        return True
 
 
 def generate_ai_reply_with_timeout(
@@ -425,28 +246,11 @@ def generate_messenger_tutor_reply(user_id: str, user_text: str) -> str:
     return generate_ai_reply_with_timeout(user_text, user_id=user_id, entrypoint=ENTRYPOINT_MESSENGER)
 
 
-def process_text_message_async(user_text: str, recipient_id: str) -> None:
-    try:
-        if user_text.lower() == "/help":
-            push_text(recipient_id, help_text())
-            return
-
-        reply = generate_tutor_reply(recipient_id, user_text)
-    except Exception:
-        logger.exception("LINE async text processing failed")
-        reply = ERROR_FALLBACK_RESPONSE
-
-    push_text(recipient_id, normalize_response(reply))
-
-
-messenger_webhook.configure_messenger_handler(
-    reply_generator=generate_messenger_tutor_reply,
-    executor=webhook_executor,
-)
-
-
-def messenger_enabled() -> bool:
-    return os.getenv("MESSENGER_ENABLED", "").strip().lower() == "true"
+# Channel adapters own transport; they reach the tutor only through these functions.
+line_channel.init_app(app, reply_generator=generate_tutor_reply, executor=webhook_executor, assets_dir=ASSETS_DIR)
+messenger_channel.init_app(app, reply_generator=generate_messenger_tutor_reply, executor=webhook_executor)
+web_chat_channel.init_app(app, reply_generator=generate_ai_reply)
+handler = line_channel.handler  # re-exported for compatibility
 
 
 @app.get("/")
@@ -768,49 +572,6 @@ def ipas_net_zero_answer():
     return jsonify({"ok": True, **result})
 
 
-@app.post("/web-chat")
-def web_chat():
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
-        payload = {}
-
-    raw_message = payload.get("message")
-    message = raw_message.strip() if isinstance(raw_message, str) else ""
-    telemetry_context = begin_external_request(
-        "web_chat",
-        question_length=len(message),
-        route="/web-chat",
-        user_scope="anonymous",
-    )
-    if not message:
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"reply": "請先輸入一個想討論的 AI 學習問題。"}), 400
-    if len(message) > TUTOR_API_MAX_QUESTION_LENGTH:
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"reply": "問題內容過長，請縮短後再試。"}), 400
-
-    client_ip = tutor_api_client_ip()
-    if web_chat_rate_limit_exceeded(client_ip):
-        reject_external_request(telemetry_context, "rate_limit_error")
-        return jsonify({"error": "rate_limit_exceeded"}), 429
-
-    if "skill_id" in payload:
-        reject_external_request(telemetry_context, "validation_error")
-        return jsonify({"error": "unsupported_skill"}), 400
-
-    # Public Web Chat has no authenticated identity. Do not trust a caller-supplied
-    # user_id or place unrelated visitors in one shared conversation bucket.
-    telemetry_context = record_request_validation(telemetry_context, status="success")
-    reply = generate_ai_reply(
-        message,
-        user_id=None,
-        truncate=False,
-        entrypoint=ENTRYPOINT_WEB_CHAT,
-        request_context=telemetry_context,
-    )
-    return jsonify({"reply": normalize_response(reply, ERROR_FALLBACK_RESPONSE)})
-
-
 def require_dashboard_access():
     expected_key = os.getenv("DASHBOARD_API_KEY") or os.getenv("OBSERVABILITY_API_KEY")
     supplied_key = request.headers.get("X-Dashboard-Key", "")
@@ -841,90 +602,6 @@ def runtime_telemetry_api():
 @app.get("/assets/<path:filename>")
 def asset_file(filename: str):
     return send_from_directory(ASSETS_DIR, filename)
-
-
-@app.get("/webhook/messenger")
-def messenger_verify():
-    if not messenger_enabled():
-        abort(404)
-    return messenger_webhook.handle_verify_request(request.args, os.getenv("MESSENGER_VERIFY_TOKEN", ""))
-
-
-@app.post("/webhook/messenger")
-def messenger_callback():
-    if not messenger_enabled():
-        abort(404)
-
-    raw_body = request.get_data(cache=True)
-    app_secret = os.getenv("MESSENGER_APP_SECRET", "")
-    signature = request.headers.get("X-Hub-Signature-256", "")
-    if not messenger_webhook.verify_request_signature(raw_body, signature, app_secret):
-        logger.warning("Invalid Messenger webhook signature")
-        abort(403)
-
-    payload = request.get_json(silent=True) or {}
-    if not isinstance(payload, dict):
-        payload = {}
-
-    try:
-        messenger_webhook.handle_messenger_event(payload)
-    except Exception:
-        logger.exception("Messenger webhook handler failed")
-
-    return "OK"
-
-
-@app.post("/callback")
-def callback():
-    signature = request.headers.get("X-Line-Signature", "")
-    body = request.get_data(as_text=True)
-
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        logger.warning("Invalid LINE signature")
-        abort(400)
-    except Exception:
-        logger.exception("Webhook handler failed")
-
-    return "OK"
-
-
-@handler.add(MessageEvent, message=TextMessageContent)
-def handle_text_message(event: MessageEvent):
-    user_text = event.message.text.strip()
-
-    if not mark_event_if_new(event):
-        return
-
-    if is_menu_command(user_text):
-        try:
-            with ApiClient(line_configuration) as api_client:
-                messaging_api = MessagingApi(api_client)
-                handle_menu_command(
-                    user_text,
-                    messaging_api,
-                    event.reply_token,
-                    public_base_url(),
-                    ASSETS_DIR,
-                )
-        except Exception:
-            logger.exception("LINE Rich Menu command handling failed")
-            reply_text(event.reply_token, DEFAULT_FALLBACK_RESPONSE)
-        return
-
-    reply_text(event.reply_token, PROCESSING_MESSAGE)
-
-    recipient_id = line_recipient_id(event)
-    if not recipient_id:
-        logger.warning("LINE event has no push recipient id")
-        return
-
-    try:
-        webhook_executor.submit(process_text_message_async, user_text, recipient_id)
-    except Exception:
-        logger.exception("Failed to submit LINE async processing task")
-        push_text(recipient_id, ERROR_FALLBACK_RESPONSE)
 
 
 if __name__ == "__main__":

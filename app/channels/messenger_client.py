@@ -8,7 +8,8 @@ import urllib.request
 from meta_config import get_meta_api_version
 
 
-logger = logging.getLogger(__name__)
+# Logger name kept from the pre-R2 module (messenger_client.py) so log identity is unchanged.
+logger = logging.getLogger("messenger_client")
 
 
 def send_text_message(recipient_id: str, text: str) -> bool:
