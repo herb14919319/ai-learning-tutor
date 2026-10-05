@@ -77,9 +77,11 @@ class IpasWebTest(unittest.TestCase):
     def test_route_uses_skill_api_without_markdown_loader(self):
         source = inspect.getsource(main.ipas_page)
 
-        self.assertIn("ipas_ai_skill.get_course_info()", source)
-        self.assertIn("ipas_ai_skill.get_chapters()", source)
-        self.assertIn("ipas_ai_skill.get_questions()", source)
+        # R4: the page reads the AI Planner through the Knowledge Pack contract, which delegates to the skill API.
+        self.assertIn("ai_planner_pack.get_course_info()", source)
+        self.assertIn("ai_planner_pack.get_chapters()", source)
+        self.assertIn("ai_planner_pack.list_questions()", source)
+        self.assertIs(main.ai_planner_pack._module, main.ipas_ai_skill)
         self.assertNotIn("open(", source)
         self.assertNotIn("read_text", source)
         self.assertNotIn(".md", source)

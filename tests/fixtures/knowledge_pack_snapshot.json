@@ -1,0 +1,497 @@
+{
+ "ipas_ai_application_planner": {
+  "chapter_detail_digests": {
+   "CH-01": "7cbd3f6e320734a96e5b0ffed4586d8612f6930ee1ab1c7913f5d69e18132813",
+   "CH-02": "8e2194f5d7ce4fbd318980054c63e9cf5aa9394b61bd89f5857403584ce5fea9",
+   "CH-03": "298e538b6430f9031528c68ed791e831ca9c48cb1818df18c858a79fc66a3eec",
+   "CH-04": "50732abd57d126f7e0e89dee14c69638db8ab1a213c8d8aaa42d39f660049c93",
+   "CH-05": "d375a935ab62aa347f362ac646d664ae4d4609dce361f8090d1cafff8ae9c59f",
+   "CH-06": "cadff715f6bcdb2af490311c928e18bedddeb4dd25ea3541d65cd414e3bf6f0c",
+   "CH-07": "385c158a06140524df5ed7d28819a40d350ef41b46f7ec81efb5cefca3a9c453"
+  },
+  "chapter_ids": [
+   "CH-01",
+   "CH-02",
+   "CH-03",
+   "CH-04",
+   "CH-05",
+   "CH-06",
+   "CH-07"
+  ],
+  "chapters_digest": "a4498a5987bcce9d9c8d7154bd902464579e6c5de593df7d65af675d18bc1af1",
+  "course_info": {
+   "chapter_count": 7,
+   "first_chapter_id": "CH-01",
+   "question_count": 56,
+   "skill_id": "ipas_ai_application_planner",
+   "title": "iPAS AI 應用規劃師正式課程"
+  },
+  "grading_digest": "92c30aca0ad6fb5c14f311e05459d71ec56fcc1a9037072bb9e2a431e54b7911",
+  "http_grading_digest": "c120d4749a5ef72d95a9f0888835b3add0282a6f262fca546fbb4810da567315",
+  "http_validation": {
+   "blank_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "invalid_answer": [
+    400,
+    {
+     "error": "invalid_answer",
+     "message": "answer 必須是 A、B、C 或 D。",
+     "ok": false
+    }
+   ],
+   "json_list": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "lowercase_and_spaces": [
+    200,
+    {
+     "chapter_id": "CH-01",
+     "correct": false,
+     "correct_answer": "A",
+     "explanation": "只能處理特定任務且能力不能自然遷移，是弱 AI；強 AI 與 AGI 指理論上的跨任務能力，不符合題目。",
+     "ok": true,
+     "question_id": "L111-Q001",
+     "selected_answer": "B"
+    }
+   ],
+   "missing_answer": [
+    400,
+    {
+     "error": "missing_answer",
+     "message": "缺少 answer。",
+     "ok": false
+    }
+   ],
+   "missing_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "not_json": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "numeric_answer": [
+    400,
+    {
+     "error": "missing_answer",
+     "message": "缺少 answer。",
+     "ok": false
+    }
+   ],
+   "unknown_question": [
+    404,
+    {
+     "error": "question_not_found",
+     "message": "找不到指定的題目。",
+     "ok": false
+    }
+   ]
+  },
+  "page": [
+   200,
+   "4ec679cbbf5ef0b877a031e5bd801b6082670513853cd3c9f98d092b05f5afb2"
+  ],
+  "public_questions_digest": "e07393da75b9ff392d8f1436473c20c1f0840a0b4f5674cfdaeff712dff2b225",
+  "question_ids": [
+   "L111-Q001",
+   "L111-Q002",
+   "L111-Q003",
+   "L111-Q004",
+   "L111-Q005",
+   "L111-Q006",
+   "L111-Q007",
+   "L111-Q008",
+   "L112-Q001",
+   "L112-Q002",
+   "L112-Q003",
+   "L112-Q004",
+   "L112-Q005",
+   "L112-Q006",
+   "L112-Q007",
+   "L112-Q008",
+   "L113-Q001",
+   "L113-Q002",
+   "L113-Q003",
+   "L113-Q004",
+   "L113-Q005",
+   "L113-Q006",
+   "L113-Q007",
+   "L113-Q008",
+   "L114-Q001",
+   "L114-Q002",
+   "L114-Q003",
+   "L114-Q004",
+   "L114-Q005",
+   "L114-Q006",
+   "L114-Q007",
+   "L114-Q008",
+   "L121-Q001",
+   "L121-Q002",
+   "L121-Q003",
+   "L121-Q004",
+   "L121-Q005",
+   "L121-Q006",
+   "L121-Q007",
+   "L121-Q008",
+   "L122-Q001",
+   "L122-Q002",
+   "L122-Q003",
+   "L122-Q004",
+   "L122-Q005",
+   "L122-Q006",
+   "L122-Q007",
+   "L122-Q008",
+   "L123-Q001",
+   "L123-Q002",
+   "L123-Q003",
+   "L123-Q004",
+   "L123-Q005",
+   "L123-Q006",
+   "L123-Q007",
+   "L123-Q008"
+  ],
+  "sources_digest": "ebc6731d8f372b669dbbdabbd95e4a36eae922e6b11661935a325d0c14c00600"
+ },
+ "ipas_cybersecurity": {
+  "chapter_detail_digests": {
+   "I11-ASSESS": "2ef3963a01bd967964e2dec3ef5dbc1501eb599f3906abc605b0564d2d6ca527",
+   "I11-ASSET": "5267f9a3f06603069b2e63257e853a62abbf40d019ad36bffed8681d75ef843c",
+   "I11-CIA": "2622aa94946832cbbff90b4d03d8fad8659fc82c131dd0400579dfb4dd6cee19",
+   "I11-PHYS": "4e133d31d8afc5b82c31860d1db837f57da5f7a03a16a830f7e1ec9e2ae1efb9",
+   "I11-RISK": "dc949fc71f9838ebbb0869093b5f64eac93a444a3ec23974e8f7879dc49dabe8"
+  },
+  "chapter_ids": [
+   "I11-CIA",
+   "I11-RISK",
+   "I11-ASSESS",
+   "I11-ASSET",
+   "I11-PHYS"
+  ],
+  "chapters_digest": "e6ab6a1882f02f87334c7f74a9e3db53f2cd31bf6bc0476115b50d2625a57465",
+  "course_info": {
+   "card_count": 40,
+   "chapter_count": 5,
+   "chunk_count": 30,
+   "first_chapter_id": "I11-CIA",
+   "question_count": 40,
+   "skill_id": "ipas_cybersecurity",
+   "title": "iPAS 資訊安全工程師初級"
+  },
+  "grading_digest": "1965fed7a549c4245a83a7ce3c76433cf4aade9ff24ae7e2b1366afac07cfa14",
+  "http_grading_digest": "897c9504aabda5fed6efe5f1c96778cfb42a38deb4e9eb85bc2947e1a02baddd",
+  "http_validation": {
+   "blank_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "invalid_answer": [
+    400,
+    {
+     "error": "invalid_answer",
+     "message": "answer 必須是 A、B、C 或 D。",
+     "ok": false
+    }
+   ],
+   "json_list": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "lowercase_and_spaces": [
+    200,
+    {
+     "chunk_ids": [
+      "I11-CIA-001",
+      "I11-CIA-004"
+     ],
+     "correct": true,
+     "correct_answer": "B",
+     "explanation": "A 是 Availability，指授權使用者需要時能取得資訊或服務。",
+     "ok": true,
+     "question_id": "I11-CIA-Q001",
+     "review_status": "pending_review",
+     "selected_answer": "B",
+     "source_references": [
+      {
+       "chunk_id": "I11-CIA-001",
+       "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+       "source_pages": [
+        13,
+        15,
+        16
+       ],
+       "source_title": [
+        "資訊安全的目標",
+        "資訊安全的三個目標"
+       ]
+      },
+      {
+       "chunk_id": "I11-CIA-004",
+       "source_file": "iPAS_資訊安全管理概論_PART_I.pdf",
+       "source_pages": [
+        13,
+        16,
+        17
+       ],
+       "source_title": [
+        "資訊安全的目標",
+        "資訊安全的三個目標",
+        "保護資訊 C.I.A. 不同的技術與方法"
+       ]
+      }
+     ]
+    }
+   ],
+   "missing_answer": [
+    400,
+    {
+     "error": "invalid_answer",
+     "message": "answer 必須是 A、B、C 或 D。",
+     "ok": false
+    }
+   ],
+   "missing_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "not_json": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "numeric_answer": [
+    400,
+    {
+     "error": "invalid_answer",
+     "message": "answer 必須是 A、B、C 或 D。",
+     "ok": false
+    }
+   ],
+   "unknown_question": [
+    404,
+    {
+     "error": "question_not_found",
+     "message": "找不到指定的題目。",
+     "ok": false
+    }
+   ]
+  },
+  "page": [
+   200,
+   "14c4b78d2cd288d5b0a42134c0834347f7f9b9ec6c3e8dabbd5ecb0041380145"
+  ],
+  "public_questions_digest": "fa013325dbd668afdfcd6cdf33022badab1569ccd644e266bc1e1f6a422cfd9f",
+  "question_ids": [
+   "I11-CIA-Q001",
+   "I11-CIA-Q002",
+   "I11-CIA-Q003",
+   "I11-CIA-Q004",
+   "I11-CIA-Q005",
+   "I11-CIA-Q006",
+   "I11-RISK-Q001",
+   "I11-RISK-Q002",
+   "I11-RISK-Q003",
+   "I11-RISK-Q004",
+   "I11-RISK-Q005",
+   "I11-RISK-Q006",
+   "I11-ASSESS-Q001",
+   "I11-ASSESS-Q002",
+   "I11-ASSESS-Q003",
+   "I11-ASSESS-Q004",
+   "I11-ASSESS-Q005",
+   "I11-ASSESS-Q006",
+   "I11-ASSET-Q001",
+   "I11-ASSET-Q002",
+   "I11-ASSET-Q003",
+   "I11-ASSET-Q004",
+   "I11-ASSET-Q005",
+   "I11-ASSET-Q006",
+   "I11-ASSET-Q007",
+   "I11-ASSET-Q008",
+   "I11-ASSET-Q009",
+   "I11-ASSET-Q010",
+   "I11-PHYS-Q001",
+   "I11-PHYS-Q002",
+   "I11-PHYS-Q003",
+   "I11-PHYS-Q004",
+   "I11-PHYS-Q005",
+   "I11-PHYS-Q006",
+   "I11-PHYS-Q007",
+   "I11-PHYS-Q008",
+   "I11-PHYS-Q009",
+   "I11-PHYS-Q010",
+   "I11-PHYS-Q011",
+   "I11-PHYS-Q012"
+  ],
+  "sources_digest": "cfa48aaf6cf7188b06bb34cc5b516a64b50d8da727ffbd57fa4d9a5a3ad0df00"
+ },
+ "ipas_net_zero_planner": {
+  "chapter_detail_digests": {
+   "ch01": "6e3287219b3472d41baf8ae2e10d3d61e3f435b03b803c2f63e10edbfea0a86c",
+   "ch02": "6c94fbad6cfbdd2027396bf3ca2b7f783cf44cad36dd0926ee6c079be76535ac",
+   "ch03": "1d4e862a7bacff9348cba3c0905d25f923287ef599f5e5290055ff1d3de455d8",
+   "ch04": "b4c1d142df7b66b3ab9449881e1b45f4d2025349436a2654fa8f7bbe7d3564fb",
+   "ch05": "59d1b9aaba9c9b6fd32fc777ca02c50159d71a851914b8f98ab7a1a69e4d9bb8",
+   "ch06": "6b44b5c136fd7b178b9d5568abf086ab83dc7f1bc06601a47623e85e7110c82c",
+   "ch07": "fd596b1b3e8801ae75a8abd98af2b646bab26b0a4f016993ad5e9532ecd3e7b1",
+   "ch08": "11bf1cb0d778b220b5ad61612bf4be5b0d3b87f92dd02f49ba2c75733f0c1842"
+  },
+  "chapter_ids": [
+   "ch01",
+   "ch02",
+   "ch03",
+   "ch04",
+   "ch05",
+   "ch06",
+   "ch07",
+   "ch08"
+  ],
+  "chapters_digest": "12098414fc24bb2a3be32c09eb2f5b1693b3d572a62b2899a68c3fbdabfeb190",
+  "course_info": {
+   "card_count": 36,
+   "chapter_count": 8,
+   "description": "依序完成八章課程，搭配章節圖卡掌握氣候治理、碳管理與國際標準。",
+   "eyebrow": "iPAS 淨零碳規劃師學習平台",
+   "first_chapter_id": "ch01",
+   "headline": "準備 iPAS，從淨零碳規劃核心開始",
+   "platform_name": "AI Learning Platform",
+   "skill_id": "ipas_net_zero_planner",
+   "title": "iPAS 淨零碳規劃師"
+  },
+  "grading_digest": "4fdbde3c2f9819db395b3e70d8324b139721d57b1f6e3fd3083000ef301c9516",
+  "http_grading_digest": "feb5269870ca9377b5a0f42ea16a0e2c34ae23f1ee00bbe7422ffb298f063bb4",
+  "http_validation": {
+   "blank_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "invalid_answer": [
+    400,
+    {
+     "error": "invalid_answer",
+     "message": "answer 必須是 A、B、C 或 D。",
+     "ok": false
+    }
+   ],
+   "json_list": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "lowercase_and_spaces": [
+    200,
+    {
+     "correct": false,
+     "correct_answer": "A",
+     "explanation": "這段內容出自第一章：國內外氣候變遷治理與因應。",
+     "ok": true,
+     "question_id": "NZ-Q001",
+     "selected_answer": "B",
+     "source_references": [
+      {
+       "locator": "knowledge/processed/ch01_climate_governance.md",
+       "section": "第一章：國內外氣候變遷治理與因應",
+       "source_id": "CH01"
+      }
+     ]
+    }
+   ],
+   "missing_answer": [
+    400,
+    {
+     "error": "missing_answer",
+     "message": "缺少 answer。",
+     "ok": false
+    }
+   ],
+   "missing_question_id": [
+    400,
+    {
+     "error": "missing_question_id",
+     "message": "缺少 question_id。",
+     "ok": false
+    }
+   ],
+   "not_json": [
+    400,
+    {
+     "error": "invalid_json",
+     "message": "請提供有效的 JSON 請求。",
+     "ok": false
+    }
+   ],
+   "numeric_answer": [
+    400,
+    {
+     "error": "missing_answer",
+     "message": "缺少 answer。",
+     "ok": false
+    }
+   ],
+   "unknown_question": [
+    404,
+    {
+     "error": "question_not_found",
+     "message": "找不到指定的題目。",
+     "ok": false
+    }
+   ]
+  },
+  "page": [
+   200,
+   "395459ee4ebece17dea65a855830b786d105325d3961b374442b5df068d346b1"
+  ],
+  "public_questions_digest": "9b925a8710042846951873c9f653a8d9b9a0c6b83a87c8dc82dac87a780d2674",
+  "question_ids": [
+   "NZ-Q001",
+   "NZ-Q002",
+   "NZ-Q003",
+   "NZ-Q004",
+   "NZ-Q005",
+   "NZ-Q006",
+   "NZ-Q007",
+   "NZ-Q008"
+  ],
+  "sources_digest": "f54731c28bf3ee4724bbad1935e120417b5dc7b0fa087eb55db60182a97a0ff6"
+ }
+}

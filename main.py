@@ -39,6 +39,8 @@ from app.responses import (
     TIMEOUT_FALLBACK_RESPONSE,
     normalize_response,
 )
+from app.courses import ChoiceAnswerMessages, register_choice_answer_route
+from knowledge_packs import get_pack
 from llm import gateway as llm_gateway
 from llm.gateway import (  # re-exported for compatibility; implementation lives in llm/
     MODEL_RATE_LIMIT_FALLBACK_RESPONSE,
@@ -70,6 +72,11 @@ from skills import ipas_ai_application_planner as ipas_ai_skill
 from skills import ipas_cybersecurity as ipas_cyber_skill
 from skills import ipas_net_zero_planner as ipas_net_zero_skill
 from skills import little_tree as little_tree_skill
+
+# Knowledge Pack contract views of the course packages (chat routing stays with skill manifests).
+net_zero_pack = get_pack("ipas_net_zero_planner")
+ai_planner_pack = get_pack("ipas_ai_application_planner")
+cybersecurity_pack = get_pack("ipas_cybersecurity")
 
 
 load_dotenv()
@@ -368,10 +375,10 @@ def little_tree_parenting_scenarios():
 @app.get("/ipas")
 def ipas_page():
     try:
-        course_info = ipas_ai_skill.get_course_info()
-        chapters = ipas_ai_skill.get_chapters()
-        questions = ipas_ai_skill.get_questions()
-    except ipas_ai_skill.DataUnavailableError:
+        course_info = ai_planner_pack.get_course_info()
+        chapters = ai_planner_pack.get_chapters()
+        questions = ai_planner_pack.list_questions()
+    except ai_planner_pack.unavailable_error:
         logger.warning("iPAS AI application planner course materials are unavailable")
         return render_template(
             "ipas.html",
@@ -399,63 +406,39 @@ def ipas_page():
     )
 
 
-def ipas_ai_api_error(error: str, message: str, status_code: int):
-    return jsonify({"ok": False, "error": error, "message": message}), status_code
-
-
-@app.post("/api/ipas/answer")
-def ipas_ai_answer():
-    if not request.is_json:
-        return ipas_ai_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
-
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return ipas_ai_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
-
-    raw_question_id = payload.get("question_id")
-    question_id = raw_question_id.strip().upper() if isinstance(raw_question_id, str) else ""
-    if not question_id:
-        return ipas_ai_api_error("missing_question_id", "缺少 question_id。", 400)
-
-    raw_answer = payload.get("answer")
-    answer_value = raw_answer.strip().upper() if isinstance(raw_answer, str) else ""
-    if not answer_value:
-        return ipas_ai_api_error("missing_answer", "缺少 answer。", 400)
-    if answer_value not in {"A", "B", "C", "D"}:
-        return ipas_ai_api_error("invalid_answer", "answer 必須是 A、B、C 或 D。", 400)
-
-    try:
-        result = ipas_ai_skill.submit_answer(question_id, answer_value)
-    except ValueError:
-        return ipas_ai_api_error("question_not_found", "找不到指定的題目。", 404)
-    except ipas_ai_skill.DataUnavailableError:
-        logger.warning("iPAS AI application planner answer materials are unavailable")
-        return ipas_ai_api_error("skill_unavailable", "題庫暫時無法使用，請稍後再試。", 503)
-    except Exception:
-        logger.exception("Failed to grade iPAS AI application planner answer")
-        return ipas_ai_api_error("internal_error", "批改失敗，請稍後再試。", 500)
-
-    return jsonify({"ok": True, **result})
+register_choice_answer_route(
+    app,
+    "/api/ipas/answer",
+    endpoint="ipas_ai_answer",
+    pack=ai_planner_pack,
+    messages=ChoiceAnswerMessages(
+        unavailable="題庫暫時無法使用，請稍後再試。",
+        internal_error="批改失敗，請稍後再試。",
+        unavailable_log="iPAS AI application planner answer materials are unavailable",
+        failure_log="Failed to grade iPAS AI application planner answer",
+    ),
+    logger=logger,
+)
 
 
 @app.get("/ipas/cybersecurity")
 def ipas_cybersecurity_page():
     try:
-        chapter_index = ipas_cyber_skill.get_chapters()
+        chapter_index = cybersecurity_pack.get_chapters()
         return render_template(
             "ipas_cybersecurity.html",
-            course_info=ipas_cyber_skill.get_course_info(),
+            course_info=cybersecurity_pack.get_course_info(),
             topics=[
                 {
-                    "chapter": ipas_cyber_skill.get_chapter(item["chapter_id"]),
-                    "cards": ipas_cyber_skill.get_flashcards(item["chapter_id"]),
-                    "questions": ipas_cyber_skill.get_questions(item["chapter_id"]),
+                    "chapter": cybersecurity_pack.get_chapter(item["chapter_id"]),
+                    "cards": cybersecurity_pack.get_flashcards(item["chapter_id"]),
+                    "questions": cybersecurity_pack.get_chapter_questions(item["chapter_id"]),
                 }
                 for item in chapter_index
             ],
             error_message=None,
         )
-    except ipas_cyber_skill.DataUnavailableError:
+    except cybersecurity_pack.unavailable_error:
         logger.warning("iPAS cybersecurity CIA materials are unavailable")
         return render_template(
             "ipas_cybersecurity.html", course_info={}, topics=[],
@@ -475,21 +458,21 @@ def ipas_cybersecurity_answer():
     if not isinstance(selected, str) or selected.strip().upper() not in {"A", "B", "C", "D"}:
         return jsonify({"ok": False, "error": "invalid_answer", "message": "answer 必須是 A、B、C 或 D。"}), 400
     try:
-        return jsonify({"ok": True, **ipas_cyber_skill.submit_answer(question_id, selected)})
+        return jsonify({"ok": True, **cybersecurity_pack.submit_answer(question_id, selected)})
     except ValueError:
         return jsonify({"ok": False, "error": "question_not_found", "message": "找不到指定的題目。"}), 404
-    except ipas_cyber_skill.DataUnavailableError:
+    except cybersecurity_pack.unavailable_error:
         return jsonify({"ok": False, "error": "skill_unavailable", "message": "資安教材目前無法使用。"}), 503
 
 
 @app.get("/ipas/net-zero-planner")
 def ipas_net_zero_page():
     try:
-        course_info = ipas_net_zero_skill.get_course_info()
-        chapter_index = ipas_net_zero_skill.get_chapters()
-        chapters = [ipas_net_zero_skill.get_chapter(item["chapter_id"]) for item in chapter_index]
-        questions = ipas_net_zero_skill.get_questions()
-    except ipas_net_zero_skill.DataUnavailableError:
+        course_info = net_zero_pack.get_course_info()
+        chapter_index = net_zero_pack.get_chapters()
+        chapters = [net_zero_pack.get_chapter(item["chapter_id"]) for item in chapter_index]
+        questions = net_zero_pack.list_questions()
+    except net_zero_pack.unavailable_error:
         logger.warning("iPAS net-zero course materials are unavailable")
         return render_template(
             "ipas_net_zero.html",
@@ -533,43 +516,19 @@ def ipas_net_zero_card(filename: str):
     return send_from_directory(IPAS_NET_ZERO_CARDS_DIR, normalized)
 
 
-def ipas_net_zero_api_error(error: str, message: str, status_code: int):
-    return jsonify({"ok": False, "error": error, "message": message}), status_code
-
-
-@app.post("/api/ipas/net-zero-planner/answer")
-def ipas_net_zero_answer():
-    if not request.is_json:
-        return ipas_net_zero_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
-
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return ipas_net_zero_api_error("invalid_json", "請提供有效的 JSON 請求。", 400)
-
-    raw_question_id = payload.get("question_id")
-    question_id = raw_question_id.strip().upper() if isinstance(raw_question_id, str) else ""
-    if not question_id:
-        return ipas_net_zero_api_error("missing_question_id", "缺少 question_id。", 400)
-
-    raw_answer = payload.get("answer")
-    answer_value = raw_answer.strip().upper() if isinstance(raw_answer, str) else ""
-    if not answer_value:
-        return ipas_net_zero_api_error("missing_answer", "缺少 answer。", 400)
-    if answer_value not in {"A", "B", "C", "D"}:
-        return ipas_net_zero_api_error("invalid_answer", "answer 必須是 A、B、C 或 D。", 400)
-
-    try:
-        result = ipas_net_zero_skill.submit_answer(question_id, answer_value)
-    except ValueError:
-        return ipas_net_zero_api_error("question_not_found", "找不到指定的題目。", 404)
-    except ipas_net_zero_skill.DataUnavailableError:
-        logger.warning("iPAS net-zero answer materials are unavailable")
-        return ipas_net_zero_api_error("skill_unavailable", "課程教材目前無法使用，請稍後再試。", 503)
-    except Exception:
-        logger.exception("Failed to grade iPAS net-zero answer")
-        return ipas_net_zero_api_error("internal_error", "題目批改失敗，請稍後再試。", 500)
-
-    return jsonify({"ok": True, **result})
+register_choice_answer_route(
+    app,
+    "/api/ipas/net-zero-planner/answer",
+    endpoint="ipas_net_zero_answer",
+    pack=net_zero_pack,
+    messages=ChoiceAnswerMessages(
+        unavailable="課程教材目前無法使用，請稍後再試。",
+        internal_error="題目批改失敗，請稍後再試。",
+        unavailable_log="iPAS net-zero answer materials are unavailable",
+        failure_log="Failed to grade iPAS net-zero answer",
+    ),
+    logger=logger,
+)
 
 
 def require_dashboard_access():
