@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import threading
 import time
 import uuid
@@ -18,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 # Operational telemetry is an append-only observability log. It is not
 # conversational memory and must never block the tutor request path.
-TELEMETRY_PATH = Path("data/runtime_telemetry.jsonl")
+DEFAULT_TELEMETRY_PATH = Path("data/runtime_telemetry.jsonl")
+TELEMETRY_PATH = Path(os.getenv("RUNTIME_TELEMETRY_PATH") or DEFAULT_TELEMETRY_PATH)
 SCHEMA_VERSION = 2
 _telemetry_write_lock = threading.Lock()
 TELEMETRY_FIELDS = (

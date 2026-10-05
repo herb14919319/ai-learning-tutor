@@ -101,6 +101,16 @@ gunicorn --bind :8080 --workers 1 --threads 8 --timeout 120 main:app
 curl http://localhost:8080/
 ```
 
+## 自動化測試
+
+測試使用標準函式庫 `unittest`，請在 repo 根目錄執行：
+
+```bash
+python -m unittest discover -s tests -t .
+```
+
+`-t .` 會先載入 `tests/__init__.py`，把 runtime telemetry 導向暫存檔，避免測試寫入受版本控制的 `data/runtime_telemetry.jsonl`。若漏掉 `-t .`，`test_baseline_characterization` 會失敗提醒。正式環境可用 `RUNTIME_TELEMETRY_PATH` 指定 telemetry 檔案位置，未設定時維持 `data/runtime_telemetry.jsonl`。
+
 ## Cloud Run 部署
 
 請先確認已安裝並登入 Google Cloud CLI，並已設定專案：
